@@ -1,0 +1,21 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: security-headers
+  namespace: {{ .Release.Namespace }}
+spec:
+  headers:
+    stsSeconds: 31536000
+    stsIncludeSubdomains: true
+    stsPreload: true
+    frameDeny: false  # deprecated; use CSP frame-ancestors instead
+    browserXssFilter: true
+    contentTypeNosniff: true
+    permissionsPolicy: "ambient-light-sensor=(), bluetooth=(), camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), accelerometer=(), midi=(), hid=(), payment=(), usb=(), interest-cohort=()"
+    referrerPolicy: "strict-origin-when-cross-origin"
+    contentSecurityPolicy: "frame-ancestors 'self' https://{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }} https://*.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }};"
+    # customResponseHeaders:
+    #   # TODO corp same-site breaks Plex images?
+    #   Cross-Origin-Resource-Policy: same-site
+    #   Cross-Origin-Opener-Policy: same-origin-allow-popups
+    #   Cross-Origin-Embedder-Policy: require-corp

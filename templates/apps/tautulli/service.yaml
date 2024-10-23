@@ -1,0 +1,18 @@
+{{- if .Values.services.tautulli.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.tautulli.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.tautulli.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.services.tautulli.ports.http }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.tautulli.name }}
+{{- end }}

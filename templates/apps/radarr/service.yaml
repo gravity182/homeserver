@@ -1,0 +1,18 @@
+{{- if .Values.services.radarr.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.radarr.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.radarr.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.radarr.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.radarr.name }}
+{{- end }}

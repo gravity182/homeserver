@@ -1,0 +1,18 @@
+{{- if .Values.services.qbittorrent.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.qbittorrent.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}
+  ports:
+    - name: http
+      port: {{ .Values.services.qbittorrent.ports.http }}
+      targetPort: http
+      protocol: TCP
+{{- end }}

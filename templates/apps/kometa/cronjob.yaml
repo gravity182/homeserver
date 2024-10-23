@@ -1,0 +1,89 @@
+{{- if .Values.services.kometa.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.services.kometa.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.kometa.name }}
+spec:
+  schedule: {{ .Values.services.kometa.scheduleCron }}
+  timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
+  successfulJobsHistoryLimit: 3
+  concurrencyPolicy: Replace
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.kometa.name }}
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ .Values.services.kometa.name }}
+          annotations:
+            checksum/config: {{ include (print $.Template.BasePath "/apps/kometa/configmap.yaml") . | sha256sum }}
+        spec:
+          securityContext:
+            runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
+            runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+            fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+            runAsNonRoot: true
+          initContainers:
+            - name: add-kometa-config
+              image: busybox
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - cp -rfL /tmp/config/* /config/ && chmod -R u+rwX,go+rX,go-w /config
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                - name: kometa-config
+                  mountPath: /tmp/config
+            {{- if .Values.services.kometa.enableJmxdOverlays }}
+            - name: init-jmxd-overlays
+              image: alpine/git
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - |-
+                  rm -rf /config/overlays/jmxd \
+                    && git clone --depth=1 https://github.com/jmxd/Kometa.git /config/overlays/jmxd \
+                    && cp -rfL /config/overlays/jmxd/overlays/* /config/overlays/ \
+                    && rm -rf /config/overlays/jmxd
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+            {{- end }}
+          containers:
+            - name: kometa
+              image: "{{ .Values.services.kometa.image.repository }}:{{ .Values.services.kometa.image.tag }}"
+              imagePullPolicy: {{ .Values.services.kometa.image.pullPolicy }}
+              args: [ "--run", "--read-only-config", "--config", "config/config.yaml" ]
+              env:
+                {{- range $key, $value := .Values.services.kometa.env }}
+                - name: {{ $key | quote }}
+                  value: {{ $value | quote }}
+                {{- end }}
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 125Mi
+                limits:
+                  cpu: 1000m
+                  memory: 1024Mi
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+          volumes:
+            - name: config
+              hostPath:
+                path: {{ .Values.services.kometa.config | quote }}
+                type: Directory
+            - name: kometa-config
+              configMap:
+                name: {{ .Values.services.kometa.name }}
+          restartPolicy: OnFailure
+{{- end }}

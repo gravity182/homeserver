@@ -1,0 +1,18 @@
+{{- if .Values.services.flaresolverr.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.flaresolverr.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.flaresolverr.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.services.flaresolverr.ports.http }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.flaresolverr.name }}
+{{- end }}

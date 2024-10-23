@@ -1,0 +1,16 @@
+{{- if .Values.services.homepage.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.services.homepage.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.homepage.name }}
+data:
+  {{- range $path, $_ := .Files.Glob "files/homepage/**.yaml" }}
+  {{- if not (contains "/default/" $path) }}
+  {{ base $path }}: |-
+{{ tpl ($.Files.Get $path) $ | indent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end }}

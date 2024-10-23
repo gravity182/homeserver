@@ -1,0 +1,18 @@
+{{- if .Values.services.miniflux.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.miniflux.db.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.miniflux.db.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.miniflux.db.ports.postgres }}
+      targetPort: postgres
+      protocol: TCP
+      name: postgres
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.miniflux.db.name }}
+{{- end }}

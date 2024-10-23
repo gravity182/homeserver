@@ -1,0 +1,47 @@
+{{- if .Values.services.autobrr.enabled }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autobrr
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: autobrr
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.autobrr.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: autobrr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: autobrr
+    spec:
+      securityContext:
+        runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
+        runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+        fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+        runAsNonRoot: true
+      containers:
+        - name: autobrr
+          image: "{{ .Values.services.autobrr.image.repository }}:{{ .Values.services.autobrr.image.tag }}"
+          imagePullPolicy: {{ .Values.services.autobrr.image.pullPolicy }}
+          env:
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 7474
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.autobrr.config }}"
+            type: Directory
+{{- end }}

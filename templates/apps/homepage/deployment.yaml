@@ -1,0 +1,71 @@
+{{- if .Values.services.homepage.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.homepage.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.homepage.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.homepage.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.homepage.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.homepage.name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/apps/homepage/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ .Values.services.homepage.name }}
+      automountServiceAccountToken: true
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: true
+      securityContext:
+        fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+      initContainers:
+        - name: add-homepage-config
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - cp -rfL /tmp/config/* /app/config/ && chmod -R u+rwX,go+rX,go-w /app/config
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+            - name: homepage-config
+              mountPath: /tmp/config
+      containers:
+        - name: homepage
+          image: "{{ .Values.services.homepage.image.repository }}:{{ .Values.services.homepage.image.tag }}"
+          imagePullPolicy: {{ .Values.services.homepage.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.homepage.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/config
+              name: config
+      volumes:
+        - name: homepage-config
+          configMap:
+            name: {{ .Values.services.homepage.name }}
+        - name: config
+          emptyDir: {}
+{{- end }}

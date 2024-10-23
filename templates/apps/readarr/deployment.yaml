@@ -1,0 +1,55 @@
+{{- if .Values.services.readarr.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.readarr.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.readarr.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.readarr.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.readarr.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.readarr.name }}
+    spec:
+      containers:
+        - name: readarr
+          image: "{{ .Values.services.readarr.image.repository }}:{{ .Values.services.readarr.image.tag }}"
+          imagePullPolicy: {{ .Values.services.readarr.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.readarr.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 8787
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: "{{ .Values.services.readarr.data }}"
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.readarr.config }}"
+            type: Directory
+        - name: data
+          hostPath:
+            path: "{{ .Values.services.readarr.data }}"
+            type: Directory
+{{- end }}

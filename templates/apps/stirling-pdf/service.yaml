@@ -1,0 +1,18 @@
+{{- if .Values.services.stirlingpdf.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.stirlingpdf.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.stirlingpdf.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.stirlingpdf.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.stirlingpdf.name }}
+{{- end }}

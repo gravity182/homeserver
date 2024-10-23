@@ -1,0 +1,55 @@
+{{- if .Values.services.whisparr.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.whisparr.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.whisparr.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.whisparr.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.whisparr.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.whisparr.name }}
+    spec:
+      containers:
+        - name: whisparr
+          image: "{{ .Values.services.whisparr.image.repository }}:{{ .Values.services.whisparr.image.tag }}"
+          imagePullPolicy: {{ .Values.services.whisparr.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.whisparr.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 6969
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: "{{ .Values.services.whisparr.data }}"
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.whisparr.config }}"
+            type: Directory
+        - name: data
+          hostPath:
+            path: "{{ .Values.services.whisparr.data }}"
+            type: Directory
+{{- end }}

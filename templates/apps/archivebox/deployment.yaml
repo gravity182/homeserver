@@ -1,0 +1,73 @@
+{{- if .Values.services.archivebox.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.archivebox.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.archivebox.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.archivebox.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.archivebox.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.archivebox.name }}
+    spec:
+      containers:
+        - name: archivebox
+          image: "{{ .Values.services.archivebox.image.repository }}:{{ .Values.services.archivebox.image.tag }}"
+          imagePullPolicy: {{ .Values.services.archivebox.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.archivebox.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: ADMIN_USERNAME
+              value: {{ .Values.services.archivebox.adminUsername | quote }}
+            - name: ADMIN_PASSWORD
+              value: {{ .Values.services.archivebox.adminPassword | quote }}
+            - name: CSRF_TRUSTED_ORIGINS
+              value: "https://{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+            - name: ALLOWED_HOSTS
+              value: "{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+            - name: PUBLIC_INDEX
+              value: "false"
+            - name: PUBLIC_SNAPSHOTS
+              value: "false"
+            - name: PUBLIC_ADD_VIEW
+              value: "false"
+            - name: MEDIA_MAX_SIZE
+              value: {{ .Values.services.archivebox.mediaMaxSize | quote }}
+            - name: TIMEOUT
+              value: {{ .Values.services.archivebox.timeout | quote }}
+            - name: CHECK_SSL_VALIDITY
+              value: "true"
+            - name: SAVE_ARCHIVE_DOT_ORG
+              value: {{ .Values.services.archivebox.saveArchiveDotOrg | quote }}
+            - name: USER_AGENT
+              value: {{ .Values.services.archivebox.userAgent | quote }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          hostPath:
+            path: "{{ .Values.services.archivebox.data }}"
+            type: Directory
+{{- end }}

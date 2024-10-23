@@ -1,0 +1,63 @@
+{{- if .Values.services.huginn.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.huginn.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.huginn.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.huginn.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.huginn.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.huginn.name }}
+    spec:
+      # unfortunately the image needs root access
+      # in order to write to the (root) /app directory
+      securityContext:
+        runAsNonRoot: false
+      containers:
+        - name: huginn
+          image: "{{ .Values.services.huginn.image.repository }}:{{ .Values.services.huginn.image.tag }}"
+          imagePullPolicy: {{ .Values.services.huginn.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.huginn.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: INVITATION_CODE
+              value: {{ .Values.services.huginn.invitationCode | quote }}
+            - name: SKIP_INVITATION_CODE
+            {{- if .Values.services.huginn.invitationCode }}
+              value: "false"
+            {{- else }}
+              value: "true"
+            {{- end }}
+            - name: REQUIRE_CONFIRMED_EMAIL
+              value: "false"
+            - name: APP_SECRET_TOKEN
+              value: {{ required "A valid .Values.services.huginn.appSecretToken required!" .Values.services.huginn.appSecretToken | quote }}
+            - name: DATABASE_ADAPTER
+              value: postgresql
+            - name: POSTGRES_PORT_5432_TCP_ADDR
+              value: {{ .Values.services.huginn.db.name | quote }}
+            - name: POSTGRES_PORT_5432_TCP_PORT
+              value: {{ .Values.services.huginn.db.ports.postgres | quote }}
+            - name: DATABASE_USERNAME
+              value: {{ .Values.services.huginn.db.user | quote }}
+            - name: DATABASE_PASSWORD
+              value: {{ required "A valid .Values.services.huginn.db.password required!" .Values.services.huginn.db.password | quote }}
+            - name: DATABASE_NAME
+              value: {{ .Values.services.huginn.db.dbname | quote }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+{{- end }}

@@ -1,0 +1,18 @@
+{{- if .Values.services.miniflux.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.miniflux.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.miniflux.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.miniflux.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.miniflux.name }}
+{{- end }}

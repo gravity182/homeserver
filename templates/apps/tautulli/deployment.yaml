@@ -1,0 +1,49 @@
+{{- if .Values.services.tautulli.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.tautulli.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.tautulli.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.tautulli.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.tautulli.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.tautulli.name }}
+    spec:
+      containers:
+        - name: tautulli
+          image: "{{ .Values.services.tautulli.image.repository }}:{{ .Values.services.tautulli.image.tag }}"
+          imagePullPolicy: {{ .Values.services.tautulli.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.tautulli.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 8181
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.tautulli.config }}"
+            type: Directory
+{{- end }}

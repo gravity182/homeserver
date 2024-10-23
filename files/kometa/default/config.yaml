@@ -1,0 +1,157 @@
+libraries:
+  Movies:
+    collection_files:
+      - file: config/movies.yaml
+      - default: decade
+      - default: imdb
+        template_variables:
+          use_lowest: false
+          radarr_add_missing: true
+          radarr_tag: imdb-<<key>>
+          item_radarr_tag: imdb-<<key>>
+      - default: oscars
+        template_variables:
+          use_best_picture: false
+          use_best_director: false
+          collection_order: alpha
+          radarr_add_missing: true
+          radarr_tag: oscars-<<key>>
+          item_radarr_tag: oscars-<<key>>
+          data:
+            starting: latest-10
+            ending: latest
+      - default: seasonal
+        template_variables:
+          radarr_add_missing: true
+          radarr_tag: <<key>>
+          item_radarr_tag: <<key>>
+          schedule_years: range(12/26-01/09)
+          schedule_christmas: range(12/01-01/09)
+          use_patrick: false
+          use_easter: false
+          use_mother: false
+          use_father: false
+          use_memorial: false
+          use_independence: false
+          use_labor: false
+          use_veteran: false
+          use_thanksgiving: false
+          use_aapi: false
+          use_disabilities: false
+          use_black_history: false
+          use_lgbtq: false
+          use_latinx: false
+          use_women: false
+    remove_overlays: false
+    reapply_overlays: false
+    overlay_files:
+      - file: config/overlays/media_info.yml
+        template_variables:
+          use_combined: false
+          use_audio: false
+      - file: config/overlays/audience_rating.yml
+    operations:
+      # critic and audience ratings are fetched by Plex itself, given that Rotten Tomatoes is chosen as a ratings source
+      #
+      # we don't need to change user rating for use in jmxd overlays, so the line below is commented out
+      # although you can enable it if you wish
+      # mass_user_rating_update: imdb
+  TV Shows:
+    collection_files:
+      - file: config/tv.yaml
+      - default: imdb
+        template_variables:
+          use_lowest: false
+          sonarr_add_missing: true
+          sonarr_tag: imdb-<<key>>
+          item_sonarr_tag: imdb-<<key>>
+    remove_overlays: false
+    reapply_overlays: false
+    overlay_files:
+      - file: config/overlays/media_info.yml
+        template_variables:
+          use_combined: false
+          use_audio: false
+      - file: config/overlays/audience_rating.yml
+    operations:
+      # tmdb ratings are not very good
+      # switch the audience rating to IMDb for use in jmxd overlays
+      mass_audience_rating_update: imdb
+settings:
+  sync_mode: sync
+  run_order:
+    - operations
+    - metadata
+    - collections
+    - overlays
+  cache: true
+  cache_expiration: 60
+  asset_directory: config/assets
+  asset_folders: true
+  asset_depth: 0
+  create_asset_folders: true
+  dimensional_asset_rename: false
+  download_url_assets: false
+  show_missing_season_assets: false
+  minimum_items: 1
+  default_collection_order:
+  delete_below_minimum: true
+  delete_not_scheduled: true
+  run_again_delay: 2
+  missing_only_released: false
+  only_filter_missing: false
+  show_unmanaged: true
+  show_filtered: false
+  show_options: false
+  show_missing: true
+  show_missing_assets: true
+  save_report: true
+  tvdb_language: eng
+  ignore_ids:
+  ignore_imdb_ids:
+  playlist_sync_to_users: all
+  verify_ssl: true
+plex:
+  url: http://{{ .Values.services.plex.name }}:{{ .Values.services.plex.ports.http }}
+  token: {{ .Values.services.kometa.connections.plex.apiKey | quote }}
+  timeout: 60
+  db_cache: 512
+  clean_bundles: false
+  empty_trash: false
+  optimize: false
+tmdb:
+  apikey: {{ .Values.services.kometa.connections.tmdb.apiKey | quote }}
+  language: {{ .Values.services.kometa.connections.tmdb.language }}
+  region: {{ .Values.services.kometa.connections.tmdb.region }}
+  cache_expiration: 60
+radarr:
+  url: http://{{ .Values.services.radarr.name }}:{{ .Values.services.radarr.ports.http }}
+  token: {{ .Values.services.kometa.connections.radarr.apiKey | quote }}
+  root_folder_path: {{ .Values.services.kometa.connections.radarr.rootFolderPath | quote }}
+  ignore_cache: true
+  tag:
+  monitor: false
+  search: false
+  availability: released
+  quality_profile: {{ .Values.services.kometa.connections.radarr.qualityProfile | quote }}
+  add_missing: false
+  add_existing: false
+  upgrade_existing: false
+  monitor_existing: false
+sonarr:
+  url: http://{{ .Values.services.sonarr.name }}:{{ .Values.services.sonarr.ports.http }}
+  token: {{ .Values.services.kometa.connections.sonarr.apiKey | quote }}
+  root_folder_path: {{ .Values.services.kometa.connections.sonarr.rootFolderPath | quote }}
+  ignore_cache: true
+  tag:
+  add_missing: false
+  add_existing: false
+  upgrade_existing: false
+  monitor_existing: false
+  monitor: none
+  search: false
+  availability: released
+  quality_profile: {{ .Values.services.kometa.connections.sonarr.qualityProfile | quote }}
+  series_type: standard
+  season_folder: true
+  cutoff_search: false

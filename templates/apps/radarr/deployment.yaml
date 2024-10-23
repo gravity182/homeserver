@@ -1,0 +1,55 @@
+{{- if .Values.services.radarr.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.radarr.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.radarr.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.radarr.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.radarr.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.radarr.name }}
+    spec:
+      containers:
+        - name: radarr
+          image: "{{ .Values.services.radarr.image.repository }}:{{ .Values.services.radarr.image.tag }}"
+          imagePullPolicy: {{ .Values.services.radarr.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.radarr.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 7878
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: "{{ .Values.services.radarr.data }}"
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.radarr.config }}"
+            type: Directory
+        - name: data
+          hostPath:
+            path: "{{ .Values.services.radarr.data }}"
+            type: Directory
+{{- end }}

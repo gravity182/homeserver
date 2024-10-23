@@ -1,0 +1,60 @@
+{{- if .Values.services.jellyfin.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.jellyfin.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.jellyfin.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.jellyfin.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.jellyfin.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.jellyfin.name }}
+    spec:
+      containers:
+        - name: jellyfin
+          image: "{{ .Values.services.jellyfin.image.repository }}:{{ .Values.services.jellyfin.image.tag }}"
+          imagePullPolicy: {{ .Values.services.jellyfin.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.jellyfin.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: "JELLYFIN_PublishedServerUrl"
+              value: "https://{{ .Values.services.jellyfin.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+          ports:
+            - name: http
+              containerPort: 8096
+              protocol: TCP
+            - name: udp
+              containerPort: 7359
+              protocol: UDP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: library
+              mountPath: /data/library
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.jellyfin.config }}"
+            type: Directory
+        - name: library
+          hostPath:
+            path: "{{ .Values.services.jellyfin.library }}"
+            type: Directory
+{{- end }}

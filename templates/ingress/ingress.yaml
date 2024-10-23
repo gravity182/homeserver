@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cert-issuer
+    traefik.ingress.kubernetes.io/router.middlewares: "{{ .Release.Namespace }}-forwardauth-authentik@kubernetescrd,{{ .Release.Namespace }}-security-headers@kubernetescrd"
+    {{- range $key, $value := .Values.ingress.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  ingressClassName: traefik
+  tls:
+    - secretName: {{ .Values.certmanager.tlsSecretName }}
+      hosts:
+        - "{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+        - "*.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+  rules:
+    {{- range $k, $service := .Values.services }}
+    {{- if and $service.enabled $service.exposed }}
+    - host: "{{ $service.name }}.{{ $.Values.ingress.domain }}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $service.name }}
+                port:
+                  number: {{ $service.ports.http }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.ingress.rootService }}
+    {{- range $k, $service := .Values.services }}
+    {{- if and (and $service.enabled $service.exposed) (eq $service.name $.Values.ingress.rootService ) }}
+    - host: {{ $.Values.ingress.domain | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $service.name }}
+                port:
+                  number: {{ $service.ports.http }}
+    {{- end }}
+    {{- end }}
+    {{- end }}

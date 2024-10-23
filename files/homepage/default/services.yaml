@@ -1,0 +1,215 @@
+---
+- Arr Stack:
+      {{- if .Values.services.radarr.enabled }}
+      - Radarr:
+            icon: sh-radarr
+            href: https://{{ .Values.services.radarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.radarr.name }}:{{ .Values.services.radarr.ports.http }}
+            description: Movie management
+            widget:
+                type: radarr
+                url: http://{{ .Values.services.radarr.name }}:{{ .Values.services.radarr.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.radarr.apiKey }}"
+      {{- end }}
+      {{- if .Values.services.sonarr.enabled }}
+      - Sonarr:
+            icon: sh-sonarr
+            href: https://{{ .Values.services.sonarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.sonarr.name }}:{{ .Values.services.sonarr.ports.http }}
+            description: Series management
+            widget:
+                type: sonarr
+                url: http://{{ .Values.services.sonarr.name }}:{{ .Values.services.sonarr.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.sonarr.apiKey }}"
+      {{- end }}
+      {{- if .Values.services.readarr.enabled }}
+      - Readarr:
+            icon: sh-readarr
+            href: https://{{ .Values.services.readarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.readarr.name }}:{{ .Values.services.readarr.ports.http }}
+            description: Books management
+            widget:
+                type: readarr
+                url: http://{{ .Values.services.readarr.name }}:{{ .Values.services.readarr.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.readarr.apiKey }}"
+      {{- end }}
+      {{- if .Values.services.whisparr.enabled }}
+      - Whisparr:
+            icon: https://raw.githubusercontent.com/Whisparr/Whisparr/refs/heads/develop/Logo/Whisparr.svg
+            href: https://{{ .Values.services.whisparr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.whisparr.name }}:{{ .Values.services.whisparr.ports.http }}
+            description: Adult videos management
+      {{- end }}
+      {{- if .Values.services.bazarr.enabled }}
+      - Bazarr:
+            icon: sh-bazarr
+            href: https://{{ .Values.services.bazarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.bazarr.name }}:{{ .Values.services.bazarr.ports.http }}
+            description: Subtitles management
+            widget:
+                type: bazarr
+                url: http://{{ .Values.services.bazarr.name }}:{{ .Values.services.bazarr.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.bazarr.apiKey }}"
+      {{- end }}
+      {{- if .Values.services.autobrr.enabled }}
+      - Autobrr:
+            icon: sh-autobrr
+            href: https://{{ .Values.services.autobrr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.autobrr.name }}:{{ .Values.services.autobrr.ports.http }}
+            description: Download automation
+            widget:
+                type: autobrr
+                url: http://{{ .Values.services.autobrr.name }}:{{ .Values.services.autobrr.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.autobrr.apiKey }}"
+      {{- end }}
+      {{- if .Values.services.prowlarr.enabled }}
+      - Prowlarr:
+            icon: sh-prowlarr
+            href: https://{{ .Values.services.prowlarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.prowlarr.name }}:{{ .Values.services.prowlarr.ports.http }}
+            description: Indexers management
+            widget:
+                type: prowlarr
+                url: http://{{ .Values.services.prowlarr.name }}:{{ .Values.services.prowlarr.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.prowlarr.apiKey }}"
+      {{- end }}
+- Downloaders:
+      {{- if .Values.services.qbittorrent.enabled }}
+      - qBittorrent:
+            icon: sh-qbittorrent
+            href: https://{{ .Values.services.qbittorrent.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.qbittorrent.name }}:{{ .Values.services.qbittorrent.ports.http }}
+            description: Torrent downloader
+            widget:
+                type: qbittorrent
+                url: http://{{ .Values.services.qbittorrent.name }}:{{ .Values.services.qbittorrent.ports.http }}
+                fields: ["download", "upload"]
+      {{- end }}
+      {{- if .Values.services.sabnzbd.enabled }}
+      - SABnzbd:
+            icon: sh-sabnzbd
+            href: https://{{ .Values.services.sabnzbd.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.sabnzbd.name }}:{{ .Values.services.sabnzbd.ports.http }}
+            description: Usenet downloader
+            widget:
+                type: sabnzbd
+                url: http://{{ .Values.services.sabnzbd.name }}:{{ .Values.services.sabnzbd.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.sabnzbd.apiKey }}"
+      {{- end }}
+- Media:
+      {{- if .Values.services.jellyseerr.enabled }}
+      - Jellyseerr:
+            icon: sh-jellyseerr
+            href: https://{{ .Values.services.jellyseerr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.jellyseerr.name }}:{{ .Values.services.jellyseerr.ports.http }}
+            description: Request movies & series
+            widget:
+                type: jellyseerr
+                url: http://{{ .Values.services.jellyseerr.name }}:{{ .Values.services.jellyseerr.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.jellyseerr.apiKey }}"
+      {{- end }}
+      {{- if .Values.services.plex.enabled }}
+      - Plex:
+            icon: sh-plex
+            href: https://{{ .Values.services.plex.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.tautulli.name }}:{{ .Values.services.tautulli.ports.http }}
+            description: Media server
+            widget:
+                type: tautulli
+                url: http://{{ .Values.services.tautulli.name }}:{{ .Values.services.tautulli.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.tautulli.apiKey }}"
+                enableUser: true # optional, defaults to false
+                showEpisodeNumber: true # optional, defaults to false
+                expandOneStreamToTwoRows: false # optional, defaults to true
+      {{- end }}
+- Utilities:
+      {{- if .Values.services.miniflux.enabled }}
+      - RSS:
+            icon: sh-miniflux-light
+            href: https://{{ .Values.services.miniflux.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.miniflux.name }}:{{ .Values.services.miniflux.ports.http }}
+            description: Feed Reader
+            widget:
+                type: miniflux
+                url: http://{{ .Values.services.miniflux.name }}:{{ .Values.services.miniflux.ports.http }}
+                fields: ["unread"]
+                key: "{{ .Values.services.homepage.widgets.miniflux.apiKey }}"
+      {{- end }}
+      {{- if .Values.services.thelounge.enabled }}
+      - The Lounge:
+            icon: https://raw.githubusercontent.com/thelounge/thelounge/master/client/img/logo-vertical-transparent-bg.svg?sanitize=true
+            href: https://{{ .Values.services.thelounge.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.thelounge.name }}:{{ .Values.services.thelounge.ports.http }}
+            description: IRC client
+      {{- end }}
+      {{- if .Values.services.stirlingpdf.enabled }}
+      - Stirling PDF:
+            icon: sh-stirling-pdf
+            href: https://{{ .Values.services.stirlingpdf.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.stirlingpdf.name }}:{{ .Values.services.stirlingpdf.ports.http }}
+            description: PDF Manipulation
+      {{- end }}
+      {{- if .Values.services.huginn.enabled }}
+      - Huginn:
+            icon: sh-huginn
+            href: https://{{ .Values.services.huginn.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.huginn.name }}:{{ .Values.services.huginn.ports.http }}
+            description: Monitors the world and acts on your behalf
+      {{- end }}
+      {{- if .Values.services.changedetectionio.enabled }}
+      - Changedetection:
+            icon: sh-changedetection
+            href: https://{{ .Values.services.changedetectionio.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.changedetectionio.name }}:{{ .Values.services.changedetectionio.ports.http }}
+            description: Website change detection
+            widget:
+                type: changedetectionio
+                url: http://{{ .Values.services.changedetectionio.name }}:{{ .Values.services.changedetectionio.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.changedetection.apiKey }}"
+      {{- end }}
+      {{- if .Values.services.archivebox.enabled }}
+      - Archivebox:
+            icon: sh-archivebox
+            href: https://{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.archivebox.name }}:{{ .Values.services.archivebox.ports.http }}
+            description: Web archiving
+      {{- end }}
+      {{- if .Values.services.apprise.enabled }}
+      - Apprise:
+            icon: sh-apprise
+            href: https://{{ .Values.services.apprise.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.apprise.name }}:{{ .Values.services.apprise.ports.http }}
+            description: Send notifications to any service
+      {{- end }}
+      {{- if .Values.services.gotify.enabled }}
+      - Gotify:
+            icon: sh-gotify
+            href: https://{{ .Values.services.gotify.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.gotify.name }}:{{ .Values.services.gotify.ports.http }}
+            description: Push notifications
+            widget:
+                type: gotify
+                url: http://{{ .Values.services.gotify.name }}:{{ .Values.services.gotify.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.gotify.apiKey }}"
+      {{- end }}
+- Monitoring:
+      {{- if .Values.services.speedtest.enabled }}
+      - Speedtest:
+            icon: sh-myspeed
+            href: https://{{ .Values.services.speedtest.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.speedtest.name }}:{{ .Values.services.speedtest.ports.http }}
+            description: Speedtest tracker
+            widget:
+                type: speedtest
+                url: http://{{ .Values.services.speedtest.name }}:{{ .Values.services.speedtest.ports.http }}
+                bitratePrecision: 0
+      {{- end }}
+      - Authentik:
+            icon: sh-authentik
+            href: https://authentik.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: https://authentik.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            description: SSO authentication
+            widget:
+                type: authentik
+                url: http://authentik-server.{{ .Values.authentik.namespace }}.svc.cluster.local:80
+                key: "{{ .Values.services.homepage.widgets.authentik.apiKey }}"

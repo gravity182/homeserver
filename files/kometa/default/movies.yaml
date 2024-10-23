@@ -1,0 +1,11 @@
+collections:
+  IMDb Watchlist:
+    collection_mode: show_items
+    collection_order: custom
+    sync_mode: sync
+    radarr_add_missing: true
+    radarr_tag: imdb-watchlist
+    item_radarr_tag: imdb-watchlist
+    imdb_watchlist:
+      user_id: {{ .Values.services.kometa.connections.imdb.userId | quote }}
+      sort_by: custom.desc

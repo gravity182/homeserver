@@ -1,0 +1,18 @@
+{{- if .Values.services.huginn.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.huginn.db.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.huginn.db.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.huginn.db.ports.postgres }}
+      targetPort: postgres
+      protocol: TCP
+      name: postgres
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.huginn.db.name }}
+{{- end }}

@@ -1,0 +1,28 @@
+### Helm ###
+# Chart dependencies
+**/charts/*.tgz
+# Personal files
+.env
+.vscode
+.idea
+.git
+values.y*
+authentik-values.y*
+certmanager-values.y*
+
+/files/homepage/*
+!/files/homepage/default/*
+/files/kometa/*
+!/files/kometa/default/*
+
+### Misc ###
+.DS_Store
+*.gz
+*.log
+*.old
+*.out
+*.tar
+*.tar.gz
+*.tgz
+*.tmp
+*.zip

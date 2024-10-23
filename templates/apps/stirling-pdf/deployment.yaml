@@ -1,0 +1,67 @@
+{{- if .Values.services.stirlingpdf.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.stirlingpdf.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.stirlingpdf.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.stirlingpdf.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.stirlingpdf.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.stirlingpdf.name }}
+    spec:
+      # unfortunately the image needs root access
+      # in order to install packages and create a few root directories
+      securityContext:
+        runAsNonRoot: false
+      containers:
+        - name: stirlingpdf
+          image: "{{ .Values.services.stirlingpdf.image.repository }}:{{ .Values.services.stirlingpdf.image.tag }}"
+          imagePullPolicy: {{ .Values.services.stirlingpdf.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.stirlingpdf.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: LANGS
+              value: {{ .Values.services.stirlingpdf.langs | quote }}
+            - name: DOCKER_ENABLE_SECURITY
+              value: {{ .Values.services.stirlingpdf.enableLogin | quote }}
+            - name: SECURITY_ENABLE_LOGIN
+              value: {{ .Values.services.stirlingpdf.enableLogin | quote }}
+            - name: INSTALL_BOOK_AND_ADVANCED_HTML_OPS
+              value: {{ .Values.services.stirlingpdf.installBookAndAdvancedHtmlOps | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /configs
+            - name: logs
+              mountPath: /logs
+      volumes:
+        - name: config
+          hostPath:
+            path: {{ .Values.services.stirlingpdf.config | quote }}
+            type: Directory
+        - name: logs
+          hostPath:
+            path: {{ .Values.services.stirlingpdf.logs | quote }}
+            type: Directory
+{{- end }}

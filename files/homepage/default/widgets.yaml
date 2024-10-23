@@ -1,0 +1,20 @@
+---
+- resources:
+      label: System
+      expanded: true
+      uptime: true
+      cpu: true
+      memory: true
+- resources:
+      label: Storage
+      expanded: true
+      disk: /
+- search:
+      focus: true
+      provider: duckduckgo
+      target: _blank
+- datetime:
+      text_size: 2x1
+      locale: ru
+      format:
+          timeStyle: short

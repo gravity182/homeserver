@@ -1,0 +1,18 @@
+{{- if .Values.services.whisparr.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.whisparr.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.whisparr.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.whisparr.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.whisparr.name }}
+{{- end }}

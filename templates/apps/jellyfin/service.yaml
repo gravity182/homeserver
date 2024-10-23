@@ -1,0 +1,18 @@
+{{- if .Values.services.jellyfin.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.jellyfin.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.jellyfin.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.services.jellyfin.ports.http }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.jellyfin.name }}
+{{- end }}

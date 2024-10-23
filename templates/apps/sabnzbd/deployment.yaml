@@ -1,0 +1,83 @@
+{{- if .Values.services.sabnzbd.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.sabnzbd.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.sabnzbd.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.sabnzbd.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.sabnzbd.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.sabnzbd.name }}
+      annotations:
+        checksum/config-scripts: {{ include (print $.Template.BasePath "/apps/sabnzbd/scripts-configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+        - name: host-whitelist
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - sed -i "s/host_whitelist\s*=.*/host_whitelist = {{ .Values.services.sabnzbd.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}/" /config/sabnzbd.ini
+          volumeMounts:
+            - name: config
+              mountPath: /config
+        - name: add-scripts
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - mkdir -p /config/scripts && cp -rfL /tmp/scripts/* /config/scripts/ && chmod -R u+rwx,go+rx,go-w /config/scripts
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: scripts
+              mountPath: /tmp/scripts
+      containers:
+        - name: sabnzbd
+          image: "{{ .Values.services.sabnzbd.image.repository }}:{{ .Values.services.sabnzbd.image.tag }}"
+          imagePullPolicy: {{ .Values.services.sabnzbd.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.sabnzbd.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: {{ .Values.services.sabnzbd.data | quote }}
+      volumes:
+        - name: scripts
+          configMap:
+            name: "{{ .Values.services.sabnzbd.name }}-scripts"
+        - name: config
+          hostPath:
+            path: {{ .Values.services.sabnzbd.config | quote }}
+            type: Directory
+        - name: data
+          hostPath:
+            path: {{ .Values.services.sabnzbd.data | quote }}
+            type: Directory
+{{- end }}

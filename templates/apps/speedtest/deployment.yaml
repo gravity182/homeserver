@@ -1,0 +1,61 @@
+{{- if .Values.services.speedtest.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.speedtest.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.speedtest.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.speedtest.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.speedtest.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.speedtest.name }}
+    spec:
+      containers:
+        - name: speedtest
+          image: "{{ .Values.services.speedtest.image.repository }}:{{ .Values.services.speedtest.image.tag }}"
+          imagePullPolicy: {{ .Values.services.speedtest.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.speedtest.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: DISPLAY_TIMEZONE
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: SPEEDTEST_SCHEDULE
+              value: {{ .Values.services.speedtest.cron | quote }}
+            - name: PRUNE_RESULTS_OLDER_THAN
+              value: "360"
+            - name: PUBLIC_DASHBOARD
+              value: "true"
+            - name: APP_KEY
+              value: {{ required "A valid .Values.services.speedtest.appKey required!" .Values.services.speedtest.appKey | quote }}
+            - name: APP_URL
+              value: "{{ .Values.services.speedtest.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+            - name: DB_CONNECTION
+              value: {{ .Values.services.speedtest.dbConnection | quote }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.speedtest.config }}"
+            type: Directory
+{{- end }}

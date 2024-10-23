@@ -1,0 +1,47 @@
+{{- if .Values.services.flaresolverr.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.flaresolverr.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.flaresolverr.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.flaresolverr.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.flaresolverr.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.flaresolverr.name }}
+    spec:
+      containers:
+        - name: flaresolverr
+          image: "{{ .Values.services.flaresolverr.image.repository }}:{{ .Values.services.flaresolverr.image.tag }}"
+          imagePullPolicy: {{ .Values.services.flaresolverr.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.flaresolverr.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.services.flaresolverr.logLevel | quote }}
+            - name: LANG
+              value: {{ .Values.services.flaresolverr.lang | quote }}
+            - name: CAPTCHA_SOLVER
+              value: {{ .Values.services.flaresolverr.captchaSolver | quote }}
+          ports:
+            - name: http
+              containerPort: 8191
+              protocol: TCP
+{{- end}}

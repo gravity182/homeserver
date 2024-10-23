@@ -1,0 +1,528 @@
+host:
+    tz: # REQUIRED; e.g. 'Europe/Berlin'
+    uid: # REQUIRED; obtain via `id -u`
+    gid: # REQUIRED; obtain via `id -g`
+certmanager:
+    namespace: cert-manager
+    tlsSecretName: certs.letsencrypt.key.tls
+    acme:
+        email: # REQUIRED; e.g. 'example@gmail.com'
+        dns01:
+            cfApiToken: # REQUIRED
+authentik:
+    namespace: authentik
+ingress:
+    domain: # REQUIRED; e.g. 'example.com' (without a scheme)
+    rootService: homepage # the service to serve when opening the root domain
+    annotations: {}
+services:
+    homepage:
+        enabled: true
+        exposed: true
+        name: homepage
+        replicaCount: 1
+        image:
+            repository: ghcr.io/gethomepage/homepage
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 3000
+        widgets:
+            # the value below are not mandatory get Homepage working, but it won't show useful info about the services
+            authentik:
+                apiKey: "" # go to Admin Portal > Directory > Tokens & App passwords and generate a new API key
+            miniflux:
+                apiKey: "" # go to Settings -> API Keys and generate a new API key
+            radarr:
+                apiKey: "" # go to Settings -> General and retrieve the API key
+            sonarr:
+                apiKey: "" # go to Settings -> General and retrieve the API key
+            readarr:
+                apiKey: "" # go to Settings -> General and retrieve the API key
+            bazarr:
+                apiKey: "" # go to Settings -> General and retrieve the API key
+            prowlarr:
+                apiKey: "" # go to Settings -> General and retrieve the API key
+            autobrr:
+                apiKey: "" # go to Settings -> API Keys and generate a new API key
+            jellyseerr:
+                apiKey: "" # go to Settings -> General and retrieve the API key
+            tautulli:
+                apiKey: "" # go to Settings -> Web Interface and retrieve the API key
+            sabnzbd:
+                apiKey: "" # go to Settings -> General and retrieve the API key
+            changedetection:
+                apiKey: "" # go to Settings -> API and retrieve the API key
+            gotify:
+                apiKey: "" # go to Clients and generate a new client
+        env: {}
+    plex:
+        enabled: false
+        exposed: true
+        name: plex
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/plex
+            tag: "1.41.0"
+            pullPolicy: IfNotPresent
+        ports:
+            http: 32400
+        claim: # REQUIRED
+        config: /opt/plex/config
+        library: /data/library
+        env: {}
+    jellyfin:
+        enabled: false
+        exposed: true
+        name: jellyfin
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/jellyfin
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8096
+            udp: 7359
+        config: /opt/jellyfin/config
+        library: /data/library
+        env: {}
+    autobrr:
+        enabled: false
+        exposed: true
+        name: autobrr
+        replicaCount: 1
+        image:
+            repository: ghcr.io/autobrr/autobrr
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 7474
+        config: /opt/autobrr/config
+        env:
+            # see the full list of supported env vars
+            # https://autobrr.com/installation/docker#environment-variables
+            #
+    qbittorrent:
+        enabled: false
+        exposed: true
+        name: torrent
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/qbittorrent
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8080
+            # make sure the p2p port is allowed in your firewall
+            # you can change this port but it should be in range of 30000-32767 (k8s NodePort)
+            p2p: 32700
+        dockerMods: ghcr.io/vuetorrent/vuetorrent-lsio-mod:latest
+        config: /opt/qbittorrent/config
+        data: /data/torrents
+        env: {}
+    sabnzbd:
+        enabled: false
+        exposed: true
+        name: usenet
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/sabnzbd
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8080
+        config: /opt/sabnzbd/config
+        data: /data/usenet
+        env: {}
+    prowlarr:
+        enabled: false
+        exposed: true
+        name: prowlarr
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/prowlarr
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 9696
+        config: /opt/prowlarr/config
+        env: {}
+    radarr:
+        enabled: false
+        exposed: true
+        name: radarr
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/radarr
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 7878
+        config: /opt/radarr/config
+        data: /data
+        env: {}
+    sonarr:
+        enabled: false
+        exposed: true
+        name: sonarr
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/sonarr
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8989
+        config: /opt/sonarr/config
+        data: /data
+        env: {}
+    readarr:
+        enabled: false
+        exposed: true
+        name: readarr
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/readarr
+            tag: develop
+            pullPolicy: Always
+        ports:
+            http: 8787
+        config: /opt/readarr/config
+        data: /data
+        env: {}
+    whisparr:
+        enabled: false
+        exposed: true
+        name: whisparr
+        replicaCount: 1
+        image:
+            repository: ghcr.io/hotio/whisparr
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 6969
+        config: /opt/whisparr/config
+        data: /data
+        env: {}
+    bazarr:
+        enabled: false
+        exposed: true
+        name: bazarr
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/bazarr
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 6767
+        config: /opt/bazarr/config
+        data: /data
+        env: {}
+    jellyseerr:
+        enabled: false
+        exposed: true
+        name: jellyseerr
+        replicaCount: 1
+        image:
+            repository: fallenbagel/jellyseerr
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 5055
+        config: /opt/jellyseerr/config
+        env: {}
+    flaresolverr:
+        enabled: false
+        exposed: false
+        name: flaresolverr
+        replicaCount: 1
+        image:
+            repository: ghcr.io/flaresolverr/flaresolverr
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8191
+        logLevel: INFO
+        lang: en_US
+        captchaSolver: hCaptcha
+        env:
+            # see the full list of supported env vars
+            # https://github.com/FlareSolverr/FlareSolverr?tab=readme-ov-file#environment-variables
+            #
+    tautulli:
+        enabled: false
+        exposed: true
+        name: tautulli
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/tautulli
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8181
+        config: /opt/tautulli/config
+        env: {}
+    kometa:
+        enabled: false
+        exposed: false
+        name: kometa
+        replicaCount: 1
+        image:
+            repository: kometateam/kometa
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8181
+        config: /opt/kometa/config
+        scheduleCron: "0 5 * * *"
+        # the .connections entries below are not mandatory if you don't plan using my default profile
+        # although these vars are very common so high chance you will need them in your own configuration too
+        connections:
+            tmdb:
+                apiKey: ""
+                language: en
+                region: US
+            imdb:
+                userId: ""
+            plex:
+                apiKey: ""
+            radarr:
+                apiKey: "" # go to Settings -> General and retrieve the API key
+                qualityProfile: "" # set the quality profile name which you configured in Radarr
+                rootFolderPath: "" # set the root folder path; e.g. /data/library/movies
+            sonarr:
+                apiKey: "" # go to Settings -> General and retrieve the API key
+                qualityProfile: "" # set the quality profile name which you configured in Sonarr
+                rootFolderPath: "" # set the root folder path; e.g. /data/library/tv
+        env:
+            # see the full list of supported env vars
+            # https://kometa.wiki/en/latest/kometa/environmental
+            #
+    thelounge:
+        enabled: false
+        exposed: true
+        name: thelounge
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/thelounge
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 9000
+        config: /opt/thelounge/config
+        env: {}
+    speedtest:
+        enabled: false
+        exposed: true
+        name: speedtest
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/speedtest-tracker
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8080
+        cron: "0 00,06,12,18 * * *"
+        # get your app key at https://speedtest-tracker.dev
+        appKey: # REQUIRED
+        dbConnection: sqlite
+        config: /opt/speedtest/config
+        env:
+            # see the full list of supported env vars
+            # https://docs.speedtest-tracker.dev/getting-started/environment-variables
+            #
+    stirlingpdf:
+        enabled: false
+        exposed: true
+        name: pdf
+        replicaCount: 1
+        image:
+            repository: frooodle/s-pdf
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8080
+        enableLogin: false
+        installBookAndAdvancedHtmlOps: true
+        langs: "en_GB,en_US"
+        config: /opt/stirlingpdf/config
+        logs: /opt/stirlingpdf/logs
+        env:
+            # see the full list of supported env vars
+            # https://github.com/Stirling-Tools/Stirling-PDF?tab=readme-ov-file#customisation
+            #
+            # UI_APP_NAME: "My very own Stirling PDF"
+    miniflux:
+        enabled: false
+        exposed: true
+        name: rss
+        replicaCount: 1
+        image:
+            repository: ghcr.io/miniflux/miniflux
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8080
+        db:
+            name: miniflux-db
+            user: miniflux
+            # generate a password for the postgres user
+            # e.g. `pwgen -s -B -n 14 1`
+            password: # REQUIRED
+            dbname: miniflux
+            ports:
+                postgres: 5432
+            data: /opt/miniflux/postgresql/17/data
+        env: {}
+    huginn:
+        enabled: false
+        exposed: true
+        name: huginn
+        replicaCount: 1
+        image:
+            repository: ghcr.io/huginn/huginn
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 3000
+        db:
+            name: huginn-db
+            user: huginn
+            # generate a password for the postgres user
+            # e.g. `pwgen -s -B -n 14 1`
+            password: # REQUIRED
+            dbname: huginn
+            ports:
+                postgres: 5432
+            data: /opt/huginn/postgresql/17/data
+        # generate a secret token
+        # e.g. `openssl rand -base64 32`
+        appSecretToken: # REQUIRED
+        # leave empty if you don't want to require the inv code for registration
+        # usually not needed as this service is already protected by Authentik
+        invitationCode: ""
+        env:
+            # see the full list of supported env vars
+            # https://github.com/huginn/huginn/blob/master/.env.example
+            #
+    playwright:
+        enabled: false
+        exposed: false
+        name: playwright
+        replicaCount: 1
+        image:
+            repository: ghcr.io/browserless/chromium
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 3000
+        # generate a secret token
+        # e.g. `openssl rand -base64 32`
+        token: # REQUIRED
+        timeout: 60000
+        maxConcurrentSessions: 10
+        maxQueueLength: 10
+        config: /opt/playwright/config
+        env:
+            # see the full list of supported env vars
+            # https://docs.browserless.io/docker/config
+            #
+    changedetectionio:
+        enabled: false
+        exposed: true
+        name: changedetection
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/changedetection.io
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 5000
+        playwrightLaunchOptions:
+            # see the full list of available launch options
+            # https://docs.browserless.io/chrome-flags
+            stealth: true
+            headless: true
+            args: ["--lang=en-US", "--hide-scrollbars"]
+        config: /opt/changedetectionio/config
+        env:
+            # see the full list of supported env vars
+            # https://github.com/dgtlmoon/changedetection.io/blob/master/docker-compose.yml#L12
+            #
+    archivebox:
+        enabled: false
+        exposed: true
+        name: archivebox
+        replicaCount: 1
+        image:
+            repository: archivebox/archivebox
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8000
+        adminUsername: admin
+        adminPassword: admin
+        mediaMaxSize: 750m
+        timeout: 120
+        saveArchiveDotOrg: false
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+        data: /opt/archivebox/data
+        env:
+            # see the full list of supported env vars
+            # https://github.com/ArchiveBox/ArchiveBox/wiki/Configuration
+            #
+    apprise:
+        enabled: false
+        exposed: true
+        name: apprise
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/apprise-api
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8000
+        logLevel: INFO
+        statefulMode: simple
+        # attach size is limited to 500 Mb at max
+        attachSizeMegabytes: 500
+        defaultConfigId: apprise
+        defaultTheme: dark
+        config: /opt/apprise/config
+        env:
+            # see the full list of supported env vars
+            # https://github.com/caronc/apprise-api?tab=readme-ov-file#environment-variables
+            #
+    gotify:
+        enabled: false
+        exposed: true
+        name: gotify
+        replicaCount: 1
+        image:
+            repository: ghcr.io/gotify/server
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 80
+        adminUsername: admin
+        adminPassword: admin
+        databaseDialect: sqlite3
+        databaseConnection: data/gotify.db
+        data: /opt/gotify/data
+        env:
+            # see the full list of supported env vars
+            # https://gotify.net/docs/config#environment-variables
+            #
+    kavita:
+        enabled: false
+        exposed: true
+        name: kavita
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/kavita
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 5000
+        config: /opt/kavita/config
+        library: /data/library/books
+        env: {}

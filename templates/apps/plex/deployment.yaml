@@ -1,0 +1,57 @@
+{{- if .Values.services.plex.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.plex.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.plex.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.plex.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.plex.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.plex.name }}
+    spec:
+      containers:
+        - name: plex
+          image: "{{ .Values.services.plex.image.repository }}:{{ .Values.services.plex.image.tag }}"
+          imagePullPolicy: {{ .Values.services.plex.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.plex.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: PLEX_CLAIM
+              value: {{ required "A valid .Values.services.plex.claim required!" .Values.services.plex.claim }}
+          ports:
+            - name: http
+              containerPort: 32400
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: library
+              mountPath: "{{ .Values.services.plex.library }}"
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.plex.config }}"
+            type: Directory
+        - name: library
+          hostPath:
+            path: "{{ .Values.services.plex.library }}"
+            type: Directory
+{{- end }}

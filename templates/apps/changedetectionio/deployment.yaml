@@ -1,0 +1,55 @@
+{{- if .Values.services.changedetectionio.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.changedetectionio.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.changedetectionio.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.changedetectionio.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.changedetectionio.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.changedetectionio.name }}
+    spec:
+      containers:
+        - name: changedetectionio
+          image: "{{ .Values.services.changedetectionio.image.repository }}:{{ .Values.services.changedetectionio.image.tag }}"
+          imagePullPolicy: {{ .Values.services.changedetectionio.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.changedetectionio.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: BASE_URL
+              value: https://{{ .Values.services.changedetectionio.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            {{- if .Values.services.playwright.enabled }}
+            - name: PLAYWRIGHT_DRIVER_URL
+              value: ws://{{ .Values.services.playwright.name }}:{{ .Values.services.playwright.ports.http }}?token={{ required "A valid .Values.services.playwright.token required!" .Values.services.playwright.token }}&launch={{ mustToJson .Values.services.changedetectionio.playwrightLaunchOptions }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          hostPath:
+            path: {{ .Values.services.changedetectionio.config | quote }}
+            type: Directory
+{{- end }}

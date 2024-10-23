@@ -1,0 +1,55 @@
+{{- if .Values.services.bazarr.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.bazarr.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.bazarr.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.bazarr.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.bazarr.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.bazarr.name }}
+    spec:
+      containers:
+        - name: bazarr
+          image: "{{ .Values.services.bazarr.image.repository }}:{{ .Values.services.bazarr.image.tag }}"
+          imagePullPolicy: {{ .Values.services.bazarr.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.bazarr.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 6767
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: "{{ .Values.services.bazarr.data }}"
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.bazarr.config }}"
+            type: Directory
+        - name: data
+          hostPath:
+            path: "{{ .Values.services.bazarr.data }}"
+            type: Directory
+{{- end }}

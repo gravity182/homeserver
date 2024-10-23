@@ -1,0 +1,67 @@
+{{- if .Values.services.qbittorrent.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.qbittorrent.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.qbittorrent.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}
+    spec:
+      containers:
+        - name: qbittorrent
+          image: "{{ .Values.services.qbittorrent.image.repository }}:{{ .Values.services.qbittorrent.image.tag }}"
+          imagePullPolicy: {{ .Values.services.qbittorrent.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.qbittorrent.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: WEBUI_PORT
+              value: "8080"
+            - name: TORRENTING_PORT
+              value: "6881"
+            - name: DOCKER_MODS
+              value: {{ .Values.services.qbittorrent.dockerMods | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: p2p
+              containerPort: 6881
+              protocol: TCP
+            - name: p2pudp
+              containerPort: 6881
+              protocol: UDP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: {{ .Values.services.qbittorrent.data | quote }}
+      volumes:
+        - name: config
+          hostPath:
+            path: {{ .Values.services.qbittorrent.config | quote }}
+            type: Directory
+        - name: data
+          hostPath:
+            path: {{ .Values.services.qbittorrent.data | quote }}
+            type: Directory
+{{- end }}

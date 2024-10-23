@@ -1,0 +1,28 @@
+apiVersion: v2
+name: Home server
+version: 1.0.0
+description: Home server
+type: application
+keywords:
+    - homeserver
+    - homepage
+    - apprise
+    - gotify
+    - autobrr
+    - changedetection.io
+    - huginn
+    - jellyfin
+    - kavita
+    - overseerr
+    - jellyseerr
+    - flaresolverr
+    - playwright
+    - plex
+    - prowlarr
+    - qbittorrent
+    - radarr
+    - sonarr
+    - sabnzbd
+    - tautulli
+    - thelounge
+    - traefik

@@ -1,0 +1,18 @@
+{{- if .Values.services.apprise.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.apprise.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.apprise.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.services.apprise.ports.http }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.apprise.name }}
+{{- end }}

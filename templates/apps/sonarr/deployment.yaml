@@ -1,0 +1,55 @@
+{{- if .Values.services.sonarr.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.sonarr.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.sonarr.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.sonarr.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.sonarr.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.sonarr.name }}
+    spec:
+      containers:
+        - name: sonarr
+          image: "{{ .Values.services.sonarr.image.repository }}:{{ .Values.services.sonarr.image.tag }}"
+          imagePullPolicy: {{ .Values.services.sonarr.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.sonarr.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 8989
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: "{{ .Values.services.sonarr.data }}"
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.sonarr.config }}"
+            type: Directory
+        - name: data
+          hostPath:
+            path: "{{ .Values.services.sonarr.data }}"
+            type: Directory
+{{- end }}

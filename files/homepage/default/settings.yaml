@@ -1,0 +1,34 @@
+---
+title: Homepage
+theme: dark
+color: slate
+language: en
+showStats: false
+hideErrors: false
+headerStyle: boxed
+statusStyle: dot
+disableCollapse: true
+useEqualHeights: true
+hideVersion: true
+target: _self
+layout:
+    Media:
+        header: true
+        style: row
+        columns: 4
+    Utilities:
+        header: true
+        style: row
+        columns: 4
+    Arr Stack:
+        header: true
+        style: row
+        columns: 4
+    Downloaders:
+        header: true
+        style: row
+        columns: 4
+    Monitoring:
+        header: true
+        style: column
+        columns: 2
