@@ -54,8 +54,6 @@ Prerequisites:
         - Zone - Zone - Read
     - Zone Resources:
         - Include - All Zones
-6. Plex account. Register one at [plex.tv/sign-up](https://www.plex.tv/sign-up/)
-7. Plex claim code. Get one at [plex.tv/claim](https://www.plex.tv/claim/). Note that the code is active only for 5 minutes
 
 Copy `authentik-values.template.yaml` to `authentik-values.yaml` and set the following *required* parameters:
 ```yaml
@@ -88,6 +86,8 @@ certmanager:
 ingress:
     domain: # REQUIRED; e.g. 'example.com' (without a scheme)
 ```
+
+The user with the specified UID/GID must exist on the host machine and should be unprivileged. See the [File permissions](#do-not-run-containers-as-root-file-permissions) section for details.
 
 Install the server:
 ```sh

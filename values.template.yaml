@@ -67,6 +67,8 @@ services:
             pullPolicy: IfNotPresent
         ports:
             http: 32400
+        # get a claim code at https://www.plex.tv/claim/
+        # note the code is only active for 5 minutes
         claim: # REQUIRED
         config: /opt/plex/config
         library: /data/library
