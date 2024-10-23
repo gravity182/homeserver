@@ -181,7 +181,7 @@ services:
 This chart follows best security practices by not running the main container's process as root whenever possible.
 This limits priviliges of the process even in case of breaking out of a container.
 
-Moreover, using a specific uid/gid (user/group id) facilitates the usage of [host path volumes](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) inside the containers without any file permission issues by matching the user who owns a directory on the host and the user inside a container.
+Moreover, usage of a specific UID/GID (user/group id) facilitates the usage of [host path volumes](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) inside the containers without any file permission issues by matching the user who owns a directory on the host and the user inside a container.
 
 That is to say, the only thing you should do is:
 1. Set your *host* user's UID & GID in `host.uid` and `host.gid` respectively
