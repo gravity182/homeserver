@@ -382,11 +382,12 @@ Give it a couple of minutes for changes to take effect. Log out of your admin ac
 
 Great. Now we have a working SSO authentication.
 
-Note that not every service (e.g. Huginn) supports disabling of the built-in authentication or proxy authentication (mapping an Authentik's user to an internal service's user by the usage of a header; e.g. see the Miniflux setup for details). There's no easy solution to this.
+Note that not every service (e.g. Huginn) supports disabling of the built-in authentication or using a proxy authentication (mapping an Authentik's user to an internal service's user by the usage of an http header; e.g. see the Miniflux setup).
 
-You will have to either log in twice or bypass such a service in the Authentik completely. By going the latter way you'll be only relying on whatever auth system that service provides, which may contain its own security flaws. Personally, I still keep such services behind Authentik because it only requires you to login once and a session is usually kept for a long time (weeks or even months depending on your setup).
+There's no easy solution to this.
+You will have to either log in twice or bypass such a service in Authentik completely. By going the latter way you'll be only relying on whatever auth system that service provides, which may contain its own security flaws. Personally, I still keep such services behind Authentik because it only requires you to login once and a session is usually kept for a long time (weeks or even months depending on your setup).
 
-Actually, sometimes you want to keep internal service's auth in case it allows you to have user "profiles" (different settings for different users). Once again, an example of such a service is Huginn. This might be benefitable when you're not the only user of your home server.
+Actually, sometimes you want to keep internal service's auth in case it allows you to have different user "profiles". Once again, an example of such a service is Huginn. This might be benefitable when you're not the only user of your home server.
 
 ---
 
@@ -756,7 +757,7 @@ Setup instructions are covered in the [Prowlarr](#prowlarr) section.
 
 ### Proxy
 
-Even though Flaresolverr [have support](https://github.com/FlareSolverr/FlareSolverr?tab=readme-ov-file#-sessionscreate) for proxy server, there's no direct control over it in the Prowlarr settings.
+Even though Flaresolverr [has support](https://github.com/FlareSolverr/FlareSolverr?tab=readme-ov-file#-sessionscreate) for proxy server, there's no direct control over it in the Prowlarr settings.
 
 However if you set up a proxy in the Prowlarr settings (Settings -> General), it will be used by Flaresolverr as well. This isn't documented, but it works. You can verify that by looking at the Flaresolverr logs - `kubectl logs -l app.kubernetes.io/name=flaresolverr`.
 
