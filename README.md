@@ -1,13 +1,5 @@
 # Home Media Server
 
-**Table of Contents:**
-- [Description](#description)
-- [Installation](#installation)
-- [Credits](#credits)
-- [Disclaimer](#disclaimer)
-
----
-
 ## Description
 
 This repo will get you your own home server with a lot of useful self-hosted software. This stack is well-built and will serve you reliably.

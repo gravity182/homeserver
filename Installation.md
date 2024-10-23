@@ -1,5 +1,6 @@
 # Installation
 
+**Table of Contents:**
 - [Installation](#installation-1)
 - [Chart customization](#chart-customization)
     - [Environment variables](#environment-variables)
@@ -93,17 +94,18 @@ Install the server:
 ./bin/install.sh
 ```
 
-The script will install the [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager/) chart to the `cert-manager` namespace using the values from `certmanager-values.yaml`, the [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik) chart to the `authentik` namespace using the values from `authentik-values.yaml`, and finally this Helm chart to the `homeserver` namespace using the values from `values.yaml`. Give it a couple of minutes to spin up and self-initialize.
-If you want to customize cert-manager or Authentik before installation, please adjust the values in `certmanager-values.yaml` or `authentik-values.yaml` to your liking. This requires you to be familiar with these charts. Otherwise don't touch anything but required params.
+The script will install the [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager/), the [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik) chart, and finally this Helm chart. Give it a couple of minutes to spin up and self-initialize.
+If you want to customize cert-manager or Authentik before installation, please adjust `certmanager-values.yaml` or `authentik-values.yaml` respectively. This requires you to be familiar with these charts. Otherwise don't touch anything but required params.
 
 After installation, please carry out all the steps from the [#cert-manager](#cert-manager) and [#Authentik](#authentik) sections below.
 
 Having verified that cert-manager and Authentik are functioning properly, you can proceed to enabling individual services.
-All services are optional. All services but [homepage](https://github.com/gethomepage/homepage) are disabled by default.
+All services are optional.
 
-Service sections in `values.yaml` should be self-explanatory. The required parameters are marked with a `# REQUIRED` commment, the rest can be left default or changed to your liking. Make sure that directories used by a service do actually exist on the host and are owned by the user and group you specified in `host.uid`/`host.gid`.
+Service sections in `values.yaml` should be self-explanatory. The required parameters are marked with a `# REQUIRED` commment, the rest can be left default or changed to your liking. Make sure that directories used by a service do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
 
-This document covers all the services used in this chart and provides some useful notes. Return to this document if you're having issues. Open an issue in this GitHub repo if the issue is not covered here.
+This document covers all the services used in this chart and provides some useful notes. Return to this document if you're having troubles. Open an issue in this GitHub repo if your problem is not covered here. Please ensure that it's an indeed the chart's issue and always read the service's docs first.
+
 If you're a newbie, it's especially worth to give this document a read from start to finish. It has pretty detailed instructions for services like [Plex](#plex), [Radarr](#radarr), [Jellyseerr](#jellyseerr), and [qBittorrent](#qbittorrent).
 
 Have fun!
@@ -137,8 +139,6 @@ services:
                 foo
                 bar
 ```
-
-If you want more customization, there's support for passing custom environment variables (read below).
 
 If you feel like there could be even more customization, please open an issue in this GitHub repo.
 
