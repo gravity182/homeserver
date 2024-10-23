@@ -6,7 +6,7 @@ This repo will get you your own home server with a lot of useful self-hosted sof
 
 Detailed list:
 - Media:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/radarr-light.png"> [Radarr](https://github.com/Radarr/Radarr) - Movie management
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/radarr-light.png"> [Radarr](https://github.com/Radarr/Radarr) - Movies management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sonarr.png"> [Sonarr](https://github.com/Sonarr/Sonarr) - Series management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/readarr.png"> [Readarr](https://github.com/Readarr/Readarr) - Books management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/bazarr.png"> [Bazarr](https://github.com/morpheus65535/bazarr) - Subtitles management
