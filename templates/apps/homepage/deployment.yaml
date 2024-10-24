@@ -34,7 +34,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - cp -rfL /tmp/config/* /app/config/ && chmod -R u+rwX,go+rX,go-w /app/config
+            - cp -rfL /tmp/config/* /app/config/ && chmod -R a=,a+rX,u+w,g+w /app/config
           volumeMounts:
             - name: config
               mountPath: /app/config

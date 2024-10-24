@@ -38,7 +38,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - mkdir -p /config/scripts && cp -rfL /tmp/scripts/* /config/scripts/ && chmod -R u+rwx,go+rx,go-w /config/scripts
+            - mkdir -p /config/scripts && cp -rfL /tmp/scripts/* /config/scripts/ && chmod -R a=,a+rx,u+w,g+w /config/scripts
           volumeMounts:
             - name: config
               mountPath: /config

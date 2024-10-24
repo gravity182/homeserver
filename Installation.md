@@ -14,6 +14,7 @@
     - [Setup](#setup-1)
 - [Jellyfin](#jellyfin)
 - [Radarr](#radarr)
+    - [Hardlinks](#hardlinks)
     - [Profile](#profile)
     - [Proxy](#proxy)
     - [Custom Formats](#custom-formats)
@@ -441,6 +442,17 @@ See the official docs at <https://jellyfin.org/docs/>.
 
 Available at `radarr.<domain>.<tld>`.
 
+### Hardlinks
+
+To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/) go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked.
+
+The container should have access to the `/data` directory on the host, i.e. `services.radarr.data=/data`.
+Ensure the directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
+```sh
+sudo chown -R $USER:$USER /data
+sudo chmod -R a=,a+rX,u+w,g+w /data
+```
+
 ### Profile
 
 One of the most important parts of the whole stack. Configuring your profile properly will get you movies in the best possible quality, filtering out low-quality and unwanted releases.
@@ -454,7 +466,7 @@ Now we can start creating our perfect profile. We'll take the Trash Guides' prof
 - [Remux + WEB 2160p](https://trash-guides.info/Radarr/radarr-setup-quality-profiles/#remux-web-2160p) - if you prefer Remux-2160p quality. Size: ~40-100 GB depending on the runtime
 
 > [!WARNING]
-> Carry out ALL the steps from the guides above. Don't leave out a single step. Trash Guides' profiles is the best you can get out of Radarr.
+> Carry out ALL the steps from the guides above. Don't leave out a single step. The Trash Guides' profiles is the best you can get out of Radarr.
 
 Now let's customize our profile a bit:
 1. Optional: disable quality upgrade. Personally I never needed this
