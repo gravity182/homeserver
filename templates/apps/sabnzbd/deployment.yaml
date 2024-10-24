@@ -28,7 +28,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - sed -i "s/host_whitelist\s*=.*/host_whitelist = {{ .Values.services.sabnzbd.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}/" /config/sabnzbd.ini
+            - sed -i "s/host_whitelist\s*=.*/host_whitelist = {{ .Values.services.sabnzbd.name }},{{ .Values.services.sabnzbd.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}/" /config/sabnzbd.ini
           volumeMounts:
             - name: config
               mountPath: /config

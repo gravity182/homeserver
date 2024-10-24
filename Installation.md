@@ -29,7 +29,7 @@
 - [Jellyseerr](#jellyseerr)
     - [Setup](#setup-2)
 - [qBittorrent](#qbittorrent)
-- [Sabnzbd](#sabnzbd)
+- [SABnzbd](#sabnzbd)
 - [Flaresolverr](#flaresolverr)
     - [Proxy](#proxy-2)
 - [Speedtest tracker](#speedtest-tracker)
@@ -763,14 +763,16 @@ ufw allow 32700/udp
 
 ---
 
-## Sabnzbd
+## SABnzbd
 
 Available at `usenet.<domain>.<tld>`.
 
 Please refer to [Trash Guides](https://trash-guides.info/Downloaders/SABnzbd/Basic-Setup/) for setup instructions.
-Make sure to set `/data/usenet` as a download path in the settings.
 
-This chart includes a few useful scripts found at [Trash Guides#SABnzbd Scripts](https://trash-guides.info/Downloaders/SABnzbd/scripts/). They are mapped at `/config/scripts/`:
+Make sure to set `/data/usenet` as a download path in the settings:
+![SABnzbd](assets/sabnzbd-settings-folders.png)
+
+This chart includes a few useful scripts found at [Trash Guides#SABnzbd Scripts](https://trash-guides.info/Downloaders/SABnzbd/scripts/). They are mapped at `/config/scripts`:
 - [Clean.py](https://trash-guides.info/Downloaders/SABnzbd/scripts/#clean)
 - [replace_for.py](https://trash-guides.info/Downloaders/SABnzbd/scripts/#replace_for)
 
