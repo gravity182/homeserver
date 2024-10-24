@@ -21,6 +21,7 @@
         - [HDR/DV](#hdrdv)
         - [Teaser/Trailer](#teasertrailer)
 - [Sonarr](#sonarr)
+    - [Hardlinks](#hardlinks-1)
     - [Profile](#profile-1)
     - [Proxy](#proxy-1)
     - [Custom Formats](#custom-formats-1)
@@ -558,6 +559,17 @@ These are simple custom formats that I've accumulated over time. Feel free to us
 Available at `sonarr.<domain>.<tld>`.
 
 Sonarr is very similar to Radarr in terms of UI and capabilities. In fact, Radarr is a fork of Sonarr.
+
+### Hardlinks
+
+To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/) go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked.
+
+The container should have access to the `/data` directory on the host, i.e. `services.sonarr.data=/data`.
+Ensure the directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
+```sh
+sudo chown -R $USER:$USER /data
+sudo chmod -R a=,a+rX,u+w,g+w /data
+```
 
 ### Profile
 
