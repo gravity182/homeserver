@@ -11,6 +11,6 @@ helm install authentik authentik/authentik \
   --create-namespace \
   --version "2024.8.3"
 helm install jellywatch . \
-  -f secrets.yaml \
+  -f values.yaml \
   --namespace homeserver \
   --create-namespace
