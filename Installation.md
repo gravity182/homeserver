@@ -774,7 +774,9 @@ Make sure to set `/data/usenet` as a download path in the settings:
 
 This chart includes a few useful scripts found at [Trash Guides#SABnzbd Scripts](https://trash-guides.info/Downloaders/SABnzbd/scripts/). They are mapped at `/config/scripts`:
 - [Clean.py](https://trash-guides.info/Downloaders/SABnzbd/scripts/#clean)
+    - Set this script as a `Pre-queue script` in Settings -> Switches
 - [replace_for.py](https://trash-guides.info/Downloaders/SABnzbd/scripts/#replace_for)
+    - Set this script in Settings -> Categories for each category (movies, tv)
 
 ---
 
