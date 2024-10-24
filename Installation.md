@@ -365,6 +365,7 @@ Go to Applications, click `Create with Wizard` and set settings as follows:
         - Unauthenticated paths:
             ```text
             plex.<domain>.<tld>
+            jellyfin.<domain>.<tld>
             jellyseerr.<domain>.<tld>
             ```
 4. Click Submit

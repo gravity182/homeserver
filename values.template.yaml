@@ -49,6 +49,8 @@ services:
                 apiKey: "" # go to Settings -> General and retrieve the API key
             tautulli:
                 apiKey: "" # go to Settings -> Web Interface and retrieve the API key
+            jellyfin:
+                apiKey: "" # go to Settings -> API Keys and generate a new API key
             sabnzbd:
                 apiKey: "" # go to Settings -> General and retrieve the API key
             changedetection:

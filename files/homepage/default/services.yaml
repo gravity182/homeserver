@@ -112,13 +112,29 @@
       - Plex:
             icon: sh-plex
             href: https://{{ .Values.services.plex.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
-            siteMonitor: http://{{ .Values.services.tautulli.name }}:{{ .Values.services.tautulli.ports.http }}
+            siteMonitor: http://{{ .Values.services.plex.name }}:{{ .Values.services.plex.http }}
             description: Media server
             widget:
                 type: tautulli
                 url: http://{{ .Values.services.tautulli.name }}:{{ .Values.services.tautulli.ports.http }}
                 key: "{{ .Values.services.homepage.widgets.tautulli.apiKey }}"
                 enableUser: true # optional, defaults to false
+                showEpisodeNumber: true # optional, defaults to false
+                expandOneStreamToTwoRows: false # optional, defaults to true
+      {{- end }}
+      {{- if .Values.services.jellyfin.enabled }}
+      - Jellyfin:
+            icon: sh-jellyfin
+            href: https://{{ .Values.services.jellyfin.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.jellyfin.name }}:{{ .Values.services.jellyfin.ports.http }}
+            description: Media server
+            widget:
+                type: jellyfin
+                url: http://{{ .Values.services.jellyfin.name }}:{{ .Values.services.jellyfin.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.jellyfin.apiKey }}"
+                enableBlocks: true # optional, defaults to false
+                enableNowPlaying: true # optional, defaults to true
+                enableUser: false # optional, defaults to false
                 showEpisodeNumber: true # optional, defaults to false
                 expandOneStreamToTwoRows: false # optional, defaults to true
       {{- end }}

@@ -47,7 +47,7 @@ spec:
             - name: config
               mountPath: /config
             - name: library
-              mountPath: /data/library
+              mountPath: "{{ .Values.services.jellyfin.library }}"
       volumes:
         - name: config
           hostPath:
