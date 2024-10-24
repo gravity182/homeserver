@@ -275,7 +275,14 @@ services:
         ports:
             http: 8181
         config: /opt/kometa/config
+        # when to run the Kometa job
+        # runs at 5AM by default
+        # use https://crontab.guru for building and checking your cron value
         scheduleCron: "0 5 * * *"
+        # whether to enable jmxd overlays
+        # see https://github.com/jmxd/Kometa for details
+        # personally, I find them minimalistic and best-looking
+        enableJmxdOverlays: False
         # the .connections entries below are not mandatory if you don't plan using my default profile
         # although these vars are very common so high chance you will need them in your own configuration too
         connections:

@@ -52,7 +52,8 @@ spec:
                   rm -rf /config/overlays/jmxd \
                     && git clone --depth=1 https://github.com/jmxd/Kometa.git /config/overlays/jmxd \
                     && cp -rfL /config/overlays/jmxd/overlays/* /config/overlays/ \
-                    && rm -rf /config/overlays/jmxd
+                    && rm -rf /config/overlays/jmxd \
+                    && echo "Kometa jmxd overlays enabled. See https://github.com/jmxd/Kometa.git for details"
               volumeMounts:
                 - name: config
                   mountPath: /config
