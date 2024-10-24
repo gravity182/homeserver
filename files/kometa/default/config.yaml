@@ -9,14 +9,41 @@ libraries:
           radarr_add_missing: true
           radarr_tag: imdb-<<key>>
           item_radarr_tag: imdb-<<key>>
+      - default: letterboxd
+        template_variables:
+          use_imdb_top_250: false
+          use_oscars: false
+          use_cannes: false
+          women_directors: false
+          black_directors: false
+          cache_builders: 7
+          cache_builders_1001_movies: 30
+          cache_builders_edgarwright: 30
+          radarr_add_missing: true
+          radarr_tag: letterboxd-<<key>>
+          item_radarr_tag: letterboxd-<<key>>
       - default: oscars
         template_variables:
-          use_best_picture: false
-          use_best_director: false
+          name_format: Oscars <<key_name>> Winners
+          use_best_picture: true
+          use_best_director: true
+          collection_mode: show_items
           collection_order: alpha
           radarr_add_missing: true
           radarr_tag: oscars-<<key>>
           item_radarr_tag: oscars-<<key>>
+          data:
+            starting: latest-10
+            ending: latest
+      - default: cannes
+        template_variables:
+          name_format: Cannes <<key_name>> Winners
+          use_palm: true
+          collection_mode: show_items
+          collection_order: alpha
+          radarr_add_missing: true
+          radarr_tag: cannes-<<key>>
+          item_radarr_tag: cannes-<<key>>
           data:
             starting: latest-10
             ending: latest
