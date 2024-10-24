@@ -94,17 +94,17 @@ Install the server:
 ./bin/install.sh
 ```
 
-The script will install the [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager/), the [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik) chart, and finally this Helm chart. Give it a couple of minutes to spin up and self-initialize.
+The script will install the [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager/), the [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik), and finally this Helm chart. Give it a couple of minutes to spin up and self-initialize.
 If you want to customize cert-manager or Authentik before installation, please adjust `certmanager-values.yaml` or `authentik-values.yaml` respectively. This requires you to be familiar with these charts. Otherwise don't touch anything but required params.
 
 After installation, please carry out all the steps from the [#cert-manager](#cert-manager) and [#Authentik](#authentik) sections below.
 
 Having verified that cert-manager and Authentik are functioning properly, you can proceed to enabling individual services.
-All services are optional.
+All services are optional. Just enable the ones you need.
 
 Service sections in `values.yaml` should be self-explanatory. The required parameters are marked with a `# REQUIRED` commment, the rest can be left default or changed to your liking. Make sure that directories used by a service do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
 
-This document covers all the services used in this chart and provides some useful notes. Return to this document if you're having troubles. Open an issue in this GitHub repo if your problem is not covered here. Please ensure that it's an indeed the chart's issue and always read the service's docs first.
+This document covers all the services used in this chart and provides some useful notes. Return to this document if you're having troubles. Open an issue in this GitHub repo if your problem is not covered here. Please ensure that it's an indeed chart's issue and always read the service's docs first.
 
 If you're a newbie, it's especially worth to give this document a read from start to finish. It has pretty detailed instructions for services like [Plex](#plex), [Radarr](#radarr), [Jellyseerr](#jellyseerr), and [qBittorrent](#qbittorrent).
 
@@ -181,7 +181,7 @@ services:
 This chart follows best security practices by not running the main container's process as root whenever possible.
 This limits priviliges of the process even in case of breaking out of a container.
 
-Moreover, usage of a specific UID/GID (user/group id) facilitates the usage of [host path volumes](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) inside the containers without any file permission issues by matching the user who owns a directory on the host and the user inside a container.
+Moreover, the usage of a specific UID/GID (user/group id) facilitates the usage of [host path volumes](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) inside the containers without any file permission issues by matching the user who owns a directory on the host and the user inside a container.
 
 That is to say, the only thing you should do is:
 1. Set your *host* user's UID & GID in `host.uid` and `host.gid` respectively
@@ -201,19 +201,22 @@ Hardlinks is a way to have a file in multiple locations without using twice the 
 3. continue seeding in the torrent client even after importing,
 4. remove a movie from the torrent client without impacting its copy in the Plex library, and vice versa
 
-This chart fully supports hard links. If you have followed the Radarr/Sonarr/qBittorrent instructions precisely, it's already working.
+This chart fully supports hard links. If you have followed the [Radarr](#radarr)/[Sonarr](#sonarr)/[qBittorrent](#qbittorrent) instructions precisely, it's already working.
 
-Anyway, let's check up our setup one more time. Here's what you need to do:
+Just to double-check, here's what you need to do:
 1. Radarr:
-    - In Settings -> Media Management add a root folder with the path of `/data/library/movies`
+    - In Settings -> Media Management add a root folder with the path of `/data/library/movies`. The Radarr container should have access to the `/data` directory on the host, i.e. `services.radarr.data=/data`
 2. Sonarr:
-    - In Settings -> Media Management add a root folder with the path of `/data/library/tv`
+    - In Settings -> Media Management add a root folder with the path of `/data/library/tv`. The Sonarr container should have access to the `/data` directory on the host, i.e. `services.sonarr.data=/data`
 3. qBittorrent:
-    - In Settings -> Downloads set `Default Save Path (complete)` to `/data/torrents`. Do not touch the other paths
+    - In Settings -> Downloads set `Default Save Path (complete)` to `/data/torrents`. Do not touch the other paths. The qBittorrent container should have access to the `/data/torrents` directory on the host, i.e. `services.qbittorrent.data=/data/torrents`
+    - The same applies to SABnzbd (just replace `/data/torrents` with `/data/usenet`)
 4. Plex:
     - Add 2 libraries:
         - `Movies` with the path of `/data/library/movies`
         - `TV Shows` with the path of `/data/library/tv`
+    - The Plex container should have access to the `/data/library` directory on the host, i.e. `services.plex.library=/data/library`
+    - The same applies to Jellyfin (the path is the same)
 
 The setup above implies you haven't changed the default paths set in `values.yaml`, otherwise use the ones you set.
 
