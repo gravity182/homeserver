@@ -14,8 +14,8 @@ libraries:
           use_imdb_top_250: false
           use_oscars: false
           use_cannes: false
-          women_directors: false
-          black_directors: false
+          use_women_directors: false
+          use_black_directors: false
           cache_builders: 7
           cache_builders_1001_movies: 30
           cache_builders_edgarwright: 30
