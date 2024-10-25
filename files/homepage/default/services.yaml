@@ -112,7 +112,7 @@
       - Plex:
             icon: sh-plex
             href: https://{{ .Values.services.plex.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
-            siteMonitor: http://{{ .Values.services.plex.name }}:{{ .Values.services.plex.http }}
+            siteMonitor: http://{{ .Values.services.plex.name }}:{{ .Values.services.plex.ports.http }}
             description: Media server
             widget:
                 type: tautulli
