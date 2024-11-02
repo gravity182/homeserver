@@ -5,7 +5,7 @@
             icon: sh-radarr
             href: https://{{ .Values.services.radarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.radarr.name }}:{{ .Values.services.radarr.ports.http }}
-            description: Movie management
+            description: Movies management
             widget:
                 type: radarr
                 url: http://{{ .Values.services.radarr.name }}:{{ .Values.services.radarr.ports.http }}
