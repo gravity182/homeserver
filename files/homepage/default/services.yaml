@@ -22,6 +22,17 @@
                 url: http://{{ .Values.services.sonarr.name }}:{{ .Values.services.sonarr.ports.http }}
                 key: "{{ .Values.services.homepage.widgets.sonarr.apiKey }}"
       {{- end }}
+      {{- if .Values.services.lidarr.enabled }}
+      - Lidarr:
+            icon: sh-lidarr
+            href: https://{{ .Values.services.lidarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.lidarr.name }}:{{ .Values.services.lidarr.ports.http }}
+            description: Music management
+            widget:
+                type: lidarr
+                url: http://{{ .Values.services.lidarr.name }}:{{ .Values.services.lidarr.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.lidarr.apiKey }}"
+      {{- end }}
       {{- if .Values.services.readarr.enabled }}
       - Readarr:
             icon: sh-readarr

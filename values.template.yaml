@@ -39,6 +39,8 @@ services:
                 apiKey: "" # go to Settings -> General and retrieve the API key
             readarr:
                 apiKey: "" # go to Settings -> General and retrieve the API key
+            lidarr:
+                apiKey: "" # go to Settings -> General and retrieve the API key
             bazarr:
                 apiKey: "" # go to Settings -> General and retrieve the API key
             prowlarr:
@@ -177,6 +179,20 @@ services:
         ports:
             http: 8989
         config: /opt/sonarr/config
+        data: /data
+        env: {}
+    lidarr:
+        enabled: true
+        exposed: true
+        name: lidarr
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/lidarr
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8686
+        config: /opt/lidarr/config
         data: /data
         env: {}
     readarr:
