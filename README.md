@@ -4,10 +4,11 @@
 
 This repo will get you your own home server with a lot of useful self-hosted software. This stack is well-built and will serve you reliably.
 
-Detailed list:
+All of the services are optional (except core ones, Authentik and cert-manager) and can be enabled/disabled anytime. Detailed list:
 - Media:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/radarr-light.png"> [Radarr](https://github.com/Radarr/Radarr) - Movies management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sonarr.png"> [Sonarr](https://github.com/Sonarr/Sonarr) - Series management
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/lidarr.png"> [Lidarr](https://github.com/Lidarr/Lidarr) - Music management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/readarr.png"> [Readarr](https://github.com/Readarr/Readarr) - Books management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/bazarr.png"> [Bazarr](https://github.com/morpheus65535/bazarr) - Subtitles management
     - <img width="15" height="15" src="https://github.com/Whisparr/Whisparr/blob/develop/Logo/128.png?raw=true"> [Whisparr](https://github.com/Whisparr/Whisparr) - Adult videos management
