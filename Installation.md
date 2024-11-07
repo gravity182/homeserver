@@ -6,7 +6,7 @@
     - [Environment variables](#environment-variables)
 - [Do not run containers as root. File permissions](#do-not-run-containers-as-root-file-permissions)
 - [Folder Structure](#folder-structure)
-- [Hard links](#hard-links)
+- [Hard links \& Instant moves](#hard-links--instant-moves)
 - [Cert-manager](#cert-manager)
 - [Authentik](#authentik)
     - [Setup](#setup)
@@ -231,7 +231,7 @@ The data folder itself can be placed wherever you like. Personally, I put this i
 
 ---
 
-## Hard links
+## Hard links & Instant moves
 
 You've probably heard about hard links in context of Radarr/Sonarr and Torrent clients.
 
