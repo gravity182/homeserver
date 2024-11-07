@@ -5,14 +5,12 @@
 - [Chart customization](#chart-customization)
     - [Environment variables](#environment-variables)
 - [Do not run containers as root. File permissions](#do-not-run-containers-as-root-file-permissions)
+- [Folder Structure](#folder-structure)
 - [Hard links](#hard-links)
 - [Cert-manager](#cert-manager)
 - [Authentik](#authentik)
     - [Setup](#setup)
 - [Homepage](#homepage)
-- [Plex](#plex)
-    - [Setup](#setup-1)
-- [Jellyfin](#jellyfin)
 - [Radarr](#radarr)
     - [Hardlinks](#hardlinks)
     - [Profile](#profile)
@@ -26,6 +24,9 @@
     - [Proxy](#proxy-1)
     - [Custom Formats](#custom-formats-1)
 - [Prowlarr](#prowlarr)
+- [Plex](#plex)
+    - [Setup](#setup-1)
+- [Jellyfin](#jellyfin)
 - [Jellyseerr](#jellyseerr)
     - [Setup](#setup-2)
 - [qBittorrent](#qbittorrent)
@@ -91,7 +92,7 @@ ingress:
 
 The user with the specified UID/GID must exist on the host machine and should be unprivileged. See the [File permissions](#do-not-run-containers-as-root-file-permissions) section for details.
 
-Install the server:
+Finally, install the server:
 ```sh
 ./bin/install.sh
 ```
@@ -104,11 +105,11 @@ After installation, please carry out all the steps from the [#cert-manager](#cer
 Having verified that cert-manager and Authentik are functioning properly, you can proceed to enabling individual services.
 All services are optional. Just enable the ones you need.
 
-Service sections in `values.yaml` should be self-explanatory. The required parameters are marked with a `# REQUIRED` commment, the rest can be left default or changed to your liking. Make sure that directories used by a service do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
+Service sections in `values.yaml` should be self-explanatory since all important variables are documented. The required parameters are marked with a `# REQUIRED` commment, the rest can be left default or changed to your liking. Make sure that directories used by a service do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
 
-This document covers all the services used in this chart and provides some useful notes. Return to this document if you're having troubles. Open an issue in this GitHub repo if your problem is not covered here. Please ensure that it's an indeed chart's issue and always read the service's docs first.
+This document covers most of the services used in this chart and provides some useful notes. Return to this document if you're having troubles. Open an issue in this GitHub repo if your problem is not covered here. Please ensure that it's an indeed chart's issue and always read the service's docs first.
 
-If you're a newbie, it's especially worth to give this document a read from start to finish. It has pretty detailed instructions for services like [Plex](#plex), [Radarr](#radarr), [Jellyseerr](#jellyseerr), and [qBittorrent](#qbittorrent).
+If you're a newbie, it's especially worth to give this document a read from start to finish. It has detailed instructions for core services like [Plex](#plex), [Radarr](#radarr)/[Sonarr](#sonarr), [Jellyseerr](#jellyseerr), and [qBittorrent](#qbittorrent).
 
 Have fun!
 
@@ -193,6 +194,43 @@ That is to say, the only thing you should do is:
 
 ---
 
+## Folder Structure
+
+Here's an overview of a folder structure that this chart uses by default. The necessary paths are already set in `values.template.yaml`:
+```text
+data
+├── torrents
+│   ├── movies
+│   └── tv
+│   ├── music
+│   ├── books
+│   └── xxx
+├── usenet
+│   ├── incomplete
+│   └── complete
+│       ├── movies
+│       └── tv
+│       ├── music
+│       ├── books
+│       └── xxx
+└── library
+    ├── movies
+    └── tv
+    ├── music
+    ├── books
+    └── xxx
+```
+
+The torrent downloads paths (movies, tv, etc.) are controlled by a download category you use. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/torrents/movies` directory will be created by qBittorrent automatically. E.g. your qBittorrent setup can look like this:
+![qBittorrent categories](assets/qbittorrent-categories.png)
+
+The same applies to Usenet downloads. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/usenet/movies` directory will be created by SABnzbd automatically. Note the categories must be pre-created first before setting up a download client in the *arr stack. E.g. your SABnzbd setup can look like this:
+![SABnzbd categories](assets/sabnzbd-categories.png)
+
+The data folder itself can be placed wherever you like. Personally, I put this in the root at `/data`.
+
+---
+
 ## Hard links
 
 You've probably heard about hard links in context of Radarr/Sonarr and Torrent clients.
@@ -207,18 +245,23 @@ This chart fully supports hard links. If you have followed the [Radarr](#radarr)
 
 Just to double-check, here's what you need to do:
 1. Radarr:
-    - In Settings -> Media Management add a root folder with the path of `/data/library/movies`. The Radarr container should have access to the `/data` directory on the host, i.e. `services.radarr.data=/data`
+    - The Radarr container should have access to the `/data` directory on the host, i.e. `services.radarr.data=/data`
+    - In Settings -> Media Management add a root folder with the path of `/data/library/movies`
 2. Sonarr:
-    - In Settings -> Media Management add a root folder with the path of `/data/library/tv`. The Sonarr container should have access to the `/data` directory on the host, i.e. `services.sonarr.data=/data`
+    - The Sonarr container should have access to the `/data` directory on the host, i.e. `services.sonarr.data=/data`
+    - In Settings -> Media Management add a root folder with the path of `/data/library/tv`
 3. qBittorrent:
-    - In Settings -> Downloads set `Default Save Path (complete)` to `/data/torrents`. Do not touch the other paths. The qBittorrent container should have access to the `/data/torrents` directory on the host, i.e. `services.qbittorrent.data=/data/torrents`
-    - The same applies to SABnzbd (just replace `/data/torrents` with `/data/usenet`)
-4. Plex:
+    - The qBittorrent container should have access to the `/data/torrents` directory on the host, i.e. `services.qbittorrent.data=/data/torrents`
+    - In Settings -> Downloads set `Default Save Path (complete)` to `/data/torrents`. Do not touch the other paths
+4. SABnzbd
+    - The SABnzbd container should have access to the `/data/usenet` directory on the host, i.e. `services.sabnzbd.data=/data/usenet`
+    - In Settings -> Folders set `Completed Download Folder` to `/data/usenet/complete` and `Temporary Download Folder` to `/data/usenet/incomplete`
+5. Plex:
+    - The Plex container should have access to the `/data/library` directory on the host, i.e. `services.plex.library=/data/library`
     - Add 2 libraries:
         - `Movies` with the path of `/data/library/movies`
         - `TV Shows` with the path of `/data/library/tv`
-    - The Plex container should have access to the `/data/library` directory on the host, i.e. `services.plex.library=/data/library`
-    - The same applies to Jellyfin (the path is the same)
+    - The same applies to Jellyfin
 
 The setup above implies you haven't changed the default paths set in `values.yaml`, otherwise use the ones you set.
 
@@ -233,7 +276,7 @@ total 22884576
                    |
 ```
 
-The third column shows the number of hardlinks. If this number equals `2`, you're good. In case you were wondering where the second hardlink lies, it's `/data/torrents/radarr/`:
+The third column shows the number of hardlinks. If this number equals `2`, you're good. In case you were wondering where the second hardlink lies, it's `/data/torrents/radarr/`, i.e. the torrent client continues seeding:
 ```sh
 $ ls -li /data/torrents/radarr/
 4849714 -rw-r--r-- 2 jelly jelly 23433785758 Oct  2 21:42 John.Wick.Chapter.4.2023.1080p.BluRay.DDP.7.1.x264-SPHD_EniaHD.mkv
@@ -242,6 +285,8 @@ $ ls -li /data/torrents/radarr/
 Note the number in the first column - `4849714`. It's an *[inode](https://en.wikipedia.org/wiki/Inode)* number, which is the same for these 2 files.
 
 By the way, data won't be deleted from your filesystem until you delete all the hardlinks. Practically this means you have to delete a movie from both Radarr and qBittorrent whenever you want to claim back some space.
+
+The above does not apply to SABnzbd as Usenet protocol doesn't even have a notion of seeding so there's no need to have multiple hardlinks. However, the *arr stack will still benefit from having an access to the whole data directory, since it'll be able to [move downloads instantly](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/#what-are-instant-moves-atomic-moves).
 
 ---
 
@@ -401,42 +446,10 @@ Actually, sometimes you want to keep internal service's auth in case it allows y
 
 Available at `homepage.<domain>.<tld>` and at the root domain `<domain>.<tld>` by default (the service to serve on the root domain can be controlled via `ingress.rootService`).
 
-Any `.yaml` files you put in `files/homepage` (the file hierarchy should be flat) will be dynamically loaded into the config directory inside the container and used by Homepage if they follow proper name conventions (`settings.yaml`, `widgets.yaml`, etc.).
-These files are Helm template files, so you can reference any value as you would do normally in a template.
+Any `.yaml` files you put in the directory `files/homepage`  will be dynamically loaded into the config directory inside the container and used by Homepage if they follow proper name conventions (`settings.yaml`, `widgets.yaml`, etc.). Note the file hierarchy must be flat.
+These files are Helm template files, so you can reference any Helm value as you would do normally in a template.
 
-I provided some sensible default configuration files at `files/homepage/default`. You can either copy them to `files/homepage` and tune them to your liking or create your own config files from scratch (see the official [Homepage docs](https://gethomepage.dev/configs/) on this topic).
-
----
-
-## Plex
-
-Available at `plex.<domain>.<tld>`.
-
-### Setup
-
-Go to `https://plex.<domain>.<tld>/web` and carry out the initial setup.
-
-Now we need to configure Plex properly. I'll redirect you to *TRaSH Guides*, the awesome resource which covers the whole *arr stack and popular torrent/usenet downloaders. I can't appreciate it enough how much it helped me initially.
-
-Follow this guide - [Trash Guides#Suggested Plex Media Server Settings](https://trash-guides.info/Plex/Tips/Plex-media-server/). Note that some settings might be missing if you don't have an active Plex Pass subscription.
-
-Ensure that you've set up the libraries as follows:
-1. Movies:
-    - Scanner: `Plex Movie`
-    - Agent: `Plex Movie`
-    - Folders: `/data/library/movies`
-2. TV Shows:
-    - Scanner: `Plex TV Series`
-    - Agent: `Plex Series`
-    - Folders: `/data/library/tv`
-
----
-
-## Jellyfin
-
-Available at `jellyfin.<domain>.<tld>`.
-
-See the official docs at <https://jellyfin.org/docs/>.
+I provided some sensible default configuration files at `files/homepage/default`. They are not used by default. You can either copy them to `files/homepage` and tune them to your liking or create your own config files from scratch (see the official [Homepage docs](https://gethomepage.dev/configs/)).
 
 ---
 
@@ -446,14 +459,15 @@ Available at `radarr.<domain>.<tld>`.
 
 ### Hardlinks
 
-To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/) go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked.
-
-The container should have access to the `/data` directory on the host, i.e. `services.radarr.data=/data`.
-Ensure the directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
-```sh
-sudo chown -R $USER:$USER /data
-sudo chmod -R a=,a+rX,u+w,g+w /data
-```
+To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/), all of the steps below must be carried out:
+1. Ensure the Radarr container has access to the whole `/data` directory on the host, meaning you've set `services.radarr.data=/data`
+2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
+    ```sh
+    sudo chown -R <uid>:<gid> /data
+    sudo chmod -R a=,a+rX,u+w,g+w /data
+    ```
+3. Go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked
+4. Go to Settings -> Media Management, Root Folders, and add a Root Folder with the path of `/data/library/movies`. The directory must be pre-created manually first. This is the path which you'll also use in Plex when adding a Movies library
 
 ### Profile
 
@@ -563,14 +577,15 @@ Sonarr is very similar to Radarr in terms of UI and capabilities. In fact, Radar
 
 ### Hardlinks
 
-To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/) go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked.
-
-The container should have access to the `/data` directory on the host, i.e. `services.sonarr.data=/data`.
-Ensure the directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
-```sh
-sudo chown -R $USER:$USER /data
-sudo chmod -R a=,a+rX,u+w,g+w /data
-```
+To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/), all of the steps below must be carried out:
+1. Ensure the Sonarr container has access to the whole `/data` directory on the host, meaning you've set `services.sonarr.data=/data`
+2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
+    ```sh
+    sudo chown -R <uid>:<gid> /data
+    sudo chmod -R a=,a+rX,u+w,g+w /data
+    ```
+3. Go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked
+4. Go to Settings -> Media Management, Root Folders, and add a Root Folder with the path of `/data/library/tv`. The directory must be pre-created manually first. This is the path which you'll also use in Plex when adding a TV Series library
 
 ### Profile
 
@@ -653,6 +668,38 @@ Arr Apps:
 Great. Now your indexers will be automatically synced to Radarr and Sonarr. This is the time to add some other indexers of your liking before moving on.
 
 For detailed info refer to the [Trash Guides](https://trash-guides.info/Prowlarr/) and official [Servarr Wiki](https://wiki.servarr.com/en/prowlarr).
+
+---
+
+## Plex
+
+Available at `plex.<domain>.<tld>`.
+
+### Setup
+
+Go to `https://plex.<domain>.<tld>/web` and carry out the initial setup.
+
+Now we need to configure the Plex instance properly. I'll redirect you to *TRaSH Guides*, the awesome resource which covers the whole *arr stack and popular torrent/usenet downloaders. I can't appreciate it enough how much it helped me initially.
+
+Follow this guide - [Trash Guides#Suggested Plex Media Server Settings](https://trash-guides.info/Plex/Tips/Plex-media-server/). Note that some settings might be missing if you don't have an active Plex Pass subscription.
+
+Ensure that you've set up the libraries as follows:
+1. Movies:
+    - Scanner: `Plex Movie`
+    - Agent: `Plex Movie`
+    - Folders: `/data/library/movies`
+2. TV Shows:
+    - Scanner: `Plex TV Series`
+    - Agent: `Plex Series`
+    - Folders: `/data/library/tv`
+
+---
+
+## Jellyfin
+
+Available at `jellyfin.<domain>.<tld>`.
+
+See the official docs at <https://jellyfin.org/docs/>.
 
 ---
 
@@ -745,7 +792,7 @@ After finishing the guide above adjust the following settings as well:
         - When Torrent Category changed: `Relocate torrent`
         - When Default Save Path changed: `Relocate affected torrents`
         - When Category Save Path changed: `Relocate affected torrents`
-        - Default Save Path: `/data/torrents`
+        - Default Save Path: `/data/torrents` (controlled via `services.qbittorrent.data`)
     - Click `Save`
 3. WebUI:
     - Authentication:
@@ -754,7 +801,7 @@ After finishing the guide above adjust the following settings as well:
     - Optional: Check `Use alternative WebUI` and type in the following in the box below: `/vuetorrent`. This will enable the alternative WebUI, [VueTorrent](https://github.com/VueTorrent/VueTorrent), which is more user/mobile-friendly
     - Click `Save`
 
-Now you need to allow the torrenting p2p port in your firewall, if you have one enabled. Otherwise you won't be considered an "active" seed, i.e. peers with a closed port won't be able to connect to you, which means you will seed less and slower. By default this port is `32700`. This value may be controlled via `services.qbittorrent.ports.p2p`. Note that the port must be in the range of `30000-32767` (see [Kubernetes#NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)).
+Now you need to allow the torrenting p2p port in your firewall, if you have one enabled. Otherwise you won't be considered an "active" seed, i.e. peers with a closed port won't be able to connect to you, which means you'll seed less and slower. By default this port is `32700`. This value may be controlled via `services.qbittorrent.ports.p2p`. Note that the port must be in the range of `30000-32767` (see [Kubernetes#NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)).
 
 For Debian/Ubuntu execute the following command:
 ```sh
@@ -770,14 +817,17 @@ Available at `usenet.<domain>.<tld>`.
 
 Please refer to [Trash Guides](https://trash-guides.info/Downloaders/SABnzbd/Basic-Setup/) for setup instructions.
 
-Make sure to set `/data/usenet` as a download path in the settings:
-![SABnzbd](assets/sabnzbd-settings-folders.png)
+After finishing the guide above, make sure the temporary and completed download folders are set as follows:
+![SABnzbd folders](assets/sabnzbd-settings-folders.png)
+
+You also need to set up categories for usage in the *arr stack:
+![SABnzbd categories](assets/sabnzbd-categories.png)
 
 This chart includes a few useful scripts found at [Trash Guides#SABnzbd Scripts](https://trash-guides.info/Downloaders/SABnzbd/scripts/). They are mapped at `/config/scripts`:
 - [Clean.py](https://trash-guides.info/Downloaders/SABnzbd/scripts/#clean)
-    - Set this script as a `Pre-queue script` in Settings -> Switches
+    - Set this script as a `Pre-queue script` in Settings -> Switches. Make sure you enabled Advanced Settings, otherwise you won't see this setting
 - [replace_for.py](https://trash-guides.info/Downloaders/SABnzbd/scripts/#replace_for)
-    - Set this script in Settings -> Categories for each category (movies, tv)
+    - Set this script in Settings -> Categories for each category (movies, tv, etc.)
 
 ---
 
@@ -821,7 +871,7 @@ The default username is `admin` and password is `password`. Please change the cr
 
 Unfortunately there's no way to disable auth or use forward auth, so you probably want to disable Authentik for Huginn and use the built-in auth system solely.
 This is especially true if you expect to run webhooks since Authentik would interfere with third-party services pushing updates to your instance.
-Don't forget to set `services.huginn.invitationCode` to a cryptographically secure random value. This will keep the strangers away from using your Huginn instance since they'll require an invitation code to sign up.
+Don't forget to set `services.huginn.invitationCode` to a cryptographically secure random value. This will keep the strangers away from using your Huginn instance since it'll require them to have an invitation code to sign up.
 
 ---
 
@@ -865,10 +915,10 @@ Available at `kometa.<domain>.<tld>`.
 
 See the official docs at <https://kometa.wiki>.
 
-Any `.yaml` files you put in `files/kometa` (the file hierarchy should be flat) will be dynamically loaded into the config directory inside the container and used by Kometa if they follow proper name conventions.
-These files are Helm template files, so you can reference any value as you would do normally in a template.
+Any `.yaml` files you put in the directory `files/kometa` will be dynamically loaded into the config directory inside the container and used by Kometa if they follow proper name conventions. Note the file hierarchy should be flat.
+These files are Helm template files, so you can reference any Helm value as you would do normally in a template.
 
-I provided some sensible default configuration files at `files/kometa/default`. You can either copy them to `files/kometa` and tune them to your liking or create your own config files from scratch (see the official [Kometa wiki](https://kometa.wiki) on this topic).
+I provided some sensible default configuration files at `files/kometa/default`. They are not enabled by default. You can either copy them to `files/kometa` and tune them to your liking or create your own config files from scratch (see the official [Kometa wiki](https://kometa.wiki)).
 
 Make sure to actually put a config file named `config.yaml` into `files/kometa`, otherwise Kometa won't be working.
 

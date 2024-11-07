@@ -13,7 +13,9 @@ authentik:
     namespace: authentik
 ingress:
     domain: # REQUIRED; e.g. 'example.com' (without a scheme)
-    rootService: homepage # the service to serve when opening the root domain
+    # the service to serve when opening the root domain
+    # leave empty to disable
+    rootService: homepage
     annotations: {}
 services:
     homepage:
@@ -75,6 +77,7 @@ services:
         # note the code is only active for 5 minutes
         claim: # REQUIRED
         config: /opt/plex/config
+        # the container should have access only to the media library directory
         library: /data/library
         env: {}
     jellyfin:
@@ -90,6 +93,7 @@ services:
             http: 8096
             udp: 7359
         config: /opt/jellyfin/config
+        # the container should have access only to the media library directory
         library: /data/library
         env: {}
     autobrr:
@@ -124,6 +128,7 @@ services:
             p2p: 32700
         dockerMods: ghcr.io/vuetorrent/vuetorrent-lsio-mod:latest
         config: /opt/qbittorrent/config
+        # the container should have access only to the torrent downloads directory
         data: /data/torrents
         env: {}
     sabnzbd:
@@ -138,6 +143,7 @@ services:
         ports:
             http: 8080
         config: /opt/sabnzbd/config
+        # the container should have access only to the usenet downloads directory
         data: /data/usenet
         env: {}
     prowlarr:
@@ -165,6 +171,8 @@ services:
         ports:
             http: 7878
         config: /opt/radarr/config
+        # the container must have access to the whole data directory
+        # otherwise hardlinks won't be working
         data: /data
         env: {}
     sonarr:
@@ -179,6 +187,8 @@ services:
         ports:
             http: 8989
         config: /opt/sonarr/config
+        # the container must have access to the whole data directory
+        # otherwise hardlinks won't be working
         data: /data
         env: {}
     lidarr:
@@ -193,6 +203,8 @@ services:
         ports:
             http: 8686
         config: /opt/lidarr/config
+        # the container must have access to the whole data directory
+        # otherwise hardlinks won't be working
         data: /data
         env: {}
     readarr:
@@ -207,6 +219,8 @@ services:
         ports:
             http: 8787
         config: /opt/readarr/config
+        # the container must have access to the whole data directory
+        # otherwise hardlinks won't be working
         data: /data
         env: {}
     whisparr:
@@ -221,6 +235,8 @@ services:
         ports:
             http: 6969
         config: /opt/whisparr/config
+        # the container must have access to the whole data directory
+        # otherwise hardlinks won't be working
         data: /data
         env: {}
     bazarr:
@@ -235,6 +251,8 @@ services:
         ports:
             http: 6767
         config: /opt/bazarr/config
+        # the container must have access to the whole data directory
+        # otherwise hardlinks won't be working
         data: /data
         env: {}
     jellyseerr:
