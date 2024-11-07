@@ -196,7 +196,7 @@ That is to say, the only thing you should do is:
 
 ## Folder Structure
 
-Here's an overview of a folder structure that this chart uses by default. The necessary paths are already set in `values.template.yaml`:
+Here's an overview of a folder structure that this chart dictates by default, but you're free to change the paths as you like. The necessary paths are already set in `values.template.yaml`:
 ```text
 data
 ├── torrents
