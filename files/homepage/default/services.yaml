@@ -240,3 +240,10 @@
                 type: authentik
                 url: http://authentik-server.{{ .Values.authentik.namespace }}.svc.cluster.local:80
                 key: "{{ .Values.services.homepage.widgets.authentik.apiKey }}"
+      {{- if .Values.services.backrest.enabled }}
+      - Backrest:
+            icon: sh-backrest-light
+            href: https://{{ .Values.services.backrest.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.backrest.name }}:{{ .Values.services.backrest.ports.http }}
+            description: Backups management
+      {{- end }}

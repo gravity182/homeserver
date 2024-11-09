@@ -18,6 +18,22 @@ ingress:
     rootService: homepage
     annotations: {}
 services:
+    backrest:
+        enabled: true
+        exposed: true
+        name: backrest
+        replicaCount: 1
+        image:
+            repository: garethgeorge/backrest
+            tag: latest
+            pullPolicy: IfNotPresent
+        ports:
+            http: 9898
+        userdata: /opt
+        data: /opt/backrest/data
+        config: /opt/backrest/config
+        cache: /opt/backrest/cache
+        env: {}
     homepage:
         enabled: true
         exposed: true

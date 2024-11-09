@@ -1,0 +1,18 @@
+{{- if .Values.services.backrest.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.backrest.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.backrest.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.backrest.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.backrest.name }}
+{{- end }}

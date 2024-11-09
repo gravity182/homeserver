@@ -801,7 +801,7 @@ After finishing the guide above adjust the following settings as well:
     - Optional: Check `Use alternative WebUI` and type in the following in the box below: `/vuetorrent`. This will enable the alternative WebUI, [VueTorrent](https://github.com/VueTorrent/VueTorrent), which is more user/mobile-friendly
     - Click `Save`
 
-Now you need to allow the torrenting p2p port in your firewall, if you have one enabled. Otherwise you won't be considered an "active" seed, i.e. peers with a closed port won't be able to connect to you, which means you'll seed less and slower. By default this port is `32700`. This value may be controlled via `services.qbittorrent.ports.p2p`. Note that the port must be in the range of `30000-32767` (see [Kubernetes#NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)).
+Now you need to allow the torrenting p2p port in your firewall, if you have one enabled. Otherwise you won't be considered an "active" seed, i.e. peers with a closed port won't be able to connect to you, which means you'll seed less and slower. By default this port is `32700`. The port may be changed via `services.qbittorrent.ports.p2p`. Note that the port must be in the range of `30000-32767` (see [Kubernetes#NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)).
 
 For Debian/Ubuntu execute the following command:
 ```sh

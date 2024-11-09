@@ -1,0 +1,70 @@
+{{- if .Values.services.backrest.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.backrest.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.backrest.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.radarr.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.backrest.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.backrest.name }}
+    spec:
+      containers:
+        - name: backrest
+          image: "{{ .Values.services.backrest.image.repository }}:{{ .Values.services.backrest.image.tag }}"
+          imagePullPolicy: {{ .Values.services.backrest.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.backrest.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: BACKREST_DATA
+              value: /data # path for backrest data. restic binary and the database are placed here.
+            - name: BACKREST_CONFIG
+              value: /config/config.json # path for the backrest config file.
+            - name: XDG_CACHE_HOME
+              value: /cache # path for the restic cache which greatly improves performance.
+          ports:
+            - name: http
+              containerPort: 9898
+              protocol: TCP
+          volumeMounts:
+            - name: userdata
+              mountPath: /userdata
+              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+            - name: cache
+              mountPath: /cache
+      volumes:
+        - name: userdata
+          hostPath:
+            path: "{{ .Values.services.backrest.userdata }}"
+            type: Directory
+        - name: data
+          hostPath:
+            path: "{{ .Values.services.backrest.data }}"
+            type: Directory
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.backrest.config }}"
+            type: Directory
+        - name: cache
+          hostPath:
+            path: "{{ .Values.services.backrest.cache }}"
+            type: Directory
+{{- end }}
