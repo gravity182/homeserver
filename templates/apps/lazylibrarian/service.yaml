@@ -1,0 +1,18 @@
+{{- if .Values.services.lazylibrarian.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.lazylibrarian.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.lazylibrarian.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.lazylibrarian.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.lazylibrarian.name }}
+{{- end }}

@@ -271,6 +271,20 @@ services:
         # otherwise hardlinks won't be working
         data: /data
         env: {}
+    lazylibrarian:
+        enabled: false
+        exposed: true
+        name: lazylibrarian
+        replicaCount: 1
+        image:
+            repository: lscr.io/linuxserver/lazylibrarian
+            tag: develop
+            pullPolicy: Always
+        ports:
+            http: 5299
+        config: /opt/lazylibrarian/config
+        data: /data
+        env: {}
     jellyseerr:
         enabled: false
         exposed: true

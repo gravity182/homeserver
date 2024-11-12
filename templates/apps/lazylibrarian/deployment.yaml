@@ -1,0 +1,55 @@
+{{- if .Values.services.lazylibrarian.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.lazylibrarian.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.lazylibrarian.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.lazylibrarian.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.lazylibrarian.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.lazylibrarian.name }}
+    spec:
+      containers:
+        - name: lazylibrarian
+          image: "{{ .Values.services.lazylibrarian.image.repository }}:{{ .Values.services.lazylibrarian.image.tag }}"
+          imagePullPolicy: {{ .Values.services.lazylibrarian.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.lazylibrarian.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          ports:
+            - name: http
+              containerPort: 5299
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: "{{ .Values.services.lazylibrarian.data }}"
+      volumes:
+        - name: config
+          hostPath:
+            path: "{{ .Values.services.lazylibrarian.config }}"
+            type: Directory
+        - name: data
+          hostPath:
+            path: "{{ .Values.services.lazylibrarian.data }}"
+            type: Directory
+{{- end }}
