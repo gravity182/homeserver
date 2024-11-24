@@ -1,0 +1,52 @@
+{{- if .Values.services.miniflux.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.services.miniflux.db.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.miniflux.db.name }}
+spec:
+  schedule: {{ .Values.services.miniflux.db.backupScheduleCron }}
+  timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
+  successfulJobsHistoryLimit: 3
+  concurrencyPolicy: Replace
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.miniflux.db.name }}
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ .Values.services.miniflux.db.name }}
+        spec:
+          containers:
+            - name: miniflux-db-backup
+              image: postgres:17
+              imagePullPolicy: Always
+              command: ["/bin/sh"]
+              args:
+                - -c
+                - pg_dump -Fc -C > /backup/miniflux_$(date +"%Y_%m_%d").dump
+              env:
+                - name: TZ
+                  value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+                - name: PGHOST
+                  value: {{ .Values.services.miniflux.db.name | quote }}
+                - name: PGUSER
+                  value: {{ .Values.services.miniflux.db.user | quote }}
+                - name: PGPASSWORD
+                  value: {{ required "A valid .Values.services.miniflux.db.password required!" .Values.services.miniflux.db.password | quote }}
+                - name: PGDATABASE
+                  value: {{ .Values.services.miniflux.db.dbname | quote }}
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: backup
+              hostPath:
+                path: "{{ .Values.services.miniflux.db.backup }}"
+                type: Directory
+          restartPolicy: OnFailure
+{{- end }}

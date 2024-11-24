@@ -24,6 +24,8 @@ spec:
           image: postgres:17
           imagePullPolicy: Always
           env:
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
             - name: POSTGRES_USER
               value: {{ .Values.services.huginn.db.user | quote }}
             - name: POSTGRES_PASSWORD

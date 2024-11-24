@@ -32,6 +32,8 @@ spec:
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
             - name: INVITATION_CODE
               value: {{ .Values.services.huginn.invitationCode | quote }}
             - name: SKIP_INVITATION_CODE

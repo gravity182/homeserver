@@ -447,6 +447,8 @@ services:
             ports:
                 postgres: 5432
             data: /opt/miniflux/postgresql/17/data
+            backup: /opt/miniflux/postgresql/17/backup
+            backupScheduleCron: "0 5 * * *"
         env: {}
     huginn:
         enabled: false
@@ -469,6 +471,8 @@ services:
             ports:
                 postgres: 5432
             data: /opt/huginn/postgresql/17/data
+            backup: /opt/huginn/postgresql/17/backup
+            backupScheduleCron: "0 5 * * *"
         # generate a secret token
         # e.g. `openssl rand -base64 32`
         appSecretToken: # REQUIRED

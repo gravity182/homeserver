@@ -155,12 +155,24 @@
             icon: sh-miniflux-light
             href: https://{{ .Values.services.miniflux.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.miniflux.name }}:{{ .Values.services.miniflux.ports.http }}
-            description: Feed Reader
+            description: Feed reader
             widget:
                 type: miniflux
                 url: http://{{ .Values.services.miniflux.name }}:{{ .Values.services.miniflux.ports.http }}
                 fields: ["unread"]
                 key: "{{ .Values.services.homepage.widgets.miniflux.apiKey }}"
+      {{- end }}
+      {{- if .Values.services.kavita.enabled }}
+      - Kavita:
+            icon: sh-kavita
+            href: https://{{ .Values.services.kavita.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.kavita.name }}:{{ .Values.services.kavita.ports.http }}
+            description: Book reader
+            widget:
+                type: kavita
+                url: http://{{ .Values.services.kavita.name }}:{{ .Values.services.kavita.ports.http }}
+                username: "{{ .Values.services.homepage.widgets.kavita.username }}"
+                password: "{{ .Values.services.homepage.widgets.kavita.password }}"
       {{- end }}
       {{- if .Values.services.thelounge.enabled }}
       - The Lounge:
