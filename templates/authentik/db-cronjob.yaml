@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: authentik-postgresql-backup
+  namespace: {{ .Values.authentik.namespace }}
+  labels:
+    app.kubernetes.io/name: authentik-postgresql-backup
+spec:
+  schedule: {{ .Values.authentik.postgresql.backupScheduleCron }}
+  timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
+  successfulJobsHistoryLimit: 3
+  concurrencyPolicy: Replace
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: authentik-postgresql-backup
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: authentik-postgresql-backup
+        spec:
+          containers:
+            - name: authentik-db-backup
+              image: postgres:17
+              imagePullPolicy: Always
+              command: ["/bin/sh"]
+              args:
+                - -c
+                - pg_dump -Fc -C > /backup/authentik_$(date +"%Y_%m_%d").dump
+              env:
+                - name: TZ
+                  value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+                - name: PGHOST
+                  value: authentik-postgresql
+                - name: PGUSER
+                  value: authentik
+                - name: PGPASSWORD
+                  value: {{ required "A valid .Values.authentik.postgresql.auth.password required!" .Values.authentik.postgresql.auth.password | quote }}
+                - name: PGDATABASE
+                  value: authentik
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: backup
+              hostPath:
+                path: "{{ .Values.authentik.postgresql.backup }}"
+                type: Directory
+          restartPolicy: OnFailure
