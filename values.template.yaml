@@ -89,6 +89,8 @@ services:
             pullPolicy: IfNotPresent
         ports:
             http: 32400
+            # make sure to open the remote access port in your firewall
+            remoteAccess: 32400
         # get a claim code at https://www.plex.tv/claim/
         # note the code is only active for 5 minutes
         claim: # REQUIRED
