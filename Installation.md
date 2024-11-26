@@ -453,7 +453,7 @@ Available at `homepage.<domain>.<tld>` and at the root domain `<domain>.<tld>` b
 Any `.yaml` files you put in the directory `files/homepage`  will be dynamically loaded into the config directory inside the container and used by Homepage if they follow proper name conventions (`settings.yaml`, `widgets.yaml`, etc.). Note the file hierarchy must be flat.
 These files are Helm template files, so you can reference any Helm value as you would do normally in a template.
 
-I provided some sensible default configuration files at `files/homepage/default`. They are not used by default. You can either copy them to `files/homepage` and tune them to your liking or create your own config files from scratch (see the official [Homepage docs](https://gethomepage.dev/configs/)).
+I provided some sensible default configuration files at `files/homepage/default`. These are not used by default. You can either copy them to `files/homepage` and tune them to your liking or create your own config files from scratch (see the official [Homepage docs](https://gethomepage.dev/configs/)).
 
 ---
 
@@ -927,7 +927,7 @@ See the official docs at <https://kometa.wiki>.
 Any `.yaml` files you put in the directory `files/kometa` will be dynamically loaded into the config directory inside the container and used by Kometa if they follow proper name conventions. Note the file hierarchy should be flat.
 These files are Helm template files, so you can reference any Helm value as you would do normally in a template.
 
-I provided some sensible default configuration files at `files/kometa/default`. They are not enabled by default. You can either copy them to `files/kometa` and tune them to your liking or create your own config files from scratch (see the official [Kometa wiki](https://kometa.wiki)).
+I provided some sensible default configuration files at `files/kometa/default`. These are not used by default. You can either copy them to `files/kometa` and tune them to your liking or create your own config files from scratch (see the official [Kometa wiki](https://kometa.wiki)).
 
 Make sure to actually put a config file named `config.yaml` into `files/kometa`, otherwise Kometa won't be working.
 
