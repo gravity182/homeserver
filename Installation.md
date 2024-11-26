@@ -226,9 +226,11 @@ data
 ```
 
 The sub-folders for torrent downloads (movies, tv, etc.) are controlled by a download category you use. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/torrents/movies` directory will be created by qBittorrent automatically. E.g. your qBittorrent setup can look like this:
+
 ![qBittorrent categories](assets/qbittorrent-categories.png)
 
 The same applies to Usenet downloads. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/usenet/movies` directory will be created by SABnzbd automatically. Note the categories must be pre-created first before setting up a download client in the *arr stack. E.g. your SABnzbd setup can look like this:
+
 ![SABnzbd categories](assets/sabnzbd-categories.png)
 
 The data folder itself can be placed wherever you like. Personally, I put this in the root at `/data`.
