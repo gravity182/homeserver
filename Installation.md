@@ -595,13 +595,13 @@ To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardli
 
 Unfortunately there's no easy way to sync Radarr and Sonarr profiles, so you'll have to copy-paste custom formats once again. Luckily, this is a one time job. The profile will serve you well and reliably, having set it up once.
 
-Ensure to set up [Naming Scheme](https://trash-guides.info/Sonarr/Sonarr-recommended-naming-scheme/) and [Quality Settings](https://trash-guides.info/Sonarr/Sonarr-Quality-Settings-File-Size/) first.
+Similar to Radarr, ensure to set up [Naming Scheme](https://trash-guides.info/Sonarr/Sonarr-recommended-naming-scheme/) and [Quality Settings](https://trash-guides.info/Sonarr/Sonarr-Quality-Settings-File-Size/) first.
 
 We'll take Trash Guides' profiles as a base - select one of the following:
 - [WEB-1080p](https://trash-guides.info/Sonarr/sonarr-setup-quality-profiles/#web-1080p) - if you prefer 720p/1080p WEBDL quality
 - [WEB-2160p](https://trash-guides.info/Sonarr/sonarr-setup-quality-profiles/#web-2160p) - if you prefer 2160p WEBDL quality
 
-Customize the profile similarily to Radarr: add/exclude HDR formats and implement flexible language selection.
+Lastly, customize the profile: add/exclude HDR formats and implement flexible language selection.
 
 In the end your profile should look like this:
 
