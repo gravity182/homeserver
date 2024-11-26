@@ -697,7 +697,7 @@ Ensure that you've set up the libraries as follows:
     - Agent: `Plex Series`
     - Folders: `/data/library/tv`
 
-One last note: make sure the remote access port is allowed in your firewall. The port can be changed via the `services.plex.ports.remoteAccess` value.
+One last note: make sure the remote access port is allowed in your firewall. The port can be changed via the `services.plex.ports.remoteAccess` value. By default it's `32400`.
 This allows your Plex instance to be discoverable & accessible from the outer networks (practically, from all the client apps). Configure your Plex instance as follows:
 
 ![Plex Remote Access](assets/plex-remote-access.png)
