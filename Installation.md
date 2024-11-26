@@ -81,6 +81,10 @@ host:
     tz: # REQUIRED; e.g. 'Europe/Berlin'
     uid: # REQUIRED; obtain via `id -u`
     gid: # REQUIRED; obtain via `id -g`
+authentik:
+    postgresql:
+        auth:
+            password: "" # REQUIRED; set the same value as in authentik-values.yaml
 certmanager:
     acme:
         email: # REQUIRED; e.g. 'example@gmail.com'
@@ -692,6 +696,11 @@ Ensure that you've set up the libraries as follows:
     - Scanner: `Plex TV Series`
     - Agent: `Plex Series`
     - Folders: `/data/library/tv`
+
+One last note: make sure the remote access port is allowed in your firewall. The port can be changed via the `services.plex.ports.remoteAccess` value.
+This allows your Plex instance to be discoverable & accessible from the outer networks (practically, from all the client apps). Configure your Plex instance as follows:
+
+![Plex Remote Access](assets/plex-remote-access.png)
 
 ---
 

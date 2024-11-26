@@ -11,6 +11,11 @@ certmanager:
             cfApiToken: # REQUIRED
 authentik:
     namespace: authentik
+    postgresql:
+        auth:
+            password: "" # REQUIRED; set the same value as in authentik-values.yaml
+        backup: /opt/authentik/postgresql/backup
+        backupScheduleCron: "0 5 * * *"
 ingress:
     domain: # REQUIRED; e.g. 'example.com' (without a scheme)
     # the service to serve when opening the root domain
@@ -90,6 +95,7 @@ services:
         ports:
             http: 32400
             # make sure to open the remote access port in your firewall
+            # you can change this port but it should be in range of 30000-32767 (k8s NodePort)
             remoteAccess: 32400
         # get a claim code at https://www.plex.tv/claim/
         # note the code is only active for 5 minutes
