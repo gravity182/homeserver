@@ -42,6 +42,8 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
 1. Move sensitive values to Kubernetes secrets
 2. Add hardware decoding support for Plex & Jellyfin
 
+---
+
 ## Installation
 
 Please see [Installation](Installation.md).
