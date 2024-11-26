@@ -200,7 +200,7 @@ That is to say, the only thing you should do is:
 
 ## Folder Structure
 
-Here's an overview of a folder structure that this chart dictates by default, meaning these paths are set in `values.template.yaml` and these paths are mentioned in all the service-specific sections below, but you're free to change the paths as you'd like:
+Here's an overview of a folder structure this chart dictates by default, meaning these paths are set in `values.template.yaml` and these paths are mentioned in all the service-specific sections below, but you're free to change the paths as you'd like:
 ```text
 data
 ├── torrents
