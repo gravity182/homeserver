@@ -48,6 +48,8 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
 
 Please see [Installation](Installation.md).
 
+---
+
 ## Credits
 
 I want to thank these amazing resources which I heavily used during the development:
