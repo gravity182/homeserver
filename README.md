@@ -13,15 +13,15 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/bazarr.png"> [Bazarr](https://github.com/morpheus65535/bazarr) - Subtitles management
     - <img width="15" height="15" src="https://github.com/Whisparr/Whisparr/blob/develop/Logo/128.png?raw=true"> [Whisparr](https://github.com/Whisparr/Whisparr) - Adult videos management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/prowlarr.png"> [Prowlarr](https://github.com/Prowlarr/Prowlarr) - Indexers management. Allows you to sync your torrent/usenet indexers across all of the *arr stack
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/plex.png"> [Plex](https://www.plex.tv/) - Media server for watching the downloaded movies and series from any of your devices (PC, Android, iOS, iPad, TV)
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/plex.png"> [Plex](https://www.plex.tv/) - Media server for watching downloaded movies and series from any of your devices (PC, Android, iOS, iPad, TV)
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/jellyfin.png"> [Jellyfin](https://github.com/jellyfin/jellyfin) - An open-source alternative to Plex
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/jellyseerr.png"> [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) - Media request platform, which you can share with your friends for automatic movie/series downloading. Supports both Plex and Jellyfin
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/autobrr.png"> [Autobrr](https://github.com/autobrr/autobrr) - Download automation for torrents and Usenet. Monitors indexers' IRC channels and grabs a release as soon as it's announced
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/kavita.png"> [Kavita](https://github.com/Kareadita/Kavita) - Books reader
 - Downloaders
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/qbittorrent.png"> [qBittorrent](https://github.com/qbittorrent/qBittorrent) - Torrent downloader
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sabnzbd.png"> [SABnzbd](https://github.com/sabnzbd/sabnzbd) - Usenet downloader
 - Utilities:
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/kavita.png"> [Kavita](https://github.com/Kareadita/Kavita) - Books reader
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/miniflux-light.png"> [Miniflux](https://github.com/dysosmus/miniflux) - RSS feed reader
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/stirling-pdf.png"> [Stirling PDF](https://github.com/Stirling-Tools/Stirling-PDF) - PDF Manipulation Tool
     - <img width="15" height="15" src="https://github.com/thelounge/thelounge/blob/master/client/img/logo-grey-bg-152x152px.png?raw=true"> [The Lounge](https://github.com/thelounge/thelounge) - IRC Client
