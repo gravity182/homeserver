@@ -42,13 +42,9 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
 1. Move sensitive values to Kubernetes secrets
 2. Add hardware decoding support for Plex & Jellyfin
 
----
-
 ## Installation
 
 Please see [Installation](Installation.md).
-
----
 
 ## Credits
 
@@ -57,19 +53,13 @@ I want to thank these amazing resources which I heavily used during the developm
 - <https://wiki.servarr.com>
 - a bunch of random questions on r/SelfHosted
 
----
-
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
----
-
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
----
 
 ## Disclaimer
 
