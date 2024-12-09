@@ -15,7 +15,10 @@ authentik:
         auth:
             password: "" # REQUIRED; set the same value as in authentik-values.yaml
         backup: /opt/authentik/postgresql/backup
-        backupScheduleCron: "0 5 * * *"
+        # backups schedule cron
+        backupScheduleCron: "0 5 * * 0"
+        # backups will be kept for the specified number of days
+        backupRetentionDays: 180
 ingress:
     domain: # REQUIRED; e.g. 'example.com' (without a scheme)
     # the service to serve when opening the root domain
@@ -456,7 +459,10 @@ services:
                 postgres: 5432
             data: /opt/miniflux/postgresql/17/data
             backup: /opt/miniflux/postgresql/17/backup
-            backupScheduleCron: "0 5 * * *"
+            # backups schedule cron
+            backupScheduleCron: "0 5 * * 0"
+            # backups will be kept for the specified number of days
+            backupRetentionDays: 180
         env: {}
     huginn:
         enabled: false
@@ -480,7 +486,10 @@ services:
                 postgres: 5432
             data: /opt/huginn/postgresql/17/data
             backup: /opt/huginn/postgresql/17/backup
-            backupScheduleCron: "0 5 * * *"
+            # backups schedule cron
+            backupScheduleCron: "0 5 * * 0"
+            # backups will be kept for the specified number of days
+            backupRetentionDays: 180
         # generate a secret token
         # e.g. `openssl rand -base64 32`
         appSecretToken: # REQUIRED

@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   headers:
+    # this Strict-Transport-Security (STS) config is valid for submission to the HSTS preload list
+    # submit at https://hstspreload.org
     stsSeconds: 31536000
     stsIncludeSubdomains: true
     stsPreload: true

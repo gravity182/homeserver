@@ -1,11 +1,9 @@
-### Helm ###
-# Chart dependencies
 **/charts/*.tgz
-# Personal files
-.env
+
 .vscode
 .idea
 .git
+.env
 values.y*
 authentik-values.y*
 certmanager-values.y*
@@ -15,7 +13,6 @@ certmanager-values.y*
 /files/kometa/*
 !/files/kometa/default/*
 
-### Misc ###
 .DS_Store
 *.gz
 *.log

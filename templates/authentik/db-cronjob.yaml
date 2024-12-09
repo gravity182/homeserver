@@ -27,7 +27,7 @@ spec:
               command: ["/bin/sh"]
               args:
                 - -c
-                - pg_dump -Fc -C > /backup/authentik_$(date +"%Y_%m_%d").dump
+                - find /backup/ -mtime +{{ .Values.authentik.postgresql.backupRetentionDays }} -exec rm -f {} \; ; pg_dump -Fc -C > /backup/authentik_db_backup_$(date +"%Y_%m_%d").dump
               env:
                 - name: TZ
                   value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
