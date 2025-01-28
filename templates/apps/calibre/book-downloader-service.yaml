@@ -1,0 +1,18 @@
+{{- if .Values.services.calibrebookdownloader.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.calibrebookdownloader.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.calibrebookdownloader.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.calibrebookdownloader.ports.http }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ .Values.services.calibrebookdownloader.name }}
+{{- end }}
