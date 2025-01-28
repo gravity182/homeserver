@@ -19,6 +19,7 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .Values.services.plex.name }}
     spec:
+      priorityClassName: homeserver-high-priority
       containers:
         - name: plex
           image: "{{ .Values.services.plex.image.repository }}:{{ .Values.services.plex.image.tag }}"
