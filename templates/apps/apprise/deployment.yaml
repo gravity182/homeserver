@@ -21,6 +21,46 @@ spec:
     spec:
       securityContext:
         fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+      initContainers:
+      {{- if .Values.services.apprise.vpn.enabled }}
+        - name: gluetun
+          image: ghcr.io/qdm12/gluetun:v3.40
+          imagePullPolicy: IfNotPresent
+          restartPolicy: Always
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          env:
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: VPN_SERVICE_PROVIDER
+              value: custom
+            - name: VPN_TYPE
+              value: wireguard
+            - name: HTTP_CONTROL_SERVER_ADDRESS
+              value: ":8001"
+            - name: DNS_KEEP_NAMESERVER
+              value: "on"
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              value: "10.42.0.0/15"
+          volumeMounts:
+            - name: wg0-conf
+              mountPath: /gluetun/wireguard/
+              readOnly: true
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
+        - name: verify-vpn
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              while ! ping -c 1 8.8.8.8; do
+                echo "Ping failed, retrying in 5"
+                sleep 5
+              done
+              echo "VPN connection established successfully, exiting"
+      {{- end }}
       containers:
         - name: apprise
           image: "{{ .Values.services.apprise.image.repository }}:{{ .Values.services.apprise.image.tag }}"
@@ -47,7 +87,7 @@ spec:
             - name: APPRISE_DEFAULT_CONFIG_ID
               value: {{ .Values.services.apprise.defaultConfigId | quote }}
             - name: ALLOWED_HOSTS
-              value: "{{ .Values.services.apprise.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+              value: "{{ .Values.services.apprise.name }},{{ .Values.services.apprise.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
           ports:
             - name: http
               containerPort: 8000
@@ -58,6 +98,16 @@ spec:
             - name: attachments
               mountPath: /attachments
       volumes:
+        {{- if .Values.services.apprise.vpn.enabled }}
+        - name: wg0-conf
+          secret:
+            secretName: gluetun-wireguard-conf
+            optional: false
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+        {{- end }}
         - name: config
           hostPath:
             path: "{{ .Values.services.apprise.config }}"

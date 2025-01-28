@@ -19,6 +19,46 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .Values.services.archivebox.name }}
     spec:
+      initContainers:
+      {{- if .Values.services.archivebox.vpn.enabled }}
+        - name: gluetun
+          image: ghcr.io/qdm12/gluetun:v3.40
+          imagePullPolicy: IfNotPresent
+          restartPolicy: Always
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          env:
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: VPN_SERVICE_PROVIDER
+              value: custom
+            - name: VPN_TYPE
+              value: wireguard
+            - name: HTTP_CONTROL_SERVER_ADDRESS
+              value: ":8001"
+            - name: DNS_KEEP_NAMESERVER
+              value: "on"
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              value: "10.42.0.0/15"
+          volumeMounts:
+            - name: wg0-conf
+              mountPath: /gluetun/wireguard/
+              readOnly: true
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
+        - name: verify-vpn
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              while ! ping -c 1 8.8.8.8; do
+                echo "Ping failed, retrying in 5"
+                sleep 5
+              done
+              echo "VPN connection established successfully, exiting"
+      {{- end }}
       containers:
         - name: archivebox
           image: "{{ .Values.services.archivebox.image.repository }}:{{ .Values.services.archivebox.image.tag }}"
@@ -41,7 +81,7 @@ spec:
             - name: CSRF_TRUSTED_ORIGINS
               value: "https://{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
             - name: ALLOWED_HOSTS
-              value: "{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+              value: "{{ .Values.services.archivebox.name }},{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
             - name: PUBLIC_INDEX
               value: "false"
             - name: PUBLIC_SNAPSHOTS
@@ -66,6 +106,16 @@ spec:
             - name: data
               mountPath: /data
       volumes:
+        {{- if .Values.services.archivebox.vpn.enabled }}
+        - name: wg0-conf
+          secret:
+            secretName: gluetun-wireguard-conf
+            optional: false
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+        {{- end }}
         - name: data
           hostPath:
             path: "{{ .Values.services.archivebox.data }}"

@@ -20,6 +20,46 @@ spec:
         app.kubernetes.io/name: {{ .Values.services.plex.name }}
     spec:
       priorityClassName: homeserver-high-priority
+      initContainers:
+      {{- if .Values.services.plex.vpn.enabled }}
+        - name: gluetun
+          image: ghcr.io/qdm12/gluetun:v3.40
+          imagePullPolicy: IfNotPresent
+          restartPolicy: Always
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          env:
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: VPN_SERVICE_PROVIDER
+              value: custom
+            - name: VPN_TYPE
+              value: wireguard
+            - name: HTTP_CONTROL_SERVER_ADDRESS
+              value: ":8001"
+            - name: DNS_KEEP_NAMESERVER
+              value: "on"
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              value: "10.42.0.0/15"
+          volumeMounts:
+            - name: wg0-conf
+              mountPath: /gluetun/wireguard/
+              readOnly: true
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
+        - name: verify-vpn
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              while ! ping -c 1 8.8.8.8; do
+                echo "Ping failed, retrying in 5"
+                sleep 5
+              done
+              echo "VPN connection established successfully, exiting"
+      {{- end }}
       containers:
         - name: plex
           image: "{{ .Values.services.plex.image.repository }}:{{ .Values.services.plex.image.tag }}"
@@ -47,6 +87,16 @@ spec:
             - name: library
               mountPath: "{{ .Values.services.plex.library }}"
       volumes:
+        {{- if .Values.services.plex.vpn.enabled }}
+        - name: wg0-conf
+          secret:
+            secretName: gluetun-wireguard-conf
+            optional: false
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+        {{- end }}
         - name: config
           hostPath:
             path: "{{ .Values.services.plex.config }}"
