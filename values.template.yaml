@@ -695,3 +695,20 @@ services:
         # restricts the search to a specific format, you can add more formats separated by a comma
         # pay attention to compatibility with CWA - some formats may not be ingested
         supportedFormats: "epub,mobi,azw3,fb2,djvu,cbz,cbr,pdf"
+    openbooks:
+        enabled: true
+        exposed: true
+        name: openbooks
+        replicaCount: 1
+        image:
+            repository: evanbuss/openbooks
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8080
+        vpn:
+            enabled: false
+        # your IRC name, it will be used to identify you in the IRC channel
+        ircname: # REQUIRED
+        # if true, won't send files to browser
+        noBrowserDownloads: false

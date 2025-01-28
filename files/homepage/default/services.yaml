@@ -152,13 +152,6 @@
                 password: "{{ .Values.services.homepage.widgets.calibre.password }}"
                 fields: ["books", "authors", "series"]
       {{- end }}
-      {{- if .Values.services.calibrebookdownloader.enabled }}
-      - "Anna's Archive":
-            icon: sh-calibre-web
-            href: https://{{ .Values.services.calibrebookdownloader.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
-            siteMonitor: http://{{ .Values.services.calibrebookdownloader.name }}:{{ .Values.services.calibrebookdownloader.ports.http }}
-            description: Download books
-      {{- end }}
       {{- if .Values.services.kavita.enabled }}
       - Kavita:
             icon: sh-kavita
@@ -170,6 +163,20 @@
                 url: http://{{ .Values.services.kavita.name }}:{{ .Values.services.kavita.ports.http }}
                 username: "{{ .Values.services.homepage.widgets.kavita.username }}"
                 password: "{{ .Values.services.homepage.widgets.kavita.password }}"
+      {{- end }}
+      {{- if .Values.services.calibrebookdownloader.enabled }}
+      - "Anna's Archive":
+            icon: sh-calibre-web
+            href: https://{{ .Values.services.calibrebookdownloader.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.calibrebookdownloader.name }}:{{ .Values.services.calibrebookdownloader.ports.http }}
+            description: Download books from Anna's Archive
+      {{- end }}
+      {{- if .Values.services.openbooks.enabled }}
+      - "IRCHighWay":
+            icon: sh-openbooks
+            href: https://{{ .Values.services.openbooks.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.openbooks.name }}:{{ .Values.services.openbooks.ports.http }}
+            description: Download books from IRCHighWay
       {{- end }}
 - Utilities:
       {{- if .Values.services.miniflux.enabled }}

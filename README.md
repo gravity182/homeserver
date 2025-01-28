@@ -21,7 +21,8 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sabnzbd.png"> [SABnzbd](https://github.com/sabnzbd/sabnzbd) - Usenet downloader
 - Books:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/calibre-web.png"> [Calibre-Web Automated](https://github.com/crocodilestick/Calibre-Web-Automated) - Calibre-Web but automated
-    - 📚 [Calibre-Web-Automated-Book-Downloader](https://github.com/calibrain/calibre-web-automated-book-downloader) - An intuitive web interface for searching and downloading books from Anna's Archive. Designed to work seamlessly with Calibre-Web-Automated
+    - 📚 [Calibre-Web-Automated-Book-Downloader](https://github.com/calibrain/calibre-web-automated-book-downloader) - A web interface for searching and downloading books from Anna's Archive
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/openbooks.png"> [Openbooks](https://github.com/evan-buss/openbooks) - A web interface for searching and downloading books from IRCHighWay
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/kavita.png"> [Kavita](https://github.com/Kareadita/Kavita) - Books reader
 - Utilities:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/miniflux-light.png"> [Miniflux](https://github.com/dysosmus/miniflux) - RSS feed reader
