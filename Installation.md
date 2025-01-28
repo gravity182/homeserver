@@ -3,6 +3,7 @@
 **Table of Contents:**
 - [Installation](#installation-1)
 - [Chart customization](#chart-customization)
+    - [VPN](#vpn)
     - [Environment variables](#environment-variables)
 - [Do not run containers as root. File permissions](#do-not-run-containers-as-root-file-permissions)
 - [Folder Structure](#folder-structure)
@@ -149,9 +150,28 @@ services:
 
 If you feel like there could be even more customization, please open an issue in this GitHub repo.
 
+### VPN
+
+Every service supports passing its traffic through a VPN, based on [Gluetun](https://github.com/qdm12/gluetun) and WireGuard (a very lightweight VPN protocol).
+This feature is completely optional and doesn't require you to do anything if you don't need a VPN.
+
+You must create a secret named `gluetun-wireguard-conf` and containing a WireGuard configuration:
+```sh
+kubectl create secret generic gluetun-wireguard-conf --from-file=wg0.conf=<path_to_wg_conf>
+```
+
+Afterwards set `services.<service_name>.vpn` as follows to enable VPN for *any* service:
+```yaml
+services:
+  service_name:
+    vpn:
+      enabled: true
+```
+
 ### Environment variables
 
-Every service supports custom environment variables that are be passed as is to the respective pod.
+Every service supports passing custom environment variables to the respective pod.
+This feature is completely optional and doesn't require you to do anything if you don't need to pass custom env vars.
 
 Set `services.<service_name>.env` to a dictionary in the following format:
 ```yaml
@@ -168,7 +188,7 @@ services:
 
 Note these custom env vars will *not* take precedence over those that are already set in the deployment's template. Please use the predefined variables instead.
 
-For instance, Stirling-PDF can be customized this way:
+For instance, Stirling-PDF can be customized this way, apart from the predefined env vars:
 ```yaml
 services:
   stirlingpdf:
@@ -200,7 +220,7 @@ That is to say, the only thing you should do is:
 
 ## Folder Structure
 
-Here's an overview of a folder structure this chart dictates by default, meaning these paths are set in `values.template.yaml` and these paths are mentioned in all the service-specific sections below, but you're free to change the paths as you'd like:
+Here's an overview of a folder structure this chart follows by default:
 ```text
 data
 ├── torrents
@@ -225,11 +245,13 @@ data
     └── xxx
 ```
 
-The sub-folders for torrent downloads (movies, tv, etc.) are controlled by a download category you use. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/torrents/movies` directory will be created by qBittorrent automatically. E.g. your qBittorrent setup can look like this:
+You're free to change the paths as you'd like though. Just to remember to reflect the changes in the `values.yaml`.
+
+The names of sub-folders for torrent downloads (movies, tv, etc.) are controlled by a download category you use. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/torrents/movies` directory will be created by qBittorrent automatically. E.g. your qBittorrent setup can look like this:
 
 ![qBittorrent categories](assets/qbittorrent-categories.png)
 
-The same applies to Usenet downloads. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/usenet/movies` directory will be created by SABnzbd automatically. Note the categories must be pre-created first before setting up a download client in the *arr stack. E.g. your SABnzbd setup can look like this:
+The same applies to Usenet downloads. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/usenet/movies` directory will be created by SABnzbd automatically. E.g. your SABnzbd setup can look like this:
 
 ![SABnzbd categories](assets/sabnzbd-categories.png)
 

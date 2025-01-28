@@ -67,8 +67,6 @@ services:
                 apiKey: "" # go to Settings -> General and retrieve the API key
             sonarr:
                 apiKey: "" # go to Settings -> General and retrieve the API key
-            readarr:
-                apiKey: "" # go to Settings -> General and retrieve the API key
             lidarr:
                 apiKey: "" # go to Settings -> General and retrieve the API key
             bazarr:
@@ -258,24 +256,6 @@ services:
         vpn:
             enabled: false
         config: /opt/lidarr/config
-        # the container must have access to the whole data directory
-        # otherwise hardlinks won't be working
-        data: /data
-        env: {}
-    readarr:
-        enabled: false
-        exposed: true
-        name: readarr
-        replicaCount: 1
-        image:
-            repository: lscr.io/linuxserver/readarr
-            tag: develop
-            pullPolicy: Always
-        ports:
-            http: 8787
-        vpn:
-            enabled: false
-        config: /opt/readarr/config
         # the container must have access to the whole data directory
         # otherwise hardlinks won't be working
         data: /data
