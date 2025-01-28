@@ -33,17 +33,6 @@
                 url: http://{{ .Values.services.lidarr.name }}:{{ .Values.services.lidarr.ports.http }}
                 key: "{{ .Values.services.homepage.widgets.lidarr.apiKey }}"
       {{- end }}
-      {{- if .Values.services.readarr.enabled }}
-      - Readarr:
-            icon: sh-readarr
-            href: https://{{ .Values.services.readarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
-            siteMonitor: http://{{ .Values.services.readarr.name }}:{{ .Values.services.readarr.ports.http }}
-            description: Books management
-            widget:
-                type: readarr
-                url: http://{{ .Values.services.readarr.name }}:{{ .Values.services.readarr.ports.http }}
-                key: "{{ .Values.services.homepage.widgets.readarr.apiKey }}"
-      {{- end }}
       {{- if .Values.services.whisparr.enabled }}
       - Whisparr:
             icon: https://raw.githubusercontent.com/Whisparr/Whisparr/refs/heads/develop/Logo/Whisparr.svg
