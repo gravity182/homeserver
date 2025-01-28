@@ -149,18 +149,26 @@
                 showEpisodeNumber: true # optional, defaults to false
                 expandOneStreamToTwoRows: false # optional, defaults to true
       {{- end }}
-- Utilities:
-      {{- if .Values.services.miniflux.enabled }}
-      - RSS:
-            icon: sh-miniflux-light
-            href: https://{{ .Values.services.miniflux.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
-            siteMonitor: http://{{ .Values.services.miniflux.name }}:{{ .Values.services.miniflux.ports.http }}
-            description: Feed reader
+- Books:
+      {{- if .Values.services.calibre.enabled }}
+      - Calibre:
+            icon: sh-calibre
+            href: https://{{ .Values.services.calibre.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.calibre.name }}:{{ .Values.services.calibre.ports.http }}
+            description: Book library
             widget:
-                type: miniflux
-                url: http://{{ .Values.services.miniflux.name }}:{{ .Values.services.miniflux.ports.http }}
-                fields: ["unread"]
-                key: "{{ .Values.services.homepage.widgets.miniflux.apiKey }}"
+                type: calibreweb
+                url: http://{{ .Values.services.calibre.name }}:{{ .Values.services.calibre.ports.http }}
+                username: "{{ .Values.services.homepage.widgets.calibre.username }}"
+                password: "{{ .Values.services.homepage.widgets.calibre.password }}"
+                fields: ["books", "authors", "series"]
+      {{- end }}
+      {{- if .Values.services.calibrebookdownloader.enabled }}
+      - "Anna's Archive":
+            icon: sh-calibre-web
+            href: https://{{ .Values.services.calibrebookdownloader.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.calibrebookdownloader.name }}:{{ .Values.services.calibrebookdownloader.ports.http }}
+            description: Download books
       {{- end }}
       {{- if .Values.services.kavita.enabled }}
       - Kavita:
@@ -173,6 +181,19 @@
                 url: http://{{ .Values.services.kavita.name }}:{{ .Values.services.kavita.ports.http }}
                 username: "{{ .Values.services.homepage.widgets.kavita.username }}"
                 password: "{{ .Values.services.homepage.widgets.kavita.password }}"
+      {{- end }}
+- Utilities:
+      {{- if .Values.services.miniflux.enabled }}
+      - RSS:
+            icon: sh-miniflux-light
+            href: https://{{ .Values.services.miniflux.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.miniflux.name }}:{{ .Values.services.miniflux.ports.http }}
+            description: Feed reader
+            widget:
+                type: miniflux
+                url: http://{{ .Values.services.miniflux.name }}:{{ .Values.services.miniflux.ports.http }}
+                fields: ["unread"]
+                key: "{{ .Values.services.homepage.widgets.miniflux.apiKey }}"
       {{- end }}
       {{- if .Values.services.thelounge.enabled }}
       - The Lounge:
