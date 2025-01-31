@@ -692,9 +692,12 @@ services:
         useCfBypass: true
         # preferred books language, you can add more languages separated by a comma
         bookLanguage: "en,ru"
-        # restricts the search to a specific format, you can add more formats separated by a comma
+        # restricts the search to specific formats
+        # you can add more formats separated by a comma
         # pay attention to compatibility with CWA - some formats may not be ingested
-        supportedFormats: "epub,mobi,azw3,fb2,djvu,cbz,cbr,pdf"
+        # the default value is synced with the current version of CWA (3.0.1)
+        # note: formats are sorted in the order of preference
+        supportedFormats: "epub,azw,azw3,azw4,mobi,fb2,cbz,cbr,cb7,cbc,chm,pdf,djvu,docx,fbz,html,htmlz,lit,lrf,odt,prc,pdb,pml,rb,rtf,snb,tcr,txtz"
     openbooks:
         enabled: true
         exposed: true

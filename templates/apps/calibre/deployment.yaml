@@ -74,8 +74,6 @@ spec:
               value: {{ required "A valid GID required!" .Values.host.gid | quote }}
             - name: TZ
               value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
-            - name: DOCKER_MODS
-              value: lscr.io/linuxserver/mods:universal-calibre-v7.16.0
           ports:
             - name: http
               containerPort: 8083
