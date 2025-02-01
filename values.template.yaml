@@ -658,7 +658,7 @@ services:
         library: /data/library/books
         env: {}
     calibre:
-        enabled: true
+        enabled: false
         exposed: true
         name: calibre
         replicaCount: 1
@@ -675,7 +675,7 @@ services:
         data: /data/library/books
         env: {}
     calibrebookdownloader:
-        enabled: true
+        enabled: false
         exposed: true
         name: calibrebookdownloader
         replicaCount: 1
@@ -698,8 +698,9 @@ services:
         # the default value is synced with the current version of CWA (3.0.1)
         # note: formats are sorted in the order of preference
         supportedFormats: "epub,azw,azw3,azw4,mobi,fb2,cbz,cbr,cb7,cbc,chm,pdf,djvu,docx,fbz,html,htmlz,lit,lrf,odt,prc,pdb,pml,rb,rtf,snb,tcr,txtz"
+        env: {}
     openbooks:
-        enabled: true
+        enabled: false
         exposed: true
         name: openbooks
         replicaCount: 1
@@ -715,3 +716,20 @@ services:
         ircname: # REQUIRED
         # if true, won't send files to browser
         noBrowserDownloads: false
+        env: {}
+    convertx:
+        enabled: false
+        exposed: true
+        name: convertx
+        replicaCount: 1
+        image:
+            repository: ghcr.io/c4illin/convertx
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 3000
+        vpn:
+            enabled: false
+        data: /opt/convertx/data
+        autoDeleteEveryNHours: 24
+        env: {}

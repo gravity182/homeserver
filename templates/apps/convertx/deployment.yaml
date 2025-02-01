@@ -1,0 +1,103 @@
+{{- if .Values.services.convertx.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.convertx.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.services.convertx.name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.services.convertx.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.services.convertx.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.services.convertx.name }}
+    spec:
+      initContainers:
+      {{- if .Values.services.convertx.vpn.enabled }}
+        - name: gluetun
+          image: ghcr.io/qdm12/gluetun:v3.40
+          imagePullPolicy: IfNotPresent
+          restartPolicy: Always
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          env:
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: VPN_SERVICE_PROVIDER
+              value: custom
+            - name: VPN_TYPE
+              value: wireguard
+            - name: HTTP_CONTROL_SERVER_ADDRESS
+              value: ":8001"
+            - name: DNS_KEEP_NAMESERVER
+              value: "on"
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              value: "10.42.0.0/15"
+          volumeMounts:
+            - name: wg0-conf
+              mountPath: /gluetun/wireguard/
+              readOnly: true
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
+        - name: verify-vpn
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              while ! ping -c 1 8.8.8.8; do
+                echo "Ping failed, retrying in 5"
+                sleep 5
+              done
+              echo "VPN connection established successfully, exiting"
+      {{- end }}
+      containers:
+        - name: convertx
+          image: "{{ .Values.services.convertx.image.repository }}:{{ .Values.services.convertx.image.tag }}"
+          imagePullPolicy: {{ .Values.services.convertx.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.services.convertx.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: TZ
+              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+            - name: ALLOW_UNAUTHENTICATED
+              value: "true"
+            - name: AUTO_DELETE_EVERY_N_HOURS
+              value: {{ .Values.services.convertx.autoDeleteEveryNHours | quote }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        {{- if .Values.services.convertx.vpn.enabled }}
+        - name: wg0-conf
+          secret:
+            secretName: gluetun-wireguard-conf
+            optional: false
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+        {{- end }}
+        - name: data
+          hostPath:
+            path: "{{ .Values.services.convertx.data }}"
+            type: Directory
+{{- end }}

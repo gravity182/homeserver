@@ -198,6 +198,13 @@
             siteMonitor: http://{{ .Values.services.thelounge.name }}:{{ .Values.services.thelounge.ports.http }}
             description: IRC client
       {{- end }}
+      {{- if .Values.services.convertx.enabled }}
+      - Convertx:
+            icon: sh-convertx
+            href: https://{{ .Values.services.convertx.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.convertx.name }}:{{ .Values.services.convertx.ports.http }}
+            description: File conversion
+      {{- end }}
       {{- if .Values.services.stirlingpdf.enabled }}
       - Stirling PDF:
             icon: sh-stirling-pdf
