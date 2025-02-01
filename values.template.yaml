@@ -382,6 +382,8 @@ services:
                 region: US
             imdb:
                 userId: ""
+            letterboxd:
+                username: ""
             plex:
                 apiKey: ""
             radarr:
