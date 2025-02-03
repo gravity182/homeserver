@@ -87,7 +87,7 @@ spec:
             - name: APPRISE_DEFAULT_CONFIG_ID
               value: {{ .Values.services.apprise.defaultConfigId | quote }}
             - name: ALLOWED_HOSTS
-              value: "{{ .Values.services.apprise.name }},{{ .Values.services.apprise.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+              value: "{{ .Values.services.apprise.name }} {{ .Values.services.apprise.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
           ports:
             - name: http
               containerPort: 8000
