@@ -23,11 +23,6 @@ spec:
           annotations:
             checksum/config: {{ include (print $.Template.BasePath "/apps/kometa/configmap.yaml") . | sha256sum }}
         spec:
-          securityContext:
-            runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
-            runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
-            fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
-            runAsNonRoot: true
           initContainers:
           {{- if .Values.services.kometa.vpn.enabled }}
             - name: gluetun
@@ -71,6 +66,10 @@ spec:
             - name: add-kometa-config
               image: busybox
               imagePullPolicy: IfNotPresent
+              securityContext:
+                runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
+                runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+                runAsNonRoot: true
               command:
                 - /bin/sh
                 - -c
@@ -84,6 +83,10 @@ spec:
             - name: init-jmxd-overlays
               image: alpine/git
               imagePullPolicy: IfNotPresent
+              securityContext:
+                runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
+                runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+                runAsNonRoot: true
               command:
                 - /bin/sh
                 - -c
@@ -102,6 +105,10 @@ spec:
               image: "{{ .Values.services.kometa.image.repository }}:{{ .Values.services.kometa.image.tag }}"
               imagePullPolicy: {{ .Values.services.kometa.image.pullPolicy }}
               args: [ "--run", "--read-only-config", "--config", "config/config.yaml" ]
+              securityContext:
+                runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
+                runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+                runAsNonRoot: true
               env:
                 {{- range $key, $value := .Values.services.kometa.env }}
                 - name: {{ $key | quote }}

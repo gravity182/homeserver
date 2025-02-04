@@ -19,8 +19,6 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .Values.services.apprise.name }}
     spec:
-      securityContext:
-        fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
       initContainers:
       {{- if .Values.services.apprise.vpn.enabled }}
         - name: gluetun

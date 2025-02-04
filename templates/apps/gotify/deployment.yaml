@@ -20,10 +20,7 @@ spec:
         app.kubernetes.io/name: {{ .Values.services.gotify.name }}
     spec:
       securityContext:
-        runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
-        runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
         fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
-        runAsNonRoot: true
       initContainers:
       {{- if .Values.services.gotify.vpn.enabled }}
         - name: gluetun
@@ -68,6 +65,10 @@ spec:
         - name: gotify
           image: "{{ .Values.services.gotify.image.repository }}:{{ .Values.services.gotify.image.tag }}"
           imagePullPolicy: {{ .Values.services.gotify.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
+            runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+            runAsNonRoot: true
           env:
             {{- range $key, $value := .Values.services.gotify.env }}
             - name: {{ $key | quote }}

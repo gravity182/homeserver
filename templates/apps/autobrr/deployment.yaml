@@ -21,10 +21,7 @@ spec:
         app.kubernetes.io/name: autobrr
     spec:
       securityContext:
-        runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
-        runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
         fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
-        runAsNonRoot: true
       initContainers:
       {{- if .Values.services.autobrr.vpn.enabled }}
         - name: gluetun
@@ -69,6 +66,10 @@ spec:
         - name: autobrr
           image: "{{ .Values.services.autobrr.image.repository }}:{{ .Values.services.autobrr.image.tag }}"
           imagePullPolicy: {{ .Values.services.autobrr.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
+            runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+            runAsNonRoot: true
           env:
             - name: TZ
               value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
