@@ -84,7 +84,7 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: ingest
-              mountPath: /books
+              mountPath: /books/books # see https://github.com/evan-buss/openbooks/issues/60
       volumes:
         {{- if .Values.services.openbooks.vpn.enabled }}
         - name: wg0-conf
