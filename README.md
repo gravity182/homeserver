@@ -19,6 +19,7 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
 - Downloaders:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/qbittorrent.png"> [qBittorrent](https://github.com/qbittorrent/qBittorrent) - Torrent downloader
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sabnzbd.png"> [SABnzbd](https://github.com/sabnzbd/sabnzbd) - Usenet downloader
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/pinchflat.png"> [Pinchflat](https://github.com/kieraneglin/pinchflat) - YouTube downloader based on yt-dlp
 - Books:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/calibre-web.png"> [Calibre-Web Automated](https://github.com/crocodilestick/Calibre-Web-Automated) - Calibre-Web but automated
     - 📚 [Calibre-Web-Automated-Book-Downloader](https://github.com/calibrain/calibre-web-automated-book-downloader) - A web interface for searching and downloading books from Anna's Archive
@@ -33,7 +34,7 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/apprise.png"> [Apprise](https://github.com/caronc/apprise-api) - Send a notification to many popular services like Telegram, Discord, Slack, Gotify, and others
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/gotify.png"> [Gotify](https://github.com/gotify/server) - Self-hosted push notification service
 - Monitoring:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/myspeed.png"> [Speedtest Tracker](https://github.com/alexjustesen/speedtest-tracker) - Monitors your download & upload speed over time
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/myspeed.png"> [MySpeed](https://github.com/gnmyt/myspeed) - Speed test tracker. Monitors your download & upload speed over time
 - Authentication:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/authentik.png"> [Authentik](https://github.com/goauthentik/authentik) - SSO (Single-Sign On) Authentication. Allows you to sign in only once and use any of the services without the hassle of remembering a credentials for each service
 - Security:

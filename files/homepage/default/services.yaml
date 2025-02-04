@@ -96,6 +96,13 @@
                 url: http://{{ .Values.services.sabnzbd.name }}:{{ .Values.services.sabnzbd.ports.http }}
                 key: "{{ .Values.services.homepage.widgets.sabnzbd.apiKey }}"
       {{- end }}
+      {{- if .Values.services.pinchflat.enabled }}
+      - Pinchflat:
+            icon: sh-pinchflat
+            href: https://{{ .Values.services.pinchflat.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.pinchflat.name }}:{{ .Values.services.pinchflat.ports.http }}
+            description: YouTube downloader
+      {{- end }}
 - Media:
       {{- if .Values.services.jellyseerr.enabled }}
       - Jellyseerr:
@@ -256,16 +263,15 @@
                 key: "{{ .Values.services.homepage.widgets.gotify.apiKey }}"
       {{- end }}
 - Monitoring:
-      {{- if .Values.services.speedtest.enabled }}
-      - Speedtest:
+      {{- if .Values.services.myspeed.enabled }}
+      - MySpeed:
             icon: sh-myspeed
-            href: https://{{ .Values.services.speedtest.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
-            siteMonitor: http://{{ .Values.services.speedtest.name }}:{{ .Values.services.speedtest.ports.http }}
-            description: Speedtest tracker
+            href: https://{{ .Values.services.myspeed.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.myspeed.name }}:{{ .Values.services.myspeed.ports.http }}
+            description: Internet speed tracker
             widget:
-                type: speedtest
-                url: http://{{ .Values.services.speedtest.name }}:{{ .Values.services.speedtest.ports.http }}
-                bitratePrecision: 0
+                type: myspeed
+                url: http://{{ .Values.services.myspeed.name }}:{{ .Values.services.myspeed.ports.http }}
       {{- end }}
       - Authentik:
             icon: sh-authentik

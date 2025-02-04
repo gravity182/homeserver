@@ -413,28 +413,21 @@ services:
             enabled: false
         config: /opt/thelounge/config
         env: {}
-    speedtest:
-        enabled: false
+    myspeed:
+        enabled: true
         exposed: true
-        name: speedtest
+        name: myspeed
         replicaCount: 1
         image:
-            repository: lscr.io/linuxserver/speedtest-tracker
+            repository: germannewsmaker/myspeed
             tag: latest
             pullPolicy: Always
         ports:
-            http: 8080
+            http: 5216
         vpn:
             enabled: false
-        cron: "0 00,06,12,18 * * *"
-        # get your app key at https://speedtest-tracker.dev
-        appKey: # REQUIRED
-        dbConnection: sqlite
-        config: /opt/speedtest/config
-        env:
-            # see the full list of supported env vars
-            # https://docs.speedtest-tracker.dev/getting-started/environment-variables
-            #
+        config: /opt/myspeed/config
+        env: {}
     stirlingpdf:
         enabled: false
         exposed: true
@@ -734,4 +727,20 @@ services:
             enabled: false
         data: /opt/convertx/data
         autoDeleteEveryNHours: 24
+        env: {}
+    pinchflat:
+        enabled: false
+        exposed: true
+        name: pinchflat
+        replicaCount: 1
+        image:
+            repository: ghcr.io/kieraneglin/pinchflat
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 8945
+        vpn:
+            enabled: false
+        config: /opt/pinchflat/config
+        data: /data/library/videos
         env: {}

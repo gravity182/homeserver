@@ -1,26 +1,26 @@
-{{- if .Values.services.speedtest.enabled }}
+{{- if .Values.services.myspeed.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.services.speedtest.name }}
+  name: {{ .Values.services.myspeed.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.speedtest.name }}
+    app.kubernetes.io/name: {{ .Values.services.myspeed.name }}
 spec:
   revisionHistoryLimit: 3
-  replicas: {{ .Values.services.speedtest.replicaCount }}
+  replicas: {{ .Values.services.myspeed.replicaCount }}
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Values.services.speedtest.name }}
+      app.kubernetes.io/name: {{ .Values.services.myspeed.name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Values.services.speedtest.name }}
+        app.kubernetes.io/name: {{ .Values.services.myspeed.name }}
     spec:
       initContainers:
-      {{- if .Values.services.speedtest.vpn.enabled }}
+      {{- if .Values.services.myspeed.vpn.enabled }}
         - name: gluetun
           image: ghcr.io/qdm12/gluetun:v3.40
           imagePullPolicy: IfNotPresent
@@ -60,11 +60,11 @@ spec:
               echo "VPN connection established successfully, exiting"
       {{- end }}
       containers:
-        - name: speedtest
-          image: "{{ .Values.services.speedtest.image.repository }}:{{ .Values.services.speedtest.image.tag }}"
-          imagePullPolicy: {{ .Values.services.speedtest.image.pullPolicy }}
+        - name: myspeed
+          image: "{{ .Values.services.myspeed.image.repository }}:{{ .Values.services.myspeed.image.tag }}"
+          imagePullPolicy: {{ .Values.services.myspeed.image.pullPolicy }}
           env:
-            {{- range $key, $value := .Values.services.speedtest.env }}
+            {{- range $key, $value := .Values.services.myspeed.env }}
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
@@ -72,29 +72,17 @@ spec:
               value: {{ required "A valid UID required!" .Values.host.uid | quote }}
             - name: PGID
               value: {{ required "A valid GID required!" .Values.host.gid | quote }}
-            - name: DISPLAY_TIMEZONE
+            - name: TZ
               value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
-            - name: SPEEDTEST_SCHEDULE
-              value: {{ .Values.services.speedtest.cron | quote }}
-            - name: PRUNE_RESULTS_OLDER_THAN
-              value: "360"
-            - name: PUBLIC_DASHBOARD
-              value: "true"
-            - name: APP_KEY
-              value: {{ required "A valid .Values.services.speedtest.appKey required!" .Values.services.speedtest.appKey | quote }}
-            - name: APP_URL
-              value: "{{ .Values.services.speedtest.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
-            - name: DB_CONNECTION
-              value: {{ .Values.services.speedtest.dbConnection | quote }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 5216
               protocol: TCP
           volumeMounts:
             - name: config
-              mountPath: /config
+              mountPath: /myspeed/data
       volumes:
-        {{- if .Values.services.speedtest.vpn.enabled }}
+        {{- if .Values.services.myspeed.vpn.enabled }}
         - name: wg0-conf
           secret:
             secretName: gluetun-wireguard-conf
@@ -106,6 +94,6 @@ spec:
         {{- end }}
         - name: config
           hostPath:
-            path: "{{ .Values.services.speedtest.config }}"
+            path: "{{ .Values.services.myspeed.config }}"
             type: Directory
 {{- end }}
