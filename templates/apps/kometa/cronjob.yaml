@@ -63,7 +63,7 @@ spec:
                       echo "Ping failed, retrying in 5"
                       sleep 5
                   done
-                  echo "VPN connection established successfully, exiting"
+                  echo "VPN connection established successfully"
           {{- end }}
             - name: add-kometa-config
               image: busybox

@@ -41,6 +41,12 @@ spec:
               value: "on"
             - name: FIREWALL_OUTBOUND_SUBNETS
               value: "10.42.0.0/15"
+            - name: WIREGUARD_MTU
+              value: "1320"
+            - name: HEALTH_VPN_DURATION_INITIAL
+              value: "60s"
+            - name: HEALTH_SUCCESS_WAIT_DURATION
+              value: "30s"
           volumeMounts:
             - name: wg0-conf
               mountPath: /gluetun/wireguard/
@@ -53,11 +59,17 @@ spec:
             - sh
             - -c
             - |
+              tries=0
               while ! ping -c 1 8.8.8.8; do
-                echo "Ping failed, retrying in 5"
+                tries=$((tries+1))
+                if [ $tries -eq 12 ]; then
+                  echo "Timeout limit exceeded, couldn't establish VPN connection"
+                  exit 1
+                fi
+                echo "Ping failed, retrying in 5s"
                 sleep 5
               done
-              echo "VPN connection established successfully, exiting"
+              echo "VPN connection established successfully"
       {{- end }}
       containers:
         {{- if .Values.services.calibrebookdownloader.useCfBypass }}
