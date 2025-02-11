@@ -583,7 +583,19 @@ services:
         adminPassword: admin
         mediaMaxSize: 750m
         timeout: 120
-        saveArchiveDotOrg: false
+        saveTitle: true
+        saveFavicon: true
+        saveWget: true
+        saveWarc: true
+        savePdf: true
+        saveScreenshot: true
+        saveDom: true
+        saveSinglefile: true
+        saveReadability: true
+        saveMercury: true
+        saveGit: true
+        saveMedia: true
+        saveArchiveDotOrg: true
         userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
         data: /opt/archivebox/data
         env:

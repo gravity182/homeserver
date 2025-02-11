@@ -92,14 +92,38 @@ spec:
               value: "false"
             - name: PUBLIC_ADD_VIEW
               value: "false"
+            - name: SAVE_TITLE
+              value: {{ .Values.services.archivebox.saveTitle | quote }}
+            - name: SAVE_FAVICON
+              value: {{ .Values.services.archivebox.saveFavicon | quote }}
+            - name: SAVE_WGET
+              value: {{ .Values.services.archivebox.saveWget | quote }}
+            - name: SAVE_WARC
+              value: {{ .Values.services.archivebox.saveWarc | quote }}
+            - name: SAVE_PDF
+              value: {{ .Values.services.archivebox.savePdf | quote }}
+            - name: SAVE_SCREENSHOT
+              value: {{ .Values.services.archivebox.saveScreenshot | quote }}
+            - name: SAVE_DOM
+              value: {{ .Values.services.archivebox.saveDom | quote }}
+            - name: SAVE_SINGLEFILE
+              value: {{ .Values.services.archivebox.saveSinglefile | quote }}
+            - name: SAVE_READABILITY
+              value: {{ .Values.services.archivebox.saveReadability | quote }}
+            - name: SAVE_MERCURY
+              value: {{ .Values.services.archivebox.saveMercury | quote }}
+            - name: SAVE_GIT
+              value: {{ .Values.services.archivebox.saveGit | quote }}
+            - name: SAVE_MEDIA
+              value: {{ .Values.services.archivebox.saveMedia | quote }}
+            - name: SAVE_ARCHIVE_DOT_ORG
+              value: {{ .Values.services.archivebox.saveArchiveDotOrg | quote }}
             - name: MEDIA_MAX_SIZE
               value: {{ .Values.services.archivebox.mediaMaxSize | quote }}
             - name: TIMEOUT
               value: {{ .Values.services.archivebox.timeout | quote }}
             - name: CHECK_SSL_VALIDITY
               value: "true"
-            - name: SAVE_ARCHIVE_DOT_ORG
-              value: {{ .Values.services.archivebox.saveArchiveDotOrg | quote }}
             - name: WGET_USER_AGENT
               value: {{ .Values.services.archivebox.userAgent | quote }}
             - name: CURL_USER_AGENT
