@@ -156,21 +156,61 @@ If you feel like there could be even more customization, please open an issue in
 
 ### VPN
 
-Every service supports passing its traffic through a VPN, based on [Gluetun](https://github.com/qdm12/gluetun) and WireGuard (a very lightweight VPN protocol).
+Every service supports VPN, based on [Gluetun](https://github.com/qdm12/gluetun) and WireGuard (a very lightweight VPN protocol).
 This feature is completely optional and doesn't require you to do anything if you don't need a VPN.
 
-You must create a secret named `gluetun-wireguard-conf` and containing a WireGuard configuration:
+You must create a secret named `gluetun-wireguard-conf` with a WireGuard configuration:
 ```sh
 kubectl create secret generic gluetun-wireguard-conf --from-file=wg0.conf=<path_to_wg_conf>
 ```
 
-Afterwards set `services.<service_name>.vpn` as follows to enable VPN for *any* service:
+A WireGuard conf file should look like this:
+```conf
+[Interface]
+PrivateKey = <private_key>
+Address = 10.8.0.18/24
+
+[Peer]
+PublicKey = <public_key>
+PresharedKey = <preshared_key>
+AllowedIPs = 0.0.0.0/0, ::/0
+PersistentKeepalive = 0
+Endpoint = <vpn_server_ip>
+```
+
+Afterwards set `services.<service_name>.vpn` as follows to enable VPN for the specified service:
 ```yaml
 services:
-  service_name:
+  <service_name>:
     vpn:
       enabled: true
 ```
+
+That's all. Now the service's traffic will be going through a VPN.
+
+There are some properties you can set in `values.yaml` to customize the VPN configuration:
+```yaml
+vpn:
+    wgConfSecretName: gluetun-wireguard-conf  # controls the name of a secret to look up for a WG conf
+    wgMtu: 1320  # wireguard MTU; do not change unless you know what you're doing
+    # see https://github.com/qdm12/gluetun-wiki/blob/main/setup/options/healthcheck.md
+    health:
+        durationInitial: "10s"
+        durationAddition: "5s"
+        successWaitDuration: "10s"
+        targetAddress: "cloudflare.com:443"
+```
+
+You can also provide a different VPN connection for specific services. In order to do so, set a secret name right in the service's values:
+```yaml
+services:
+    qbittorrent:
+        vpn:
+            enabled: true
+            wgConfSecretName: other-gluetun-wireguard-conf
+```
+
+Now this service's traffic will be going through a separate VPN connection as opposed to the generic one you set in the top-level value.
 
 ### Environment variables
 

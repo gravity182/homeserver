@@ -46,11 +46,15 @@ spec:
             - name: FIREWALL_OUTBOUND_SUBNETS
               value: "10.42.0.0/15"
             - name: WIREGUARD_MTU
-              value: "1320"
+              value: {{ .Values.vpn.wgMtu | quote }}
             - name: HEALTH_VPN_DURATION_INITIAL
-              value: "60s"
+              value: {{ .Values.vpn.health.durationInitial | quote }}
+            - name: HEALTH_VPN_DURATION_ADDITION
+              value: {{ .Values.vpn.health.durationAddition | quote }}
             - name: HEALTH_SUCCESS_WAIT_DURATION
-              value: "30s"
+              value: {{ .Values.vpn.health.successWaitDuration | quote }}
+            - name: HEALTH_TARGET_ADDRESS
+              value: {{ .Values.vpn.health.targetAddress | quote }}
           volumeMounts:
             - name: wg0-conf
               mountPath: /gluetun/wireguard/
@@ -118,7 +122,7 @@ spec:
         {{- if .Values.services.huginn.vpn.enabled }}
         - name: wg0-conf
           secret:
-            secretName: gluetun-wireguard-conf
+            secretName: {{ .Values.services.huginn.vpn.wgConfSecretName | default .Values.vpn.wgConfSecretName }}
             optional: false
         - name: dev-net-tun
           hostPath:

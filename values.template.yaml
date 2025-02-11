@@ -25,6 +25,15 @@ ingress:
     # leave empty to disable
     rootService: homepage
     annotations: {}
+vpn:
+    wgConfSecretName: gluetun-wireguard-conf # controls the name of a secret to look up for a WG conf
+    wgMtu: 1320 # wireguard MTU; do not change unless you know what you're doing
+    # see https://github.com/qdm12/gluetun-wiki/blob/main/setup/options/healthcheck.md
+    health:
+        durationInitial: "10s"
+        durationAddition: "5s"
+        successWaitDuration: "10s"
+        targetAddress: "cloudflare.com:443"
 services:
     backrest:
         enabled: true
