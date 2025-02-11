@@ -9,8 +9,9 @@
 - [Folder Structure](#folder-structure)
 - [Hard links \& Instant moves](#hard-links--instant-moves)
 - [Cert-manager](#cert-manager)
-- [Authentik](#authentik)
+- [Authentik. Forward auth](#authentik-forward-auth)
     - [Setup](#setup)
+- [Reverse Auth Proxy Header](#reverse-auth-proxy-header)
 - [Homepage](#homepage)
 - [Radarr](#radarr)
     - [Hardlinks](#hardlinks)
@@ -44,6 +45,8 @@
 - [Kometa](#kometa)
 - [The Lounge](#the-lounge)
 - [Kavita](#kavita)
+- [Miniflux](#miniflux)
+    - [Auth proxy header](#auth-proxy-header)
 
 ## Installation
 
@@ -412,11 +415,20 @@ Great. Your root domain and sub-domains are secure now. The TLS certificate will
 
 ---
 
-## Authentik
+## Authentik. Forward auth
 
-The instructions below are absolutely necessary to carry out. Otherwise you will have issues accessing your services.
+Authentik is a SSO authentication service, which is used as a forward authentication provider to Traefik.
+
+Traefik, which is a reverse proxy of this setup, delegates authentication to Authentik and requires user to be authenticated before accessing any of the ingress paths. If Authentik responds with 2XX code, access is granted and the original request is performed.
+
+Authentik itself, however, may bypass auth on specific paths. This depends on your configuration.
+For instance, you might want to exclude Plex from auth. Otherwise app clients would be unable to communicate with it.
+
+![Traefik - ForwardAuth middleware](assets/traefik_authforward.webp)
 
 ### Setup
+
+The instructions below are absolutely necessary to carry out. Otherwise you will have issues accessing your services.
 
 Go to `https://authentik.<domain>.<tld>/if/flow/initial-setup/` and carry out the initial setup, creating the admin user.
 
@@ -467,6 +479,28 @@ There's no easy solution to this.
 You will have to either log in twice or bypass such a service in Authentik completely. By going the latter way you'll be only relying on whatever auth system that service provides, which may contain its own security flaws. Personally, I still keep such services behind Authentik because it only requires you to login once and a session is usually kept for a long time (weeks or even months depending on your setup).
 
 Actually, sometimes you want to keep internal service's auth in case it allows you to have different user "profiles". Once again, an example of such a service is Huginn. This might be benefitable when you're not the only user of your home server.
+
+---
+
+## Reverse Auth Proxy Header
+
+SSO is great. I love being able to log in only once and use all of my services without the hassle of remembering creds for each one.
+
+This is however not always possible.
+Some services support disabling of the authentication altogether. Notably, the whole *arr stack. This is good. There's no need to authenticate again if you've already gone through SSO auth.
+
+Some services require authentication and there's no way to bypass it. For instance, Kavita. This is not good. You'll have to log in twice for such services: first in SSO and then in the service itself. This is not as bad as it sounds though: a SSO session usually lives for a week or longer, depending on your Authentik configuration.
+
+Some services support the notion of "Reverse auth proxy header".
+This HTTP header is set by Authentik and contains the name of an authenticated user.
+When service accepts a request with such a header, it authenticates the user automatically, mapping a username from the header to an internal user. The presence of this header means that user was already authenticated upstream.
+There are multiple Authentik headers you can select from: `X-authentik-username`, `X-authentik-name`, or `X-authentik-email`. Choose the one containing the actual service's internal username.
+
+Once you go with this approach, make sure the service is actually covered by Authentik. You cannot let the service to be accessed directly anymore, since the service trusts the Proxy Auth header unconditionally with the implication that a user has already been authentication upstream.
+
+The list of the services that support Auth proxy header:
+- Miniflux
+- Calibre-web
 
 ---
 
@@ -993,3 +1027,16 @@ Available at `kavita.<domain>.<tld>`.
 See the official docs at <https://wiki.kavitareader.com/guides>.
 
 ---
+
+## Miniflux
+
+Available at `rss.<domain>.<tld>`.
+
+See the official docs at <https://miniflux.app/docs>.
+
+### Auth proxy header
+
+Miniflux supports authentication via [Auth proxy header](#auth-proxy-header).
+
+This is already enabled.
+The user will be created automatically on the first login. The username of a created user will be set to the email of a SSO-authenticated user.
