@@ -40,13 +40,14 @@
 - [Huginn](#huginn)
 - [Changedetectionio](#changedetectionio)
 - [Archivebox](#archivebox)
+    - [Auth proxy header](#auth-proxy-header)
 - [Apprise](#apprise)
 - [Gotify](#gotify)
 - [Kometa](#kometa)
 - [The Lounge](#the-lounge)
 - [Kavita](#kavita)
 - [Miniflux](#miniflux)
-    - [Auth proxy header](#auth-proxy-header)
+    - [Auth proxy header](#auth-proxy-header-1)
 
 ## Installation
 
@@ -501,6 +502,7 @@ Once you go with this approach, make sure the service is actually covered by Aut
 The list of the services that support Auth proxy header:
 - Miniflux
 - Calibre-web
+- Archivebox
 
 ---
 
@@ -958,6 +960,16 @@ See the official docs at <https://github.com/ArchiveBox/ArchiveBox/wiki>.
 
 The default admin's username is `admin` and password is `admin`. These values can be controlled via `service.archivebox.adminUsername` and `service.archivebox.adminPassword`. The default user is only created on the first run, so make sure to adjust these values beforehand.
 
+### Auth proxy header
+
+Archivebox supports authentication via [Auth proxy header](#auth-proxy-header).
+
+This is already enabled.
+
+The internal username must be equal to a SSO-authenticated user's email.
+
+---
+
 ## Apprise
 
 Available at `apprise.<domain>.<tld>`.
@@ -1039,4 +1051,5 @@ See the official docs at <https://miniflux.app/docs>.
 Miniflux supports authentication via [Auth proxy header](#auth-proxy-header).
 
 This is already enabled.
+
 The user will be created automatically on the first login. The username of a created user will be set to the email of a SSO-authenticated user.

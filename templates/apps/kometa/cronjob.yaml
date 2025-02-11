@@ -23,6 +23,8 @@ spec:
           annotations:
             checksum/config: {{ include (print $.Template.BasePath "/apps/kometa/configmap.yaml") . | sha256sum }}
         spec:
+          securityContext:
+            fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
           initContainers:
           {{- if .Values.services.kometa.vpn.enabled }}
             - name: gluetun

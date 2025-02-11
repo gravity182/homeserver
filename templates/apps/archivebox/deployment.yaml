@@ -82,6 +82,10 @@ spec:
               value: "https://{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
             - name: ALLOWED_HOSTS
               value: "{{ .Values.services.archivebox.name }},{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+            - name: REVERSE_PROXY_USER_HEADER
+              value: "X-authentik-email"
+            - name: REVERSE_PROXY_WHITELIST
+              value: "10.42.0.0/15"
             - name: PUBLIC_INDEX
               value: "false"
             - name: PUBLIC_SNAPSHOTS
@@ -96,7 +100,11 @@ spec:
               value: "true"
             - name: SAVE_ARCHIVE_DOT_ORG
               value: {{ .Values.services.archivebox.saveArchiveDotOrg | quote }}
-            - name: USER_AGENT
+            - name: WGET_USER_AGENT
+              value: {{ .Values.services.archivebox.userAgent | quote }}
+            - name: CURL_USER_AGENT
+              value: {{ .Values.services.archivebox.userAgent | quote }}
+            - name: CHROME_USER_AGENT
               value: {{ .Values.services.archivebox.userAgent | quote }}
           ports:
             - name: http
