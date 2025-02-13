@@ -32,7 +32,7 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/convertx.png"> [Convertx](https://github.com/C4illin/ConvertX) - File conversion
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/mealie.png"> [Mealie](https://github.com/mealie-recipes/mealie) - Cooking recipe manager
 - Notification:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/apprise.png"> [Apprise](https://github.com/caronc/apprise-api) - Send a notification to many popular services like Telegram, Discord, Slack, Gotify, and others
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/apprise.png"> [Apprise](https://github.com/caronc/apprise-api) - Send notifications to many popular services like Telegram, Discord, Slack, Gotify, and others
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/gotify.png"> [Gotify](https://github.com/gotify/server) - Self-hosted push notification service
 - Monitoring:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/myspeed.png"> [MySpeed](https://github.com/gnmyt/myspeed) - Speed test tracker. Monitors your download & upload speed over time
