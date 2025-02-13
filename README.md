@@ -37,7 +37,7 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
 - Monitoring:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/myspeed.png"> [MySpeed](https://github.com/gnmyt/myspeed) - Speed test tracker. Monitors your download & upload speed over time
 - Authentication:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/authentik.png"> [Authentik](https://github.com/goauthentik/authentik) - SSO (Single-Sign On) Authentication. Allows you to sign in only once and use any of the services without the hassle of remembering a credentials for each service
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/authentik.png"> [Authentik](https://github.com/goauthentik/authentik) - SSO (Single-Sign On) Authentication. Protects your homeserver from unathenticated access. Allows you to sign in only once and use any of the services without the hassle of remembering a credentials for each service
 - Security:
     - <img width="15" height="15" src="https://github.com/cert-manager/cert-manager/blob/master/logo/logo-small.png?raw=true"> [cert-manager](https://github.com/cert-manager/cert-manager) - Automatically provision, manage, and renew TLS certificates
 
