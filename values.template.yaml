@@ -765,3 +765,19 @@ services:
         config: /opt/pinchflat/config
         data: /data/library/videos
         env: {}
+    mealie:
+        enabled: false
+        exposed: true
+        name: mealie
+        replicaCount: 1
+        image:
+            repository: ghcr.io/mealie-recipes/mealie
+            tag: latest
+            pullPolicy: Always
+        ports:
+            http: 9000
+        vpn:
+            enabled: false
+        tokenTimeHours: 168
+        data: /opt/mealie/data
+        env: {}

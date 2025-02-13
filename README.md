@@ -30,6 +30,7 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/stirling-pdf.png"> [Stirling PDF](https://github.com/Stirling-Tools/Stirling-PDF) - PDF Manipulation Tool
     - <img width="15" height="15" src="https://github.com/thelounge/thelounge/blob/master/client/img/logo-grey-bg-152x152px.png?raw=true"> [The Lounge](https://github.com/thelounge/thelounge) - IRC Client
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/convertx.png"> [Convertx](https://github.com/C4illin/ConvertX) - File conversion
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/mealie.png"> [Mealie](https://github.com/mealie-recipes/mealie) - Cooking recipe manager
 - Notification:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/apprise.png"> [Apprise](https://github.com/caronc/apprise-api) - Send a notification to many popular services like Telegram, Discord, Slack, Gotify, and others
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/gotify.png"> [Gotify](https://github.com/gotify/server) - Self-hosted push notification service
