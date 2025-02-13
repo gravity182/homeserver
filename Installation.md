@@ -156,10 +156,10 @@ If you feel like there could be even more customization, please open an issue in
 
 ### VPN
 
-Every service is able to connect to a VPN. This functionality is based on [Gluetun](https://github.com/qdm12/gluetun), which supports multiple protocols like Wireguard and VPN as well as providers like Mullvad, ProtonVPN, IVPN, and many others. Please refer to the offical [docs](https://github.com/qdm12/gluetun-wiki) for more info on supported providers, protocols, and environment variables.
+Every service is able to connect to a VPN. This functionality is based on [Gluetun](https://github.com/qdm12/gluetun), which supports multiple protocols like Wireguard and VPN as well as providers like Mullvad, ProtonVPN, IVPN, and many others. Gluetun runs as a [Native Sidecar Container](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/), which is available since Kubernetes v1.29.
 This feature is completely optional and doesn't require you to do anything if you don't need a VPN.
 
-You must create a secret named `gluetun-conf-secret` with all the required environment variables for Gluetun setup. Here's an example for setting up a custom WireGuard provider:
+You must create a secret named `gluetun-conf-secret` with all the required environment variables for Gluetun setup. Please refer to the offical [docs](https://github.com/qdm12/gluetun-wiki) for more info on supported providers, protocols, and environment variables. Here's an example for setting up a custom WireGuard provider:
 ```sh
 kubectl create secret generic gluetun-conf-secret \
     --from-literal=VPN_SERVICE_PROVIDER='custom' \
