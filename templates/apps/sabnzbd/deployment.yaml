@@ -38,13 +38,13 @@ spec:
             - name: TZ
               value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
             - name: HTTP_CONTROL_SERVER_ADDRESS
-              value: "127.0.0.1:9998"
+              value: ":9998"
             - name: DNS_KEEP_NAMESERVER
               value: "on"
             - name: FIREWALL_OUTBOUND_SUBNETS
               value: "10.42.0.0/15"
             - name: HEALTH_SERVER_ADDRESS
-              value: "127.0.0.1:9999"
+              value: ":9999"
             - name: HEALTH_VPN_DURATION_INITIAL
               value: {{ .Values.vpn.health.durationInitial | quote }}
             - name: HEALTH_VPN_DURATION_ADDITION
@@ -60,10 +60,10 @@ spec:
             httpGet:
               path: /
               port: 9999
-            initialDelaySeconds: 6
+            initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 1
-            failureThreshold: 3
+            failureThreshold: 10
             successThreshold: 1
       {{- end }}
         - name: host-whitelist
