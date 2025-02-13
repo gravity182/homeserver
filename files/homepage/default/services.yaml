@@ -205,6 +205,18 @@
             siteMonitor: http://{{ .Values.services.thelounge.name }}:{{ .Values.services.thelounge.ports.http }}
             description: IRC client
       {{- end }}
+      {{- if .Values.services.mealie.enabled }}
+      - Mealie:
+            icon: sh-mealie
+            href: https://{{ .Values.services.mealie.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            siteMonitor: http://{{ .Values.services.mealie.name }}:{{ .Values.services.mealie.ports.http }}
+            description: Recipe manager
+            widget:
+                type: mealie
+                url: http://{{ .Values.services.mealie.name }}:{{ .Values.services.mealie.ports.http }}
+                key: "{{ .Values.services.homepage.widgets.mealie.apiKey }}"
+                version: 2
+      {{- end }}
       {{- if .Values.services.convertx.enabled }}
       - Convertx:
             icon: sh-convertx

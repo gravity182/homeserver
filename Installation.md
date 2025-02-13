@@ -156,27 +156,24 @@ If you feel like there could be even more customization, please open an issue in
 
 ### VPN
 
-Every service supports VPN, based on [Gluetun](https://github.com/qdm12/gluetun) and WireGuard (a very lightweight VPN protocol).
+Every service is able to connect to a VPN. This functionality is based on [Gluetun](https://github.com/qdm12/gluetun), which supports multiple protocols like Wireguard and VPN as well as providers like Mullvad, ProtonVPN, IVPN, and many others. Please refer to the offical [docs](https://github.com/qdm12/gluetun-wiki) for more info on supported providers, protocols, and environment variables.
 This feature is completely optional and doesn't require you to do anything if you don't need a VPN.
 
-You must create a secret named `gluetun-wireguard-conf` with a WireGuard configuration:
+You must create a secret named `gluetun-conf-secret` with all the required environment variables for Gluetun setup. Here's an example for setting up a custom WireGuard provider:
 ```sh
-kubectl create secret generic gluetun-wireguard-conf --from-file=wg0.conf=<path_to_wg_conf>
+kubectl create secret generic gluetun-conf-secret \
+    --from-literal=VPN_SERVICE_PROVIDER='custom' \
+    --from-literal=VPN_TYPE='wireguard' \
+    --from-literal=WIREGUARD_PRIVATE_KEY='<your_private_key>' \
+    --from-literal=WIREGUARD_PUBLIC_KEY='<your_public_key>' \
+    --from-literal=WIREGUARD_PRESHARED_KEY='<your_preshared_key_optional>' \
+    --from-literal=WIREGUARD_ADDRESSES='10.8.0.20/24' \
+    --from-literal=WIREGUARD_ENDPOINT_IP='<vpn_server_ip>' \
+    --from-literal=WIREGUARD_ENDPOINT_PORT='51820' \
+    --from-literal=WIREGUARD_MTU='1320'
 ```
 
-A WireGuard conf file should look like this:
-```conf
-[Interface]
-PrivateKey = <private_key>
-Address = 10.8.0.18/24
-
-[Peer]
-PublicKey = <public_key>
-PresharedKey = <preshared_key>
-AllowedIPs = 0.0.0.0/0, ::/0
-PersistentKeepalive = 0
-Endpoint = <vpn_server_ip>
-```
+All keys/values will be passed *as is* to the Gluetun container.
 
 Afterwards set `services.<service_name>.vpn` as follows to enable VPN for the specified service:
 ```yaml
@@ -186,13 +183,11 @@ services:
       enabled: true
 ```
 
-That's all. Now the service's traffic will be going through a VPN.
+That's all. Now this service's traffic will be going through a VPN.
 
-There are some properties you can set in `values.yaml` to customize the VPN configuration:
+There are some properties you can set in `values.yaml` to customize the Gluetun configuration:
 ```yaml
 vpn:
-    wgConfSecretName: gluetun-wireguard-conf  # controls the name of a secret to look up for a WG conf
-    wgMtu: 1320  # wireguard MTU; do not change unless you know what you're doing
     # see https://github.com/qdm12/gluetun-wiki/blob/main/setup/options/healthcheck.md
     health:
         durationInitial: "10s"
@@ -201,16 +196,7 @@ vpn:
         targetAddress: "cloudflare.com:443"
 ```
 
-You can also provide a different VPN connection for specific services. In order to do so, set a secret name right in the service's values:
-```yaml
-services:
-    qbittorrent:
-        vpn:
-            enabled: true
-            wgConfSecretName: other-gluetun-wireguard-conf
-```
-
-Now this service's traffic will be going through a separate VPN connection as opposed to the generic one you set in the top-level value.
+You can pass more environment variables in the `gluetun-conf-secret` secret to configure other aspects of Gluetun.
 
 ### Environment variables
 

@@ -28,21 +28,21 @@ spec:
           securityContext:
             capabilities:
               add: ["NET_ADMIN"]
+          envFrom:
+            - secretRef:
+                name: gluetun-conf-secret
+                optional: false
           env:
             - name: TZ
               value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
-            - name: VPN_SERVICE_PROVIDER
-              value: custom
-            - name: VPN_TYPE
-              value: wireguard
             - name: HTTP_CONTROL_SERVER_ADDRESS
-              value: ":8001"
+              value: "127.0.0.1:9998"
             - name: DNS_KEEP_NAMESERVER
               value: "on"
             - name: FIREWALL_OUTBOUND_SUBNETS
               value: "10.42.0.0/15"
-            - name: WIREGUARD_MTU
-              value: {{ .Values.vpn.wgMtu | quote }}
+            - name: HEALTH_SERVER_ADDRESS
+              value: "127.0.0.1:9999"
             - name: HEALTH_VPN_DURATION_INITIAL
               value: {{ .Values.vpn.health.durationInitial | quote }}
             - name: HEALTH_VPN_DURATION_ADDITION
@@ -52,28 +52,17 @@ spec:
             - name: HEALTH_TARGET_ADDRESS
               value: {{ .Values.vpn.health.targetAddress | quote }}
           volumeMounts:
-            - name: wg0-conf
-              mountPath: /gluetun/wireguard/
-              readOnly: true
             - name: dev-net-tun
               mountPath: /dev/net/tun
-        - name: verify-vpn
-          image: busybox
-          command:
-            - sh
-            - -c
-            - |
-              tries=0
-              while ! ping -c 1 8.8.8.8; do
-                tries=$((tries+1))
-                if [ $tries -eq 12 ]; then
-                  echo "Timeout limit exceeded, couldn't establish VPN connection"
-                  exit 1
-                fi
-                echo "Ping failed, retrying in 5s"
-                sleep 5
-              done
-              echo "VPN connection established successfully"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9999
+            initialDelaySeconds: 6
+            periodSeconds: 5
+            timeoutSeconds: 1
+            failureThreshold: 3
+            successThreshold: 1
       {{- end }}
       containers:
         - name: playwright
@@ -107,10 +96,6 @@ spec:
               mountPath: /config
       volumes:
         {{- if .Values.services.playwright.vpn.enabled }}
-        - name: wg0-conf
-          secret:
-            secretName: {{ .Values.services.playwright.vpn.wgConfSecretName | default .Values.vpn.wgConfSecretName }}
-            optional: false
         - name: dev-net-tun
           hostPath:
             path: /dev/net/tun
