@@ -531,6 +531,12 @@ services:
             backupScheduleCron: "0 5 * * 0"
             # backups will be kept for the specified number of days
             backupRetentionDays: 180
+        # number of days after which marking read items as removed; set to -1 to disable this feature
+        cleanupArchiveReadDays: 180
+        # number of days after which marking unread items as removed; set to -1 to disable this feature
+        cleanupArchiveUnreadDays: 360
+        # cleanup job frequency
+        cleanupFrequencyHours: 24
         env: {}
     huginn:
         enabled: false

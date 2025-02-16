@@ -52,6 +52,12 @@ spec:
               value: postgres://{{ $service.db.user }}:{{ required "A valid $service.db.password required!" $service.db.password }}@{{ $service.name }}-db/{{ $service.db.dbname }}?sslmode=disable
             - name: RUN_MIGRATIONS
               value: "1"
+            - name: CLEANUP_ARCHIVE_READ_DAYS
+              value: {{ $service.cleanupArchiveReadDays | quote }}
+            - name: CLEANUP_ARCHIVE_UNREAD_DAYS
+              value: {{ $service.cleanupArchiveUnreadDays | quote }}
+            - name: CLEANUP_FREQUENCY_HOURS
+              value: {{ $service.cleanupFrequencyHours | quote }}
             - name: CREATE_ADMIN
               value: "0"
             - name: DISABLE_LOCAL_AUTH
