@@ -528,7 +528,6 @@ Some services support disabling of the authentication altogether. Notably, the w
 Some services require authentication and there's no way to bypass it. For instance, Kavita. This is not good. You'll have to log in twice for such services: first in SSO and then in the service itself. This is not as bad as it sounds though: a SSO session usually lives for a week or longer, depending on your Authentik configuration.
 
 Some services support the notion of "Reverse auth proxy header".
-This HTTP header is set by Authentik and contains the name of an authenticated user.
 When service accepts a request with such a header, it authenticates the user automatically, mapping a username from the header to an internal user. The presence of this header means that user was already authenticated upstream.
 There are multiple Authentik headers you can select from: `X-authentik-username`, `X-authentik-name`, or `X-authentik-email`. Choose the one containing the actual service's internal username.
 
@@ -539,6 +538,8 @@ The list of the services that support Auth proxy header:
 - Calibre-web
 - Archivebox
 
+These services are already configured with support for Auth proxy header. You can read more details on each one if you encounter issues.
+
 ---
 
 ## Homepage
@@ -546,9 +547,11 @@ The list of the services that support Auth proxy header:
 Available at `homepage.<domain>.<tld>` and at the root domain `<domain>.<tld>` by default (the service to serve on the root domain can be controlled via `ingress.rootService`).
 
 Any `.yaml` files you put in the directory `files/homepage`  will be dynamically loaded into the config directory inside the container and used by Homepage if they follow proper name conventions (`settings.yaml`, `widgets.yaml`, etc.). Note the file hierarchy must be flat.
-These files are Helm template files, so you can reference any Helm value as you would do normally in a template.
+These files are Helm template files, so you can reference any Helm value as you would normally do in a template.
 
-I provided some sensible default configuration files at `files/homepage/default`. These are not used by default. You can either copy them to `files/homepage` and tune them to your liking or create your own config files from scratch (see the official [Homepage docs](https://gethomepage.dev/configs/)).
+I've provided some sensible default configuration files at `files/homepage/default`. These are not used by default. You can either copy them to `files/homepage` and tune them to your liking or create your own config files from scratch.
+
+See the official [Homepage docs](https://gethomepage.dev/configs/) for more details.
 
 ---
 
