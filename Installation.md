@@ -1008,7 +1008,7 @@ The default admin's username is `admin` and password is `admin`. These values ca
 
 ### Auth proxy header
 
-Archivebox supports authentication via [Auth proxy header](#auth-proxy-header).
+Archivebox supports authentication via [Auth proxy header](#reverse-auth-proxy-header).
 This is already enabled.
 
 Note the internal username must be equal to a SSO-authenticated user's email.
@@ -1091,7 +1091,7 @@ See the official docs at <https://miniflux.app/docs>.
 
 ### Auth proxy header
 
-Miniflux supports authentication via [Auth proxy header](#auth-proxy-header).
+Miniflux supports authentication via [Auth proxy header](#reverse-auth-proxy-header).
 This is already enabled.
 
 The user will be created automatically on the first login. The username of a created user will be set to the email of a SSO-authenticated user.
