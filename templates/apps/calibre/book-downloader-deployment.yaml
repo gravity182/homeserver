@@ -76,6 +76,10 @@ spec:
               value: {{ $service.bookLanguage }}
             - name: SUPPORTED_FORMATS
               value: {{ $service.supportedFormats }}
+            {{- if $service.annasArchiveDonatorKey }}
+            - name: AA_DONATOR_KEY
+              value: {{ $service.annasArchiveDonatorKey }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 8084

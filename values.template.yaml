@@ -785,6 +785,7 @@ services:
         # the default value is synced with the current version of CWA (3.0.1)
         # note: formats are sorted in the order of preference
         supportedFormats: "epub,azw,azw3,azw4,mobi,fb2,cbz,cbr,cb7,cbc,chm,pdf,djvu,docx,fbz,html,htmlz,lit,lrf,odt,prc,pdb,pml,rb,rtf,snb,tcr,txtz"
+        annasArchiveDonatorKey: # set your donator key if you have one; this will make downloads much, much faster
         env: {}
     openbooks:
         enabled: false
