@@ -7,24 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## \[2.0.2] - 2025-02-16
 
-Add customization of the AA Donator Key for CWA-book-downloader.
+- CWA-Book-Downloader: add customization of the AA Donator Key
 
 ## \[2.0.1] - 2025-02-16
 
-Add customization of the [cleanup params](https://miniflux.app/docs/configuration.html#cleanup-archive-read-days) for Miniflux.
+- Miniflux: add customization of the [cleanup params](https://miniflux.app/docs/configuration.html#cleanup-archive-read-days)
 
 ## \[2.0.0] - 2025-02-16
 
 Big update! The chart is becoming even better!
 
 1. New services:
-    - Pinchflat - a Youtube downloader
-    - Myspeed - speed test with multiple providers
-    - Calibre-Web-Automated - books management
-    - Calibre-book-downloader - download books from Anna's Archive
-    - Openbooks - download books from IRCHighWay
-    - Mealie - recipe manager
-    - Convertx - file convertor
+    - [Pinchflat](https://github.com/kieraneglin/pinchflat) - a Youtube downloader
+    - [Myspeed](https://github.com/gnmyt/myspeed) - speed test with multiple providers
+    - [Calibre-Web-Automated](https://github.com/crocodilestick/Calibre-Web-Automated) - books management
+    - [CWA-Book-Downloader](https://github.com/calibrain/calibre-web-automated-book-downloader) - download books from Anna's Archive
+    - [Openbooks](https://github.com/evan-buss/openbooks) - download books from IRCHighWay
+    - [Mealie](https://github.com/mealie-recipes/mealie) - recipe manager
+    - [Convertx](https://github.com/C4illin/ConvertX) - file convertor
 2. Removed services:
     - Readarr - unfortunately, it's inherently broken. Replaced by Calibre, Calibre-book-downloader and Openbooks
     - Speedtest - consumed too much RAM, had only a single non-transparent provider. Myspeed allows you to choose a provider: Librespeed, Cloudflare, or Speedtest
