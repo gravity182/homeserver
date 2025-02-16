@@ -28,6 +28,7 @@
 - [Prowlarr](#prowlarr)
 - [Plex](#plex)
     - [Setup](#setup-1)
+    - [Remote Access](#remote-access)
 - [Jellyfin](#jellyfin)
 - [Jellyseerr](#jellyseerr)
     - [Setup](#setup-2)
@@ -35,7 +36,7 @@
 - [SABnzbd](#sabnzbd)
 - [Flaresolverr](#flaresolverr)
     - [Proxy](#proxy-2)
-- [Speedtest tracker](#speedtest-tracker)
+- [Myspeed](#myspeed)
 - [Stirling PDF](#stirling-pdf)
 - [Huginn](#huginn)
 - [Changedetectionio](#changedetectionio)
@@ -625,7 +626,7 @@ If you want a good proxy recommendation, there's [Privoxy](http://www.privoxy.or
 
 ### Custom Formats
 
-These are simple custom formats that I've accumulated over time. Feel free to use them if you find them useful.
+These are some custom formats that I've accumulated over time. Feel free to use them if you find them useful.
 
 #### HDR/DV
 
@@ -675,7 +676,7 @@ These are simple custom formats that I've accumulated over time. Feel free to us
 
 Available at `sonarr.<domain>.<tld>`.
 
-Sonarr is very similar to Radarr in terms of UI and capabilities. In fact, Radarr is a fork of Sonarr.
+Sonarr is very similar to Radarr in terms of UI and capabilities. In fact, Radarr is a fork of Sonarr. So the instructions below are very similar.
 
 ### Hardlinks
 
@@ -795,7 +796,10 @@ Ensure that you've set up the libraries as follows:
     - Agent: `Plex Series`
     - Folders: `/data/library/tv`
 
-One last note: make sure the remote access port is allowed in your firewall. The port can be changed via the `services.plex.ports.remoteAccess` value. By default it's `32400`.
+### Remote Access
+
+Make sure the remote access port is allowed in your firewall.
+The port can be changed via the `services.plex.ports.remoteAccess` value. By default it's `32400`.
 This allows your Plex instance to be discoverable & accessible from the outer networks (practically, from all the client apps). Configure your Plex instance as follows:
 
 ![Plex Remote Access](assets/plex-remote-access.png)
@@ -925,12 +929,14 @@ Available at `usenet.<domain>.<tld>`.
 Please refer to [Trash Guides](https://trash-guides.info/Downloaders/SABnzbd/Basic-Setup/) for setup instructions.
 
 After finishing the guide above, make sure the temporary and completed download folders are set as follows:
+
 ![SABnzbd folders](assets/sabnzbd-settings-folders.png)
 
 You also need to set up categories for usage in the *arr stack:
+
 ![SABnzbd categories](assets/sabnzbd-categories.png)
 
-This chart includes a few useful scripts found at [Trash Guides#SABnzbd Scripts](https://trash-guides.info/Downloaders/SABnzbd/scripts/). They are mapped at `/config/scripts`:
+This chart includes a few useful scripts found at [Trash Guides#SABnzbd Scripts](https://trash-guides.info/Downloaders/SABnzbd/scripts/). They are mapped at `/config/scripts` automatically:
 - [Clean.py](https://trash-guides.info/Downloaders/SABnzbd/scripts/#clean)
     - Set this script as a `Pre-queue script` in Settings -> Switches. Make sure you enabled Advanced Settings, otherwise you won't see this setting
 - [replace_for.py](https://trash-guides.info/Downloaders/SABnzbd/scripts/#replace_for)
@@ -941,6 +947,8 @@ This chart includes a few useful scripts found at [Trash Guides#SABnzbd Scripts]
 ## Flaresolverr
 
 Flaresolverr allows indexers to bypass Cloudflare captcha on such trackers as 1337x.
+
+Note the Flaresolverr image used by this Chart is a fork of the original one - [21hsmw/FlareSolverr](https://github.com/21hsmw/FlareSolverr). It's newer and based one the `nodriver` method. Practically, it's much more effective at solving captchas.
 
 Setup instructions are covered in the [Prowlarr](#prowlarr) section.
 
@@ -954,11 +962,11 @@ This means you can bypass both GeoIP restrictions and captcha when using Flareso
 
 ---
 
-## Speedtest tracker
+## Myspeed
 
-Available at `speedtest.<domain>.<tld>`.
+Available at `myspeed.<domain>.<tld>`.
 
-The [default admin's](https://docs.speedtest-tracker.dev/security/authentication#default-user-account) username is `admin@example.com` and password is `password`.
+You can choose between Ookla, LibreSpeed and Cloudflare speed test servers in the WebUI.
 
 ---
 
@@ -1001,10 +1009,9 @@ The default admin's username is `admin` and password is `admin`. These values ca
 ### Auth proxy header
 
 Archivebox supports authentication via [Auth proxy header](#auth-proxy-header).
-
 This is already enabled.
 
-The internal username must be equal to a SSO-authenticated user's email.
+Note the internal username must be equal to a SSO-authenticated user's email.
 
 ---
 
@@ -1028,16 +1035,14 @@ The default admin's username is `admin` and password is `admin`. These values ca
 
 ## Kometa
 
-Available at `kometa.<domain>.<tld>`.
-
-See the official docs at <https://kometa.wiki>.
+I provided some sensible default configuration files at `files/kometa/default`. These are not used by default. You can either copy them to `files/kometa` and tune them to your liking or create your own config files from scratch.
 
 Any `.yaml` files you put in the directory `files/kometa` will be dynamically loaded into the config directory inside the container and used by Kometa if they follow proper name conventions. Note the file hierarchy should be flat.
 These files are Helm template files, so you can reference any Helm value as you would do normally in a template.
 
-I provided some sensible default configuration files at `files/kometa/default`. These are not used by default. You can either copy them to `files/kometa` and tune them to your liking or create your own config files from scratch (see the official [Kometa wiki](https://kometa.wiki)).
-
 Make sure to actually put a config file named `config.yaml` into `files/kometa`, otherwise Kometa won't be working.
+
+See the official [Kometa wiki](https://kometa.wiki) for more details.
 
 You can verify that Kometa is working by running a test job:
 ```sh
@@ -1059,8 +1064,8 @@ Here's what you need to do:
 2. Restart the container: `kubectl rollout restart deployment thelounge`
 3. Add a new user: `kubectl exec -it deployment/thelounge -- s6-setuidgid abc thelounge add <username>`
     - You will be asked for a password that won't be echoed
-    - Enable persistent logs to have a history schollback
-    - You'll see the following output on successful creation:
+    - Enable persistent logs to have a history scrollback
+    - You'll see the following output on successful user creation:
         ```text
         2024-10-22 03:01:20 [PROMPT] Enter password:
         2024-10-22 03:01:30 [PROMPT] Save logs to disk? (yes) yes
@@ -1080,14 +1085,13 @@ See the official docs at <https://wiki.kavitareader.com/guides>.
 
 ## Miniflux
 
-Available at `rss.<domain>.<tld>`.
+Available at `miniflux.<domain>.<tld>`/`rss.<domain>.<tld>`.
 
 See the official docs at <https://miniflux.app/docs>.
 
 ### Auth proxy header
 
 Miniflux supports authentication via [Auth proxy header](#auth-proxy-header).
-
 This is already enabled.
 
 The user will be created automatically on the first login. The username of a created user will be set to the email of a SSO-authenticated user.
