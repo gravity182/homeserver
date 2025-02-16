@@ -136,15 +136,20 @@ Generally the service section adheres to the following format - read comments fo
 services:
     homepage:
         enabled: true # controls if the service is enabled
-        exposed: true # controls if the service is exposed externally through the ingress
-        name: homepage # service name; controls the names of the created k8s services/pods/jobs, plus controls the subdomain address (`homepage.<ingress.domain>` in this case)
+        exposed: true # controls if the service is exposed publicly through the ingress
+        name: homepage # service name; controls the names of the created k8s services/pods/jobs
         replicaCount: 1 # number of deployment replicas; normally only one required for each service
         image:
             repository: ghcr.io/gethomepage/homepage # image name
             tag: latest # image tag (version)
             pullPolicy: Always # image pull policy
         ports:
-            http: 3000 # port used by the respective k8s service; doesn't affect the container port as it's usually fixed and set by the image or service maintainer
+            http: 3000 # port used by the respective k8s service. Doesn't affect the container port as it's usually fixed and set by the image or service maintainer
+        ingress: # controls subdomain under which this service will be served and publicly exposed. Ignored if exposed=false
+            - subdomain1
+            - sub-domain2
+        vpn:
+            enabled: false # enables VPN for this service. Please see the respective section in this guide for important details
         env: # custom env vars that will be passed as is to the respective pod
             VAR1: foo
             VAR2: |-
@@ -156,26 +161,43 @@ If you feel like there could be even more customization, please open an issue in
 
 ### VPN
 
-Every service is able to connect to a VPN. This functionality is based on [Gluetun](https://github.com/qdm12/gluetun), which supports multiple protocols like Wireguard and VPN as well as providers like Mullvad, ProtonVPN, IVPN, and many others. Gluetun runs as a [Native Sidecar Container](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/), which is available since Kubernetes v1.29.
+Every service is able to connect to a VPN. This functionality is based on the [Linuxserver's Wireguard image](https://docs.linuxserver.io/images/docker-wireguard/). The image is very lightweight, taking only 5 Mb of RAM at max. The VPN container runs as a [Native Sidecar Container](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/). Make sure your Kubernetes cluster is of version v1.29 or newer, otherwise native sidecars and VPN won't work.
 This feature is completely optional and doesn't require you to do anything if you don't need a VPN.
 
-You must create a secret named `gluetun-conf-secret` with all the required environment variables for Gluetun setup. Please refer to the offical [docs](https://github.com/qdm12/gluetun-wiki) for more info on supported providers, protocols, and environment variables. Here's an example for setting up a custom WireGuard provider:
+You must create a secret with a correct wireguard config:
 ```sh
-kubectl create secret generic gluetun-conf-secret \
-    --from-literal=VPN_SERVICE_PROVIDER='custom' \
-    --from-literal=VPN_TYPE='wireguard' \
-    --from-literal=WIREGUARD_PRIVATE_KEY='<your_private_key>' \
-    --from-literal=WIREGUARD_PUBLIC_KEY='<your_public_key>' \
-    --from-literal=WIREGUARD_PRESHARED_KEY='<your_preshared_key_optional>' \
-    --from-literal=WIREGUARD_ADDRESSES='10.8.0.20/24' \
-    --from-literal=WIREGUARD_ENDPOINT_IP='<vpn_server_ip>' \
-    --from-literal=WIREGUARD_ENDPOINT_PORT='51820' \
-    --from-literal=WIREGUARD_MTU='1320'
+kubectl create secret generic wireguard-conf-secret --from-file=wg0.conf=homeserver_wg_vpn.conf
 ```
 
-All keys/values will be passed *as is* to the Gluetun container.
+The wireguard config usually looks like this:
+```conf
+[Interface]
+PrivateKey = <YOUR_PRIVAYE_KEY>
+Address = 10.8.0.5/24
+MTU = 1420
+PostUp = DROUTE=$(ip route | grep default | awk '{print $3}'); HOMENET=192.168.0.0/16; HOMENET2=10.0.0.0/8; HOMENET3=172.16.0.0/12; ip route add $HOMENET3 via $DROUTE;ip route add $HOMENET2 via $DROUTE; ip route add $HOMENET via $DROUTE;iptables -I OUTPUT -d $HOMENET -j ACCEPT;iptables -A OUTPUT -d $HOMENET2 -j ACCEPT; iptables -A OUTPUT -d $HOMENET3 -j ACCEPT;  iptables -A OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT
+PreDown = DROUTE=$(ip route | grep default | awk '{print $3}'); HOMENET=192.168.0.0/16; HOMENET2=10.0.0.0/8; HOMENET3=172.16.0.0/12; ip route del $HOMENET3 via $DROUTE;ip route del $HOMENET2 via $DROUTE; ip route del $HOMENET via $DROUTE; iptables -D OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT; iptables -D OUTPUT -d $HOMENET -j ACCEPT; iptables -D OUTPUT -d $HOMENET2 -j ACCEPT; iptables -D OUTPUT -d $HOMENET3 -j ACCEPT
 
-Afterwards set `services.<service_name>.vpn` as follows to enable VPN for the specified service:
+[Peer]
+PublicKey = <YOUR_PUBLIC_KEY>
+PresharedKey = <YOUR_PRESHARED_KEY>
+AllowedIPs = 0.0.0.0/0, ::/0
+PersistentKeepalive = 0
+Endpoint = <SERVER_IP_WITH_PORT>
+```
+
+Note the `PostUp` and `PreDown` keys - they are **absolutely mandatory** to have.
+Otherwise your services won't be able to speak with each other when necessary. For instance, Miniflux won't be able to communicate with its Postgres db instance hosted as a separate deployment/service.
+Just copy these two lines as is to your config and you're good to go.
+
+After creating a secret, set the `values.yaml` as follows:
+```yaml
+vpn:
+    secretRef: wireguard-conf-secret  # the secret's name
+    secretKey: wg0.conf  # key inside the secret containing a wg conf
+```
+
+Finally, set `services.<service_name>.vpn` as follows to enable VPN for the specified service:
 ```yaml
 services:
   <service_name>:
@@ -184,19 +206,6 @@ services:
 ```
 
 That's all. Now this service's traffic will be going through a VPN.
-
-There are some properties you can set in `values.yaml` to customize the Gluetun configuration:
-```yaml
-vpn:
-    # see https://github.com/qdm12/gluetun-wiki/blob/main/setup/options/healthcheck.md
-    health:
-        durationInitial: "10s"
-        durationAddition: "5s"
-        successWaitDuration: "10s"
-        targetAddress: "cloudflare.com:443"
-```
-
-You can pass more environment variables in the `gluetun-conf-secret` secret to configure other aspects of Gluetun.
 
 ### Environment variables
 

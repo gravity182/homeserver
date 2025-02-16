@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: ingress
+    {{- include "homeserver.labels" . | indent 2 }}
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-cert-issuer
     traefik.ingress.kubernetes.io/router.middlewares: "{{ .Release.Namespace }}-forwardauth-authentik@kubernetescrd,{{ .Release.Namespace }}-security-headers@kubernetescrd"
@@ -21,7 +22,8 @@ spec:
   rules:
     {{- range $k, $service := .Values.services }}
     {{- if and $service.enabled $service.exposed }}
-    - host: "{{ $service.name }}.{{ $.Values.ingress.domain }}"
+    {{- range $i, $host := $service.ingress }}
+    - host: "{{ $host }}.{{ $.Values.ingress.domain }}"
       http:
         paths:
           - path: /
@@ -31,6 +33,7 @@ spec:
                 name: {{ $service.name }}
                 port:
                   number: {{ $service.ports.http }}
+    {{- end }}
     {{- end }}
     {{- end }}
     {{- if .Values.ingress.rootService }}

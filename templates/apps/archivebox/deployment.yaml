@@ -1,75 +1,44 @@
 {{- if .Values.services.archivebox.enabled }}
+{{- $service := .Values.services.archivebox -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.services.archivebox.name }}
+  name: {{ $service.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.archivebox.name }}
+    app.kubernetes.io/name: {{ $service.name }}
+    {{- include "homeserver.labels" . | indent 2 }}
+    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
 spec:
   revisionHistoryLimit: 3
-  replicas: {{ .Values.services.archivebox.replicaCount }}
+  replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Values.services.archivebox.name }}
+      app.kubernetes.io/name: {{ $service.name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Values.services.archivebox.name }}
+        app.kubernetes.io/name: {{ $service.name }}
+        {{- include "homeserver.labels" . | indent 6 }}
+        homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
     spec:
+      securityContext:
+        sysctls:
+          {{- if $service.vpn.enabled }}
+          {{- include "homeserver.vpn.wg-sysctls" . | indent 8 }}
+          {{- end }}
       initContainers:
-      {{- if .Values.services.archivebox.vpn.enabled }}
-        - name: gluetun
-          image: ghcr.io/qdm12/gluetun:v3.40
-          imagePullPolicy: IfNotPresent
-          restartPolicy: Always
-          securityContext:
-            capabilities:
-              add: ["NET_ADMIN"]
-          envFrom:
-            - secretRef:
-                name: gluetun-conf-secret
-                optional: false
-          env:
-            - name: TZ
-              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
-            - name: HTTP_CONTROL_SERVER_ADDRESS
-              value: ":9998"
-            - name: DNS_KEEP_NAMESERVER
-              value: "on"
-            - name: FIREWALL_OUTBOUND_SUBNETS
-              value: "10.42.0.0/15"
-            - name: HEALTH_SERVER_ADDRESS
-              value: ":9999"
-            - name: HEALTH_VPN_DURATION_INITIAL
-              value: {{ .Values.vpn.health.durationInitial | quote }}
-            - name: HEALTH_VPN_DURATION_ADDITION
-              value: {{ .Values.vpn.health.durationAddition | quote }}
-            - name: HEALTH_SUCCESS_WAIT_DURATION
-              value: {{ .Values.vpn.health.successWaitDuration | quote }}
-            - name: HEALTH_TARGET_ADDRESS
-              value: {{ .Values.vpn.health.targetAddress | quote }}
-          volumeMounts:
-            - name: dev-net-tun
-              mountPath: /dev/net/tun
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 9999
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 1
-            failureThreshold: 10
-            successThreshold: 1
-      {{- end }}
+        {{- if $service.vpn.enabled }}
+        {{- include "homeserver.vpn.wg-sidecar" . | indent 6 }}
+        {{- end }}
       containers:
         - name: archivebox
-          image: "{{ .Values.services.archivebox.image.repository }}:{{ .Values.services.archivebox.image.tag }}"
-          imagePullPolicy: {{ .Values.services.archivebox.image.pullPolicy }}
+          image: "{{ $service.image.repository }}:{{ $service.image.tag }}"
+          imagePullPolicy: {{ $service.image.pullPolicy }}
           env:
-            {{- range $key, $value := .Values.services.archivebox.env }}
+            {{- range $key, $value := $service.env }}
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
@@ -80,13 +49,22 @@ spec:
             - name: TZ
               value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
             - name: ADMIN_USERNAME
-              value: {{ .Values.services.archivebox.adminUsername | quote }}
+              value: {{ $service.adminUsername | quote }}
             - name: ADMIN_PASSWORD
-              value: {{ .Values.services.archivebox.adminPassword | quote }}
+              value: {{ $service.adminPassword | quote }}
             - name: CSRF_TRUSTED_ORIGINS
-              value: "https://{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+            {{- $csrfTrustedOrigins := list }}
+            {{- range $host := $service.ingress }}
+                {{ $csrfTrustedOrigins = append $csrfTrustedOrigins (printf "https://%s.%s" $host (required "A valid .Values.ingress.domain required!" $.Values.ingress.domain)) }}
+            {{- end }}
+              value: {{ join "," $csrfTrustedOrigins }}
             - name: ALLOWED_HOSTS
-              value: "{{ .Values.services.archivebox.name }},{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
+            {{- $allowedHosts := list }}
+            {{ $allowedHosts = append $allowedHosts $service.name }}
+            {{- range $host := $service.ingress }}
+                {{ $allowedHosts = append $allowedHosts (printf "%s.%s" $host (required "A valid .Values.ingress.domain required!" $.Values.ingress.domain)) }}
+            {{- end }}
+              value: {{ join "," $allowedHosts }}
             - name: REVERSE_PROXY_USER_HEADER
               value: "X-authentik-email"
             - name: REVERSE_PROXY_WHITELIST
@@ -98,43 +76,43 @@ spec:
             - name: PUBLIC_ADD_VIEW
               value: "false"
             - name: SAVE_TITLE
-              value: {{ .Values.services.archivebox.saveTitle | quote }}
+              value: {{ $service.saveTitle | quote }}
             - name: SAVE_FAVICON
-              value: {{ .Values.services.archivebox.saveFavicon | quote }}
+              value: {{ $service.saveFavicon | quote }}
             - name: SAVE_WGET
-              value: {{ .Values.services.archivebox.saveWget | quote }}
+              value: {{ $service.saveWget | quote }}
             - name: SAVE_WARC
-              value: {{ .Values.services.archivebox.saveWarc | quote }}
+              value: {{ $service.saveWarc | quote }}
             - name: SAVE_PDF
-              value: {{ .Values.services.archivebox.savePdf | quote }}
+              value: {{ $service.savePdf | quote }}
             - name: SAVE_SCREENSHOT
-              value: {{ .Values.services.archivebox.saveScreenshot | quote }}
+              value: {{ $service.saveScreenshot | quote }}
             - name: SAVE_DOM
-              value: {{ .Values.services.archivebox.saveDom | quote }}
+              value: {{ $service.saveDom | quote }}
             - name: SAVE_SINGLEFILE
-              value: {{ .Values.services.archivebox.saveSinglefile | quote }}
+              value: {{ $service.saveSinglefile | quote }}
             - name: SAVE_READABILITY
-              value: {{ .Values.services.archivebox.saveReadability | quote }}
+              value: {{ $service.saveReadability | quote }}
             - name: SAVE_MERCURY
-              value: {{ .Values.services.archivebox.saveMercury | quote }}
+              value: {{ $service.saveMercury | quote }}
             - name: SAVE_GIT
-              value: {{ .Values.services.archivebox.saveGit | quote }}
+              value: {{ $service.saveGit | quote }}
             - name: SAVE_MEDIA
-              value: {{ .Values.services.archivebox.saveMedia | quote }}
+              value: {{ $service.saveMedia | quote }}
             - name: SAVE_ARCHIVE_DOT_ORG
-              value: {{ .Values.services.archivebox.saveArchiveDotOrg | quote }}
+              value: {{ $service.saveArchiveDotOrg | quote }}
             - name: MEDIA_MAX_SIZE
-              value: {{ .Values.services.archivebox.mediaMaxSize | quote }}
+              value: {{ $service.mediaMaxSize | quote }}
             - name: TIMEOUT
-              value: {{ .Values.services.archivebox.timeout | quote }}
+              value: {{ $service.timeout | quote }}
             - name: CHECK_SSL_VALIDITY
               value: "true"
             - name: WGET_USER_AGENT
-              value: {{ .Values.services.archivebox.userAgent | quote }}
+              value: {{ $service.userAgent | quote }}
             - name: CURL_USER_AGENT
-              value: {{ .Values.services.archivebox.userAgent | quote }}
+              value: {{ $service.userAgent | quote }}
             - name: CHROME_USER_AGENT
-              value: {{ .Values.services.archivebox.userAgent | quote }}
+              value: {{ $service.userAgent | quote }}
           ports:
             - name: http
               containerPort: 8000
@@ -143,14 +121,11 @@ spec:
             - name: data
               mountPath: /data
       volumes:
-        {{- if .Values.services.archivebox.vpn.enabled }}
-        - name: dev-net-tun
-          hostPath:
-            path: /dev/net/tun
-            type: CharDevice
+        {{- if $service.vpn.enabled }}
+        {{- include "homeserver.vpn.wg-volumes" . | indent 6 }}
         {{- end }}
         - name: data
           hostPath:
-            path: "{{ .Values.services.archivebox.data }}"
+            path: "{{ $service.data }}"
             type: Directory
 {{- end }}

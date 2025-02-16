@@ -1,19 +1,22 @@
 {{- if .Values.services.plex.enabled }}
+{{- $service := .Values.services.plex -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.services.plex.name }}-remoteaccess
+  name: {{ $service.name }}-remoteaccess
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.plex.name }}-remoteaccess
+    app.kubernetes.io/name: {{ $service.name }}-remoteaccess
+    {{- include "homeserver.labels" . | indent 2 }}
+    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
 spec:
   type: NodePort
   selector:
-    app.kubernetes.io/name: {{ .Values.services.plex.name }}
+    app.kubernetes.io/name: {{ $service.name }}
   ports:
     - name: p2p
-      port: {{ .Values.services.plex.ports.remoteAccess }}
-      nodePort: {{ .Values.services.plex.ports.remoteAccess }}
+      port: {{ $service.ports.remoteAccess }}
+      nodePort: {{ $service.ports.remoteAccess }}
       targetPort: http
       protocol: TCP
 {{- end }}

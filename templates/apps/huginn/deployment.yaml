@@ -1,88 +1,57 @@
 {{- if .Values.services.huginn.enabled }}
+{{- $service := .Values.services.huginn -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.services.huginn.name }}
+  name: {{ $service.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.huginn.name }}
+    app.kubernetes.io/name: {{ $service.name }}
+    {{- include "homeserver.labels" . | indent 2 }}
+    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
 spec:
   revisionHistoryLimit: 3
-  replicas: {{ .Values.services.huginn.replicaCount }}
+  replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Values.services.huginn.name }}
+      app.kubernetes.io/name: {{ $service.name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Values.services.huginn.name }}
+        app.kubernetes.io/name: {{ $service.name }}
+        {{- include "homeserver.labels" . | indent 6 }}
+        homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
     spec:
       # unfortunately the image needs root access
       # in order to write to the (root) /app directory
       securityContext:
         runAsNonRoot: false
+      securityContext:
+        sysctls:
+          {{- if $service.vpn.enabled }}
+          {{- include "homeserver.vpn.wg-sysctls" . | indent 8 }}
+          {{- end }}
       initContainers:
-      {{- if .Values.services.huginn.vpn.enabled }}
-        - name: gluetun
-          image: ghcr.io/qdm12/gluetun:v3.40
-          imagePullPolicy: IfNotPresent
-          restartPolicy: Always
-          securityContext:
-            capabilities:
-              add: ["NET_ADMIN"]
-          envFrom:
-            - secretRef:
-                name: gluetun-conf-secret
-                optional: false
-          env:
-            - name: TZ
-              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
-            - name: HTTP_CONTROL_SERVER_ADDRESS
-              value: ":9998"
-            - name: DNS_KEEP_NAMESERVER
-              value: "on"
-            - name: FIREWALL_OUTBOUND_SUBNETS
-              value: "10.42.0.0/15"
-            - name: HEALTH_SERVER_ADDRESS
-              value: ":9999"
-            - name: HEALTH_VPN_DURATION_INITIAL
-              value: {{ .Values.vpn.health.durationInitial | quote }}
-            - name: HEALTH_VPN_DURATION_ADDITION
-              value: {{ .Values.vpn.health.durationAddition | quote }}
-            - name: HEALTH_SUCCESS_WAIT_DURATION
-              value: {{ .Values.vpn.health.successWaitDuration | quote }}
-            - name: HEALTH_TARGET_ADDRESS
-              value: {{ .Values.vpn.health.targetAddress | quote }}
-          volumeMounts:
-            - name: dev-net-tun
-              mountPath: /dev/net/tun
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 9999
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 1
-            failureThreshold: 10
-            successThreshold: 1
-      {{- end }}
+        {{- if $service.vpn.enabled }}
+        {{- include "homeserver.vpn.wg-sidecar" . | indent 6 }}
+        {{- end }}
       containers:
         - name: huginn
-          image: "{{ .Values.services.huginn.image.repository }}:{{ .Values.services.huginn.image.tag }}"
-          imagePullPolicy: {{ .Values.services.huginn.image.pullPolicy }}
+          image: "{{ $service.image.repository }}:{{ $service.image.tag }}"
+          imagePullPolicy: {{ $service.image.pullPolicy }}
           env:
-            {{- range $key, $value := .Values.services.huginn.env }}
+            {{- range $key, $value := $service.env }}
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
             - name: TZ
               value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
             - name: INVITATION_CODE
-              value: {{ .Values.services.huginn.invitationCode | quote }}
+              value: {{ $service.invitationCode | quote }}
             - name: SKIP_INVITATION_CODE
-            {{- if .Values.services.huginn.invitationCode }}
+            {{- if $service.invitationCode }}
               value: "false"
             {{- else }}
               value: "true"
@@ -90,28 +59,25 @@ spec:
             - name: REQUIRE_CONFIRMED_EMAIL
               value: "false"
             - name: APP_SECRET_TOKEN
-              value: {{ required "A valid .Values.services.huginn.appSecretToken required!" .Values.services.huginn.appSecretToken | quote }}
+              value: {{ required "A valid $service.appSecretToken required!" $service.appSecretToken | quote }}
             - name: DATABASE_ADAPTER
               value: postgresql
             - name: POSTGRES_PORT_5432_TCP_ADDR
-              value: {{ .Values.services.huginn.db.name | quote }}
+              value: {{ $service.db.name | quote }}
             - name: POSTGRES_PORT_5432_TCP_PORT
-              value: {{ .Values.services.huginn.db.ports.postgres | quote }}
+              value: {{ $service.db.ports.postgres | quote }}
             - name: DATABASE_USERNAME
-              value: {{ .Values.services.huginn.db.user | quote }}
+              value: {{ $service.db.user | quote }}
             - name: DATABASE_PASSWORD
-              value: {{ required "A valid .Values.services.huginn.db.password required!" .Values.services.huginn.db.password | quote }}
+              value: {{ required "A valid $service.db.password required!" $service.db.password | quote }}
             - name: DATABASE_NAME
-              value: {{ .Values.services.huginn.db.dbname | quote }}
+              value: {{ $service.db.dbname | quote }}
           ports:
             - name: http
               containerPort: 3000
               protocol: TCP
       volumes:
-        {{- if .Values.services.huginn.vpn.enabled }}
-        - name: dev-net-tun
-          hostPath:
-            path: /dev/net/tun
-            type: CharDevice
+        {{- if $service.vpn.enabled }}
+        {{- include "homeserver.vpn.wg-volumes" . | indent 6 }}
         {{- end }}
 {{- end }}

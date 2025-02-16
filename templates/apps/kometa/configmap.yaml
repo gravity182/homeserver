@@ -1,11 +1,14 @@
 {{- if .Values.services.kometa.enabled }}
+{{- $service := .Values.services.kometa -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.services.kometa.name }}
+  name: {{ $service.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.kometa.name }}
+    app.kubernetes.io/name: {{ $service.name }}
+    {{- include "homeserver.labels" . | indent 2 }}
+    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
 data:
   {{- range $path, $_ := .Files.Glob "files/kometa/**.yaml" }}
   {{- if not (contains "/default/" $path) }}

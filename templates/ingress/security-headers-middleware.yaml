@@ -3,6 +3,8 @@ kind: Middleware
 metadata:
   name: security-headers
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "homeserver.labels" . | indent 2 }}
 spec:
   headers:
     # this Strict-Transport-Security (STS) config is valid for submission to the HSTS preload list

@@ -22,16 +22,12 @@ authentik:
 ingress:
     domain: # REQUIRED; e.g. 'example.com' (without a scheme)
     # the service to serve when opening the root domain
-    # leave empty to disable
+    # set to service.name; leave empty to disable
     rootService: homepage
     annotations: {}
 vpn:
-    # see https://github.com/qdm12/gluetun-wiki/blob/main/setup/options/healthcheck.md
-    health:
-        durationInitial: "6s"
-        durationAddition: "5s"
-        successWaitDuration: "5s"
-        targetAddress: "cloudflare.com:443"
+    secretRef: wireguard-conf-secret # the secret's name
+    secretKey: wg0.conf # key inside the secret containing a wg conf
 services:
     backrest:
         enabled: true
@@ -44,6 +40,9 @@ services:
             pullPolicy: IfNotPresent
         ports:
             http: 9898
+        ingress:
+            - backrest
+            - backup
         vpn:
             enabled: false
         userdata: /opt
@@ -62,6 +61,8 @@ services:
             pullPolicy: Always
         ports:
             http: 3000
+        ingress:
+            - homepage
         vpn:
             enabled: false
         widgets:
@@ -108,13 +109,15 @@ services:
         replicaCount: 1
         image:
             repository: lscr.io/linuxserver/plex
-            tag: "1.41.0"
+            tag: "1.41.4"
             pullPolicy: IfNotPresent
         ports:
             http: 32400
             # make sure to open the remote access port in your firewall
             # you can change this port but it should be in range of 30000-32767 (k8s NodePort)
             remoteAccess: 32400
+        ingress:
+            - plex
         vpn:
             enabled: false
         # get a claim code at https://www.plex.tv/claim/
@@ -136,6 +139,8 @@ services:
         ports:
             http: 8096
             udp: 7359
+        ingress:
+            - jellyfin
         vpn:
             enabled: false
         config: /opt/jellyfin/config
@@ -153,6 +158,8 @@ services:
             pullPolicy: Always
         ports:
             http: 7474
+        ingress:
+            - autobrr
         vpn:
             enabled: false
         config: /opt/autobrr/config
@@ -174,6 +181,9 @@ services:
             # make sure the p2p port is allowed in your firewall
             # you can change this port but it should be in range of 30000-32767 (k8s NodePort)
             p2p: 32700
+        ingress:
+            - qbittorrent
+            - torrent
         vpn:
             enabled: false
         dockerMods: ghcr.io/vuetorrent/vuetorrent-lsio-mod:latest
@@ -192,6 +202,9 @@ services:
             pullPolicy: Always
         ports:
             http: 8080
+        ingress:
+            - sabnzbd
+            - usenet
         vpn:
             enabled: false
         config: /opt/sabnzbd/config
@@ -209,6 +222,8 @@ services:
             pullPolicy: Always
         ports:
             http: 9696
+        ingress:
+            - prowlarr
         vpn:
             enabled: false
         config: /opt/prowlarr/config
@@ -224,6 +239,8 @@ services:
             pullPolicy: Always
         ports:
             http: 7878
+        ingress:
+            - radarr
         vpn:
             enabled: false
         config: /opt/radarr/config
@@ -242,6 +259,8 @@ services:
             pullPolicy: Always
         ports:
             http: 8989
+        ingress:
+            - sonarr
         vpn:
             enabled: false
         config: /opt/sonarr/config
@@ -260,6 +279,8 @@ services:
             pullPolicy: Always
         ports:
             http: 8686
+        ingress:
+            - lidarr
         vpn:
             enabled: false
         config: /opt/lidarr/config
@@ -278,6 +299,8 @@ services:
             pullPolicy: Always
         ports:
             http: 6969
+        ingress:
+            - whisparr
         vpn:
             enabled: false
         config: /opt/whisparr/config
@@ -296,6 +319,8 @@ services:
             pullPolicy: Always
         ports:
             http: 6767
+        ingress:
+            - bazarr
         vpn:
             enabled: false
         config: /opt/bazarr/config
@@ -314,6 +339,8 @@ services:
             pullPolicy: Always
         ports:
             http: 5055
+        ingress:
+            - jellyseerr
         vpn:
             enabled: false
         config: /opt/jellyseerr/config
@@ -331,6 +358,7 @@ services:
             pullPolicy: Always
         ports:
             http: 8191
+        ingress:
         vpn:
             enabled: false
         # nodriver is a preferred method
@@ -354,6 +382,8 @@ services:
             pullPolicy: Always
         ports:
             http: 8181
+        ingress:
+            - tautulli
         vpn:
             enabled: false
         config: /opt/tautulli/config
@@ -369,6 +399,7 @@ services:
             pullPolicy: Always
         ports:
             http: 8181
+        ingress:
         vpn:
             enabled: false
         config: /opt/kometa/config
@@ -416,6 +447,10 @@ services:
             pullPolicy: Always
         ports:
             http: 9000
+        ingress:
+            - thelounge
+            - lounge
+            - irc
         vpn:
             enabled: false
         config: /opt/thelounge/config
@@ -431,6 +466,9 @@ services:
             pullPolicy: Always
         ports:
             http: 5216
+        ingress:
+            - myspeed
+            - speedtest
         vpn:
             enabled: false
         config: /opt/myspeed/config
@@ -446,6 +484,10 @@ services:
             pullPolicy: Always
         ports:
             http: 8080
+        ingress:
+            - stirlingpdf
+            - stirling-pdf
+            - pdf
         vpn:
             enabled: false
         enableLogin: false
@@ -469,6 +511,9 @@ services:
             pullPolicy: Always
         ports:
             http: 8080
+        ingress:
+            - miniflux
+            - rss
         vpn:
             enabled: false
         db:
@@ -498,6 +543,8 @@ services:
             pullPolicy: Always
         ports:
             http: 3000
+        ingress:
+            - huginn
         vpn:
             enabled: false
         db:
@@ -536,6 +583,7 @@ services:
             pullPolicy: Always
         ports:
             http: 3000
+        ingress:
         vpn:
             enabled: false
         # generate a secret token
@@ -560,6 +608,9 @@ services:
             pullPolicy: Always
         ports:
             http: 5000
+        ingress:
+            - changedetectionio
+            - changedetection
         vpn:
             enabled: false
         playwrightLaunchOptions:
@@ -584,6 +635,9 @@ services:
             pullPolicy: Always
         ports:
             http: 8000
+        ingress:
+            - archivebox
+            - archive
         vpn:
             enabled: false
         adminUsername: admin
@@ -620,6 +674,8 @@ services:
             pullPolicy: Always
         ports:
             http: 8000
+        ingress:
+            - apprise
         vpn:
             enabled: false
         logLevel: INFO
@@ -644,6 +700,8 @@ services:
             pullPolicy: Always
         ports:
             http: 80
+        ingress:
+            - gotify
         vpn:
             enabled: false
         adminUsername: admin
@@ -666,6 +724,8 @@ services:
             pullPolicy: Always
         ports:
             http: 5000
+        ingress:
+            - kavita
         vpn:
             enabled: false
         config: /opt/kavita/config
@@ -682,6 +742,9 @@ services:
             pullPolicy: Always
         ports:
             http: 8083
+        ingress:
+            - calibre
+            - books
         vpn:
             enabled: false
         config: /opt/calibre-web-automated/config
@@ -699,6 +762,10 @@ services:
             pullPolicy: Always
         ports:
             http: 8084
+        ingress:
+            - calibre-book-downloader
+            - annas-archive
+            - anna-archive
         # Anna's Archive is blocked in some countries, you can use a VPN to bypass the block
         vpn:
             enabled: false
@@ -724,6 +791,10 @@ services:
             pullPolicy: Always
         ports:
             http: 8080
+        ingress:
+            - openbooks
+            - irchighway
+            - highway
         vpn:
             enabled: false
         # your IRC name, it will be used to identify you in the IRC channel
@@ -742,6 +813,9 @@ services:
             pullPolicy: Always
         ports:
             http: 3000
+        ingress:
+            - convertx
+            - convert
         vpn:
             enabled: false
         data: /opt/convertx/data
@@ -758,6 +832,8 @@ services:
             pullPolicy: Always
         ports:
             http: 8945
+        ingress:
+            - pinchflat
         vpn:
             enabled: false
         config: /opt/pinchflat/config
@@ -774,6 +850,10 @@ services:
             pullPolicy: Always
         ports:
             http: 9000
+        ingress:
+            - mealie
+            - recipes
+            - recipe
         vpn:
             enabled: false
         tokenTimeHours: 168

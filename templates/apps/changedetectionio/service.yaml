@@ -1,18 +1,21 @@
 {{- if .Values.services.changedetectionio.enabled }}
+{{- $service := .Values.services.changedetectionio -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.services.changedetectionio.name }}
+  name: {{ $service.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.changedetectionio.name }}
+    app.kubernetes.io/name: {{ $service.name }}
+    {{- include "homeserver.labels" . | indent 2 }}
+    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
 spec:
   type: ClusterIP
   ports:
     - name: http
-      port: {{ .Values.services.changedetectionio.ports.http }}
+      port: {{ $service.ports.http }}
       targetPort: http
       protocol: TCP
   selector:
-    app.kubernetes.io/name: {{ .Values.services.changedetectionio.name }}
+    app.kubernetes.io/name: {{ $service.name }}
 {{- end }}

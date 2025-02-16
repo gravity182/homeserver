@@ -3,7 +3,7 @@
       {{- if .Values.services.radarr.enabled }}
       - Radarr:
             icon: sh-radarr
-            href: https://{{ .Values.services.radarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.radarr.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.radarr.name }}:{{ .Values.services.radarr.ports.http }}
             description: Movies management
             widget:
@@ -14,7 +14,7 @@
       {{- if .Values.services.sonarr.enabled }}
       - Sonarr:
             icon: sh-sonarr
-            href: https://{{ .Values.services.sonarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.sonarr.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.sonarr.name }}:{{ .Values.services.sonarr.ports.http }}
             description: Series management
             widget:
@@ -25,7 +25,7 @@
       {{- if .Values.services.lidarr.enabled }}
       - Lidarr:
             icon: sh-lidarr
-            href: https://{{ .Values.services.lidarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.lidarr.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.lidarr.name }}:{{ .Values.services.lidarr.ports.http }}
             description: Music management
             widget:
@@ -35,15 +35,15 @@
       {{- end }}
       {{- if .Values.services.whisparr.enabled }}
       - Whisparr:
-            icon: https://raw.githubusercontent.com/Whisparr/Whisparr/refs/heads/develop/Logo/Whisparr.svg
-            href: https://{{ .Values.services.whisparr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            icon: sh-whisparr
+            href: https://{{ first .Values.services.whisparr.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.whisparr.name }}:{{ .Values.services.whisparr.ports.http }}
             description: Adult videos management
       {{- end }}
       {{- if .Values.services.bazarr.enabled }}
       - Bazarr:
             icon: sh-bazarr
-            href: https://{{ .Values.services.bazarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.bazarr.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.bazarr.name }}:{{ .Values.services.bazarr.ports.http }}
             description: Subtitles management
             widget:
@@ -54,7 +54,7 @@
       {{- if .Values.services.autobrr.enabled }}
       - Autobrr:
             icon: sh-autobrr
-            href: https://{{ .Values.services.autobrr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.autobrr.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.autobrr.name }}:{{ .Values.services.autobrr.ports.http }}
             description: Download automation
             widget:
@@ -65,7 +65,7 @@
       {{- if .Values.services.prowlarr.enabled }}
       - Prowlarr:
             icon: sh-prowlarr
-            href: https://{{ .Values.services.prowlarr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.prowlarr.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.prowlarr.name }}:{{ .Values.services.prowlarr.ports.http }}
             description: Indexers management
             widget:
@@ -77,7 +77,7 @@
       {{- if .Values.services.qbittorrent.enabled }}
       - qBittorrent:
             icon: sh-qbittorrent
-            href: https://{{ .Values.services.qbittorrent.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.qbittorrent.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.qbittorrent.name }}:{{ .Values.services.qbittorrent.ports.http }}
             description: Torrent downloader
             widget:
@@ -88,7 +88,7 @@
       {{- if .Values.services.sabnzbd.enabled }}
       - SABnzbd:
             icon: sh-sabnzbd
-            href: https://{{ .Values.services.sabnzbd.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.sabnzbd.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.sabnzbd.name }}:{{ .Values.services.sabnzbd.ports.http }}
             description: Usenet downloader
             widget:
@@ -99,7 +99,7 @@
       {{- if .Values.services.pinchflat.enabled }}
       - Pinchflat:
             icon: sh-pinchflat
-            href: https://{{ .Values.services.pinchflat.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.pinchflat.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.pinchflat.name }}:{{ .Values.services.pinchflat.ports.http }}
             description: YouTube downloader
       {{- end }}
@@ -107,7 +107,7 @@
       {{- if .Values.services.jellyseerr.enabled }}
       - Jellyseerr:
             icon: sh-jellyseerr
-            href: https://{{ .Values.services.jellyseerr.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.jellyseerr.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.jellyseerr.name }}:{{ .Values.services.jellyseerr.ports.http }}
             description: Request movies & series
             widget:
@@ -118,7 +118,7 @@
       {{- if .Values.services.plex.enabled }}
       - Plex:
             icon: sh-plex
-            href: https://{{ .Values.services.plex.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.plex.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.plex.name }}:{{ .Values.services.plex.ports.http }}
             description: Media server
             widget:
@@ -132,7 +132,7 @@
       {{- if .Values.services.jellyfin.enabled }}
       - Jellyfin:
             icon: sh-jellyfin
-            href: https://{{ .Values.services.jellyfin.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.jellyfin.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.jellyfin.name }}:{{ .Values.services.jellyfin.ports.http }}
             description: Media server
             widget:
@@ -149,7 +149,7 @@
       {{- if .Values.services.calibre.enabled }}
       - Calibre:
             icon: sh-calibre
-            href: https://{{ .Values.services.calibre.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.calibre.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.calibre.name }}:{{ .Values.services.calibre.ports.http }}
             description: Book library
             widget:
@@ -162,7 +162,7 @@
       {{- if .Values.services.kavita.enabled }}
       - Kavita:
             icon: sh-kavita
-            href: https://{{ .Values.services.kavita.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.kavita.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.kavita.name }}:{{ .Values.services.kavita.ports.http }}
             description: Book reader
             widget:
@@ -174,14 +174,14 @@
       {{- if .Values.services.calibrebookdownloader.enabled }}
       - "Anna's Archive":
             icon: sh-calibre-web
-            href: https://{{ .Values.services.calibrebookdownloader.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.calibrebookdownloader.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.calibrebookdownloader.name }}:{{ .Values.services.calibrebookdownloader.ports.http }}
             description: Download books from Anna's Archive
       {{- end }}
       {{- if .Values.services.openbooks.enabled }}
       - "IRCHighWay":
             icon: sh-openbooks
-            href: https://{{ .Values.services.openbooks.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.openbooks.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.openbooks.name }}:{{ .Values.services.openbooks.ports.http }}
             description: Download books from IRCHighWay
       {{- end }}
@@ -189,7 +189,7 @@
       {{- if .Values.services.miniflux.enabled }}
       - RSS:
             icon: sh-miniflux-light
-            href: https://{{ .Values.services.miniflux.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.miniflux.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.miniflux.name }}:{{ .Values.services.miniflux.ports.http }}
             description: Feed reader
             widget:
@@ -200,15 +200,15 @@
       {{- end }}
       {{- if .Values.services.thelounge.enabled }}
       - The Lounge:
-            icon: https://raw.githubusercontent.com/thelounge/thelounge/master/client/img/logo-vertical-transparent-bg.svg?sanitize=true
-            href: https://{{ .Values.services.thelounge.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            icon: sh-the-lounge
+            href: https://{{ first .Values.services.thelounge.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.thelounge.name }}:{{ .Values.services.thelounge.ports.http }}
             description: IRC client
       {{- end }}
       {{- if .Values.services.mealie.enabled }}
       - Mealie:
             icon: sh-mealie
-            href: https://{{ .Values.services.mealie.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.mealie.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.mealie.name }}:{{ .Values.services.mealie.ports.http }}
             description: Recipe manager
             widget:
@@ -220,28 +220,28 @@
       {{- if .Values.services.convertx.enabled }}
       - Convertx:
             icon: sh-convertx
-            href: https://{{ .Values.services.convertx.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.convertx.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.convertx.name }}:{{ .Values.services.convertx.ports.http }}
             description: File conversion
       {{- end }}
       {{- if .Values.services.stirlingpdf.enabled }}
       - Stirling PDF:
             icon: sh-stirling-pdf
-            href: https://{{ .Values.services.stirlingpdf.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.stirlingpdf.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.stirlingpdf.name }}:{{ .Values.services.stirlingpdf.ports.http }}
             description: PDF Manipulation
       {{- end }}
       {{- if .Values.services.huginn.enabled }}
       - Huginn:
             icon: sh-huginn
-            href: https://{{ .Values.services.huginn.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.huginn.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.huginn.name }}:{{ .Values.services.huginn.ports.http }}
             description: Monitors the world and acts on your behalf
       {{- end }}
       {{- if .Values.services.changedetectionio.enabled }}
       - Changedetection:
             icon: sh-changedetection
-            href: https://{{ .Values.services.changedetectionio.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.changedetectionio.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.changedetectionio.name }}:{{ .Values.services.changedetectionio.ports.http }}
             description: Website change detection
             widget:
@@ -252,21 +252,21 @@
       {{- if .Values.services.archivebox.enabled }}
       - Archivebox:
             icon: sh-archivebox
-            href: https://{{ .Values.services.archivebox.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.archivebox.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.archivebox.name }}:{{ .Values.services.archivebox.ports.http }}
             description: Web archiving
       {{- end }}
       {{- if .Values.services.apprise.enabled }}
       - Apprise:
             icon: sh-apprise
-            href: https://{{ .Values.services.apprise.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.apprise.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.apprise.name }}:{{ .Values.services.apprise.ports.http }}
             description: Send notifications to any service
       {{- end }}
       {{- if .Values.services.gotify.enabled }}
       - Gotify:
             icon: sh-gotify
-            href: https://{{ .Values.services.gotify.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.gotify.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.gotify.name }}:{{ .Values.services.gotify.ports.http }}
             description: Push notifications
             widget:
@@ -278,7 +278,7 @@
       {{- if .Values.services.myspeed.enabled }}
       - MySpeed:
             icon: sh-myspeed
-            href: https://{{ .Values.services.myspeed.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.myspeed.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.myspeed.name }}:{{ .Values.services.myspeed.ports.http }}
             description: Internet speed tracker
             widget:
@@ -297,7 +297,7 @@
       {{- if .Values.services.backrest.enabled }}
       - Backrest:
             icon: sh-backrest-light
-            href: https://{{ .Values.services.backrest.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: https://{{ first .Values.services.backrest.ingress }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
             siteMonitor: http://{{ .Values.services.backrest.name }}:{{ .Values.services.backrest.ports.http }}
             description: Backups management
       {{- end }}

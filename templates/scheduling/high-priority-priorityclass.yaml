@@ -2,6 +2,8 @@ apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
   name: homeserver-high-priority
+  labels:
+    {{- include "homeserver.labels" . | indent 2 }}
 value: 1000000
 globalDefault: false
 description: "This priority class should be used for high priority homeserver services only"

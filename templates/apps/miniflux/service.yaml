@@ -1,18 +1,21 @@
 {{- if .Values.services.miniflux.enabled }}
+{{- $service := .Values.services.miniflux -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.services.miniflux.name }}
+  name: {{ $service.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.miniflux.name }}
+    app.kubernetes.io/name: {{ $service.name }}
+    {{- include "homeserver.labels" . | indent 2 }}
+    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
 spec:
   type: ClusterIP
   ports:
-    - port: {{ .Values.services.miniflux.ports.http }}
+    - port: {{ $service.ports.http }}
       targetPort: http
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ .Values.services.miniflux.name }}
+    app.kubernetes.io/name: {{ $service.name }}
 {{- end }}

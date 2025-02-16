@@ -1,11 +1,13 @@
 {{- if .Values.services.miniflux.enabled }}
+{{- $service := .Values.services.miniflux -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.services.miniflux.db.name }}
+  name: {{ $service.name }}-db
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.miniflux.db.name }}
+    app.kubernetes.io/name: {{ $service.name }}-db
+    {{- include "homeserver.labels" . | indent 2 }}
 spec:
   revisionHistoryLimit: 3
   replicas: 1
@@ -13,11 +15,12 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Values.services.miniflux.db.name }}
+      app.kubernetes.io/name: {{ $service.name }}-db
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Values.services.miniflux.db.name }}
+        app.kubernetes.io/name: {{ $service.name }}-db
+        {{- include "homeserver.labels" . | indent 6 }}
     spec:
       containers:
         - name: miniflux-db
@@ -27,11 +30,11 @@ spec:
             - name: TZ
               value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
             - name: POSTGRES_USER
-              value: {{ .Values.services.miniflux.db.user | quote }}
+              value: {{ $service.db.user | quote }}
             - name: POSTGRES_PASSWORD
-              value: {{ required "A valid .Values.services.miniflux.db.password required!" .Values.services.miniflux.db.password | quote }}
+              value: {{ required "A valid $service.db.password required!" $service.db.password | quote }}
             - name: POSTGRES_DB
-              value: {{ .Values.services.miniflux.db.dbname | quote }}
+              value: {{ $service.db.dbname | quote }}
           ports:
             - name: postgres
               containerPort: 5432
@@ -44,12 +47,12 @@ spec:
               command:
                 - pg_isready
                 - -U
-                - {{ .Values.services.miniflux.db.user }}
+                - {{ $service.db.user }}
             initialDelaySeconds: 60
             periodSeconds: 30
       volumes:
         - name: data
           hostPath:
-            path: "{{ .Values.services.miniflux.db.data }}"
+            path: "{{ $service.db.data }}"
             type: Directory
 {{- end }}

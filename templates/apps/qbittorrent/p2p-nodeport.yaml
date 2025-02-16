@@ -1,24 +1,27 @@
 {{- if .Values.services.qbittorrent.enabled }}
+{{- $service := .Values.services.qbittorrent -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.services.qbittorrent.name }}-active-p2p
+  name: {{ $service.name }}-active-p2p
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}-active-p2p
+    app.kubernetes.io/name: {{ $service.name }}-active-p2p
+    {{- include "homeserver.labels" . | indent 2 }}
+    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
 spec:
   type: NodePort
   selector:
-    app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}
+    app.kubernetes.io/name: {{ $service.name }}
   ports:
     - name: p2p
-      port: {{ .Values.services.qbittorrent.ports.p2p }}
-      nodePort: {{ .Values.services.qbittorrent.ports.p2p }}
+      port: {{ $service.ports.p2p }}
+      nodePort: {{ $service.ports.p2p }}
       targetPort: p2p
       protocol: TCP
     - name: p2pudp
-      port: {{ .Values.services.qbittorrent.ports.p2p }}
-      nodePort: {{ .Values.services.qbittorrent.ports.p2p }}
+      port: {{ $service.ports.p2p }}
+      nodePort: {{ $service.ports.p2p }}
       targetPort: p2pudp
       protocol: UDP
 {{- end }}

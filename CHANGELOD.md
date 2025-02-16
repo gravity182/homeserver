@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[2.0.0] - 2025-02-16
+
+Big update! The chart is becoming even better!
+
+1. New services:
+    - Pinchflat - a Youtube downloader
+    - Myspeed (replaces Speedtest) - speed test with multiple providers of your choice
+    - Calibre - books management
+    - Calibre-book-downloader (Anna's Archive)
+    - Openbooks (IRCHighWay)
+    - Mealie
+    - Convertx
+2. Removed services:
+    - Readarr - unfortunately, it's inherently broken. Replaced by Calibre, Calibre-book-downloader and Openbooks
+    - Speedtest - took too much RAM, had only single non-transparent provider. Myspeed allows you to select a provider of your choice (Librespeed, Cloudflare, Speedtest)
+3. Now services can connect to a VPN
+4. Now each service can be served under multiple subdomain
+
 ## \[1.0.5] - 2024-12-10
 
 Added `backupRetentionDays` setting for those services having periodic backups.

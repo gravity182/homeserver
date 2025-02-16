@@ -1,75 +1,44 @@
 {{- if .Values.services.qbittorrent.enabled }}
+{{- $service := .Values.services.qbittorrent -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.services.qbittorrent.name }}
+  name: {{ $service.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}
+    app.kubernetes.io/name: {{ $service.name }}
+    {{- include "homeserver.labels" . | indent 2 }}
+    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
 spec:
   revisionHistoryLimit: 3
-  replicas: {{ .Values.services.qbittorrent.replicaCount }}
+  replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}
+      app.kubernetes.io/name: {{ $service.name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Values.services.qbittorrent.name }}
+        app.kubernetes.io/name: {{ $service.name }}
+        {{- include "homeserver.labels" . | indent 6 }}
+        homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
     spec:
+      securityContext:
+        sysctls:
+          {{- if $service.vpn.enabled }}
+          {{- include "homeserver.vpn.wg-sysctls" . | indent 8 }}
+          {{- end }}
       initContainers:
-      {{- if .Values.services.qbittorrent.vpn.enabled }}
-        - name: gluetun
-          image: ghcr.io/qdm12/gluetun:v3.40
-          imagePullPolicy: IfNotPresent
-          restartPolicy: Always
-          securityContext:
-            capabilities:
-              add: ["NET_ADMIN"]
-          envFrom:
-            - secretRef:
-                name: gluetun-conf-secret
-                optional: false
-          env:
-            - name: TZ
-              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
-            - name: HTTP_CONTROL_SERVER_ADDRESS
-              value: ":9998"
-            - name: DNS_KEEP_NAMESERVER
-              value: "on"
-            - name: FIREWALL_OUTBOUND_SUBNETS
-              value: "10.42.0.0/15"
-            - name: HEALTH_SERVER_ADDRESS
-              value: ":9999"
-            - name: HEALTH_VPN_DURATION_INITIAL
-              value: {{ .Values.vpn.health.durationInitial | quote }}
-            - name: HEALTH_VPN_DURATION_ADDITION
-              value: {{ .Values.vpn.health.durationAddition | quote }}
-            - name: HEALTH_SUCCESS_WAIT_DURATION
-              value: {{ .Values.vpn.health.successWaitDuration | quote }}
-            - name: HEALTH_TARGET_ADDRESS
-              value: {{ .Values.vpn.health.targetAddress | quote }}
-          volumeMounts:
-            - name: dev-net-tun
-              mountPath: /dev/net/tun
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 9999
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 1
-            failureThreshold: 10
-            successThreshold: 1
-      {{- end }}
+        {{- if $service.vpn.enabled }}
+        {{- include "homeserver.vpn.wg-sidecar" . | indent 6 }}
+        {{- end }}
       containers:
         - name: qbittorrent
-          image: "{{ .Values.services.qbittorrent.image.repository }}:{{ .Values.services.qbittorrent.image.tag }}"
-          imagePullPolicy: {{ .Values.services.qbittorrent.image.pullPolicy }}
+          image: "{{ $service.image.repository }}:{{ $service.image.tag }}"
+          imagePullPolicy: {{ $service.image.pullPolicy }}
           env:
-            {{- range $key, $value := .Values.services.qbittorrent.env }}
+            {{- range $key, $value := $service.env }}
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
@@ -84,7 +53,7 @@ spec:
             - name: TORRENTING_PORT
               value: "6881"
             - name: DOCKER_MODS
-              value: {{ .Values.services.qbittorrent.dockerMods | quote }}
+              value: {{ $service.dockerMods | quote }}
           ports:
             - name: http
               containerPort: 8080
@@ -99,20 +68,17 @@ spec:
             - name: config
               mountPath: /config
             - name: data
-              mountPath: {{ .Values.services.qbittorrent.data | quote }}
+              mountPath: {{ $service.data | quote }}
       volumes:
-        {{- if .Values.services.qbittorrent.vpn.enabled }}
-        - name: dev-net-tun
-          hostPath:
-            path: /dev/net/tun
-            type: CharDevice
+        {{- if $service.vpn.enabled }}
+        {{- include "homeserver.vpn.wg-volumes" . | indent 6 }}
         {{- end }}
         - name: config
           hostPath:
-            path: {{ .Values.services.qbittorrent.config | quote }}
+            path: {{ $service.config | quote }}
             type: Directory
         - name: data
           hostPath:
-            path: {{ .Values.services.qbittorrent.data | quote }}
+            path: {{ $service.data | quote }}
             type: Directory
 {{- end }}

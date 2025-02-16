@@ -1,4 +1,5 @@
 {{- if .Values.services.autobrr.enabled }}
+{{- $service := .Values.services.autobrr -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -6,11 +7,12 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: autobrr
+    {{- include "homeserver.labels" . | indent 2 }}
 spec:
   type: ClusterIP
   ports:
     - name: http
-      port: {{ .Values.services.autobrr.ports.http }}
+      port: {{ $service.ports.http }}
       targetPort: http
       protocol: TCP
   selector:

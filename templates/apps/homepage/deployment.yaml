@@ -1,77 +1,46 @@
 {{- if .Values.services.homepage.enabled }}
+{{- $service := .Values.services.homepage -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.services.homepage.name }}
+  name: {{ $service.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.services.homepage.name }}
+    app.kubernetes.io/name: {{ $service.name }}
+    {{- include "homeserver.labels" . | indent 2 }}
+    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
 spec:
   revisionHistoryLimit: 3
-  replicas: {{ .Values.services.homepage.replicaCount }}
+  replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Values.services.homepage.name }}
+      app.kubernetes.io/name: {{ $service.name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Values.services.homepage.name }}
+        app.kubernetes.io/name: {{ $service.name }}
+        {{- include "homeserver.labels" . | indent 6 }}
+        homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/apps/homepage/configmap.yaml") . | sha256sum }}
     spec:
-      serviceAccountName: {{ .Values.services.homepage.name }}
+      serviceAccountName: {{ $service.name }}
       automountServiceAccountToken: true
       dnsPolicy: ClusterFirst
       enableServiceLinks: true
       securityContext:
         fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+      securityContext:
+        sysctls:
+          {{- if $service.vpn.enabled }}
+          {{- include "homeserver.vpn.wg-sysctls" . | indent 8 }}
+          {{- end }}
       initContainers:
-      {{- if .Values.services.homepage.vpn.enabled }}
-        - name: gluetun
-          image: ghcr.io/qdm12/gluetun:v3.40
-          imagePullPolicy: IfNotPresent
-          restartPolicy: Always
-          securityContext:
-            capabilities:
-              add: ["NET_ADMIN"]
-          envFrom:
-            - secretRef:
-                name: gluetun-conf-secret
-                optional: false
-          env:
-            - name: TZ
-              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
-            - name: HTTP_CONTROL_SERVER_ADDRESS
-              value: ":9998"
-            - name: DNS_KEEP_NAMESERVER
-              value: "on"
-            - name: FIREWALL_OUTBOUND_SUBNETS
-              value: "10.42.0.0/15"
-            - name: HEALTH_SERVER_ADDRESS
-              value: ":9999"
-            - name: HEALTH_VPN_DURATION_INITIAL
-              value: {{ .Values.vpn.health.durationInitial | quote }}
-            - name: HEALTH_VPN_DURATION_ADDITION
-              value: {{ .Values.vpn.health.durationAddition | quote }}
-            - name: HEALTH_SUCCESS_WAIT_DURATION
-              value: {{ .Values.vpn.health.successWaitDuration | quote }}
-            - name: HEALTH_TARGET_ADDRESS
-              value: {{ .Values.vpn.health.targetAddress | quote }}
-          volumeMounts:
-            - name: dev-net-tun
-              mountPath: /dev/net/tun
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 9999
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 1
-            failureThreshold: 10
-            successThreshold: 1
-      {{- end }}
+        {{- if $service.vpn.enabled }}
+        {{- include "homeserver.vpn.wg-sidecar" . | indent 6 }}
+        {{- end }}
         - name: add-homepage-config
           image: busybox
           imagePullPolicy: IfNotPresent
@@ -86,10 +55,10 @@ spec:
               mountPath: /tmp/config
       containers:
         - name: homepage
-          image: "{{ .Values.services.homepage.image.repository }}:{{ .Values.services.homepage.image.tag }}"
-          imagePullPolicy: {{ .Values.services.homepage.image.pullPolicy }}
+          image: "{{ $service.image.repository }}:{{ $service.image.tag }}"
+          imagePullPolicy: {{ $service.image.pullPolicy }}
           env:
-            {{- range $key, $value := .Values.services.homepage.env }}
+            {{- range $key, $value := $service.env }}
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
@@ -107,15 +76,12 @@ spec:
             - mountPath: /app/config
               name: config
       volumes:
-        {{- if .Values.services.homepage.vpn.enabled }}
-        - name: dev-net-tun
-          hostPath:
-            path: /dev/net/tun
-            type: CharDevice
+        {{- if $service.vpn.enabled }}
+        {{- include "homeserver.vpn.wg-volumes" . | indent 6 }}
         {{- end }}
         - name: homepage-config
           configMap:
-            name: {{ .Values.services.homepage.name }}
+            name: {{ $service.name }}
         - name: config
           emptyDir: {}
 {{- end }}
