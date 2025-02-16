@@ -15,17 +15,17 @@ Big update! The chart is becoming even better!
 
 1. New services:
     - Pinchflat - a Youtube downloader
-    - Myspeed (replaces Speedtest) - speed test with multiple providers of your choice
-    - Calibre - books management
-    - Calibre-book-downloader (Anna's Archive)
-    - Openbooks (IRCHighWay)
-    - Mealie
-    - Convertx
+    - Myspeed - speed test with multiple providers
+    - Calibre-Web-Automated - books management
+    - Calibre-book-downloader - download books from Anna's Archive
+    - Openbooks - download books from IRCHighWay
+    - Mealie - recipe manager
+    - Convertx - file convertor
 2. Removed services:
     - Readarr - unfortunately, it's inherently broken. Replaced by Calibre, Calibre-book-downloader and Openbooks
-    - Speedtest - took too much RAM, had only single non-transparent provider. Myspeed allows you to select a provider of your choice (Librespeed, Cloudflare, Speedtest)
+    - Speedtest - consumed too much RAM, had only a single non-transparent provider. Myspeed allows you to choose a provider: Librespeed, Cloudflare, or Speedtest
 3. Now services can connect to a VPN
-4. Now each service can be served under multiple subdomain
+4. Now each service can be served under multiple subdomains in ingress
 
 ## \[1.0.5] - 2024-12-10
 
