@@ -5,7 +5,8 @@
 - [Chart customization](#chart-customization)
     - [VPN](#vpn)
     - [Environment variables](#environment-variables)
-- [Do not run containers as root. File permissions](#do-not-run-containers-as-root-file-permissions)
+- [File permissions](#file-permissions)
+- [Do not run containers as root](#do-not-run-containers-as-root)
 - [Folder Structure](#folder-structure)
 - [Hard links \& Instant moves](#hard-links--instant-moves)
 - [Cert-manager](#cert-manager)
@@ -14,18 +15,21 @@
 - [Reverse Auth Proxy Header](#reverse-auth-proxy-header)
 - [Homepage](#homepage)
 - [Radarr](#radarr)
-    - [Hardlinks](#hardlinks)
     - [Profile](#profile)
+    - [Hardlinks](#hardlinks)
     - [Proxy](#proxy)
     - [Custom Formats](#custom-formats)
         - [HDR/DV](#hdrdv)
         - [Teaser/Trailer](#teasertrailer)
 - [Sonarr](#sonarr)
-    - [Hardlinks](#hardlinks-1)
     - [Profile](#profile-1)
+    - [Hardlinks](#hardlinks-1)
     - [Proxy](#proxy-1)
     - [Custom Formats](#custom-formats-1)
 - [Prowlarr](#prowlarr)
+    - [Flaresolverr setup](#flaresolverr-setup)
+    - [Indexes setup](#indexes-setup)
+    - [Arr apps setup](#arr-apps-setup)
 - [Plex](#plex)
     - [Setup](#setup-1)
     - [Remote Access](#remote-access)
@@ -33,6 +37,7 @@
 - [Jellyseerr](#jellyseerr)
     - [Setup](#setup-2)
 - [qBittorrent](#qbittorrent)
+    - [Becoming an active seed](#becoming-an-active-seed)
 - [SABnzbd](#sabnzbd)
 - [Flaresolverr](#flaresolverr)
     - [Proxy](#proxy-2)
@@ -46,9 +51,14 @@
 - [Gotify](#gotify)
 - [Kometa](#kometa)
 - [The Lounge](#the-lounge)
+- [Calibre Web Automated](#calibre-web-automated)
+    - [Auth proxy header](#auth-proxy-header-1)
+- [Calibre Web Automated Book Downloader](#calibre-web-automated-book-downloader)
+- [Openbooks](#openbooks)
 - [Kavita](#kavita)
 - [Miniflux](#miniflux)
-    - [Auth proxy header](#auth-proxy-header-1)
+    - [Auth proxy header](#auth-proxy-header-2)
+- [Mealie](#mealie)
 
 ## Installation
 
@@ -100,7 +110,7 @@ ingress:
     domain: # REQUIRED; e.g. 'example.com' (without a scheme)
 ```
 
-The user with the specified UID/GID must exist on the host machine and should be unprivileged. See the [File permissions](#do-not-run-containers-as-root-file-permissions) section for details.
+The user with the specified UID/GID must exist on the host machine and should be unprivileged. See the [File permissions](#file-permissions) section for details.
 
 Finally, install the server:
 ```sh
@@ -110,7 +120,7 @@ Finally, install the server:
 The script will install the [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager/), the [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik), and finally this Helm chart. Give it a couple of minutes to spin up and self-initialize.
 If you want to customize cert-manager or Authentik before installation, please adjust `certmanager-values.yaml` or `authentik-values.yaml` respectively. This requires you to be familiar with these charts. Otherwise don't touch anything but required params.
 
-After installation, please carry out all the steps from the [#cert-manager](#cert-manager) and [#Authentik](#authentik) sections below.
+After installation, please carry out all the steps from the [#cert-manager](#cert-manager) and [#Authentik](#authentik-forward-auth) sections below.
 
 Having verified that cert-manager and Authentik are functioning properly, you can proceed to enabling individual services.
 All services are optional. Just enable the ones you need.
@@ -146,12 +156,12 @@ services:
             pullPolicy: Always # image pull policy
         ports:
             http: 3000 # port used by the respective k8s service. Doesn't affect the container port as it's usually fixed and set by the image or service maintainer
-        ingress: # controls subdomain under which this service will be served and publicly exposed. Ignored if exposed=false
+        ingress: # controls subdomains under which this service is served and publicly exposed. Ignored if exposed=false
             - subdomain1
             - sub-domain2
         vpn:
-            enabled: false # enables VPN for this service. Please see the respective section in this guide for important details
-        env: # custom env vars that will be passed as is to the respective pod
+            enabled: false # enables VPN for this service. Please see the respective section of this guide for important details
+        env: # custom env vars passed as is to the respective pod
             VAR1: foo
             VAR2: |-
                 foo
@@ -163,6 +173,7 @@ If you feel like there could be even more customization, please open an issue in
 ### VPN
 
 Every service is able to connect to a VPN. This functionality is based on the [Linuxserver's Wireguard image](https://docs.linuxserver.io/images/docker-wireguard/). The image is very lightweight, taking only 5 Mb of RAM at max. The VPN container runs as a [Native Sidecar Container](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/). Make sure your Kubernetes cluster is of version v1.29 or newer, otherwise native sidecars and VPN won't work.
+
 This feature is completely optional and doesn't require you to do anything if you don't need a VPN.
 
 You must create a secret with a correct wireguard config:
@@ -170,7 +181,7 @@ You must create a secret with a correct wireguard config:
 kubectl create secret generic wireguard-conf-secret --from-file=wg0.conf=homeserver_wg_vpn.conf
 ```
 
-The wireguard config usually looks like this:
+The wireguard config should look like this:
 ```conf
 [Interface]
 PrivateKey = <YOUR_PRIVAYE_KEY>
@@ -189,7 +200,7 @@ Endpoint = <SERVER_IP_WITH_PORT>
 
 Note the `PostUp` and `PreDown` keys - they are **absolutely mandatory** to have.
 Otherwise your services won't be able to speak with each other when necessary. For instance, Miniflux won't be able to communicate with its Postgres db instance hosted as a separate deployment/service.
-Just copy these two lines as is to your config and you're good to go.
+Just copy these two lines as is to your config and you're good to go. Make sure to put them into the `[Interface]` section.
 
 After creating a secret, set the `values.yaml` as follows:
 ```yaml
@@ -211,6 +222,7 @@ That's all. Now this service's traffic will be going through a VPN.
 ### Environment variables
 
 Every service supports passing custom environment variables to the respective pod.
+
 This feature is completely optional and doesn't require you to do anything if you don't need to pass custom env vars.
 
 Set `services.<service_name>.env` to a dictionary in the following format:
@@ -237,24 +249,34 @@ services:
       # see the full list of supported env vars
       # https://github.com/Stirling-Tools/Stirling-PDF?tab=readme-ov-file#customisation
       #
-      # a custom var passed as is to the pod's env vars
+      # a custom var passed as is to the pod
       UI_APP_NAME: "My very own Stirling PDF"
 ```
 
 ---
 
-## Do not run containers as root. File permissions
+## File permissions
 
-This chart follows best security practices by not running the main container's process as root whenever possible.
+This chart requires you to use specific UID/GID (user/group id) both on the host and containers.
+
+Here's what you need to do:
+1. Create an *unprivileged* user on the host without sudo permissions.
+2. Set your newly created host user's UID/GID in `host.uid`/`host.gid` respectively
+    - You can obtain your user id via `id -u` and group id via `id -g`
+    - *Attention!* Make sure the UID/GID is not below `100`. This range is problematic because it's often already in use by an existing system user inside a container
+3. Make sure any directories you create on the host and use in your `values.yaml` are owned by this very user. Use `chmod -R <uid>:<gid> /dir` if necessary
+
+This facilitates the usage of [host path volumes](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) inside the containers without any file permission issues by matching the user who owns a directory on the host and the user inside a container.
+
+---
+
+## Do not run containers as root
+
+This chart follows best security practices by not running the container's main process as root whenever possible.
 This limits priviliges of the process even in case of breaking out of a container.
 
-Moreover, the usage of a specific UID/GID (user/group id) facilitates the usage of [host path volumes](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) inside the containers without any file permission issues by matching the user who owns a directory on the host and the user inside a container.
-
-That is to say, the only thing you should do is:
-1. Set your *host* user's UID & GID in `host.uid` and `host.gid` respectively
-    - You can obtain your user id via `id -u` and group id via `id -g`
-    - *Attention!* Make sure the host user is unprivileged, i.e. doesn't have sudo permissions. Create a new user if needed. Make sure the UID/GID is not below `100`. This range is problematic because it's often already in use by an existing system user inside a container
-2. Make sure any directories you create and use in your `values.yaml` are owned by this very user. Use `chmod -R <uid>:<gid> /dir`
+The user who runs the main process is the user you specified in `host.uid`/`host.gid`.
+This is why your host user must be unpriviliged.
 
 ---
 
@@ -539,7 +561,7 @@ The list of the services that support Auth proxy header:
 - Calibre-web
 - Archivebox
 
-These services are already configured with support for Auth proxy header. You can read more details on each one if you encounter issues.
+These services are already configured with support for Auth proxy header.
 
 ---
 
@@ -559,18 +581,6 @@ See the official [Homepage docs](https://gethomepage.dev/configs/) for more deta
 ## Radarr
 
 Available at `radarr.<domain>.<tld>`.
-
-### Hardlinks
-
-To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/), all of the steps below must be carried out:
-1. Ensure the Radarr container has access to the whole `/data` directory on the host, meaning you've set `services.radarr.data=/data`
-2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
-    ```sh
-    sudo chown -R <uid>:<gid> /data
-    sudo chmod -R a=,a+rX,u+w,g+w /data
-    ```
-3. Go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked
-4. Go to Settings -> Media Management, Root Folders, and add a Root Folder with the path of `/data/library/movies`. The directory must be pre-created manually first. This is the path which you'll also use in Plex when adding a Movies library
 
 ### Profile
 
@@ -612,7 +622,17 @@ In the end your profile should look like this:
 
 ![Radarr - 1080p profile](assets/radarr-profile.png)
 
----
+### Hardlinks
+
+To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/), all of the steps below must be carried out:
+1. Ensure the Radarr container has access to the whole `/data` directory on the host, meaning you've set `services.radarr.data=/data`
+2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
+    ```sh
+    sudo chown -R <uid>:<gid> /data
+    sudo chmod -R a=,a+rX,u+w,g+w /data
+    ```
+3. Go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked
+4. Go to Settings -> Media Management, Root Folders, and add a Root Folder with the path of `/data/library/movies`. The directory must be pre-created manually first. This is the path which you'll also use in Plex when adding a Movies library
 
 ### Proxy
 
@@ -622,14 +642,15 @@ You want this if your movie search requests in Radarr fail due to GeoIP reasons,
 
 If you want a good proxy recommendation, there's [Privoxy](http://www.privoxy.org/) and more lightweight [Tinyproxy](https://tinyproxy.github.io/).
 
----
+As an alternative, you can use [VPN](#vpn) for Radarr.
 
 ### Custom Formats
 
-These are some custom formats that I've accumulated over time. Feel free to use them if you find them useful.
+These are some custom formats I've accumulated over time. Feel free to use them if you find them useful.
 
 #### HDR/DV
 
+Matches HDR/DV movies:
 ```json
 {
   "name": "HDR/DV",
@@ -648,10 +669,9 @@ These are some custom formats that I've accumulated over time. Feel free to use 
 }
 ```
 
----
-
 #### Teaser/Trailer
 
+Matches teasers or trailers:
 ```json
 {
   "name": "Teaser/Trailer",
@@ -678,18 +698,6 @@ Available at `sonarr.<domain>.<tld>`.
 
 Sonarr is very similar to Radarr in terms of UI and capabilities. In fact, Radarr is a fork of Sonarr. So the instructions below are very similar.
 
-### Hardlinks
-
-To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/), all of the steps below must be carried out:
-1. Ensure the Sonarr container has access to the whole `/data` directory on the host, meaning you've set `services.sonarr.data=/data`
-2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
-    ```sh
-    sudo chown -R <uid>:<gid> /data
-    sudo chmod -R a=,a+rX,u+w,g+w /data
-    ```
-3. Go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked
-4. Go to Settings -> Media Management, Root Folders, and add a Root Folder with the path of `/data/library/tv`. The directory must be pre-created manually first. This is the path which you'll also use in Plex when adding a TV Series library
-
 ### Profile
 
 Unfortunately there's no easy way to sync Radarr and Sonarr profiles, so you'll have to copy-paste custom formats once again. Luckily, this is a one time job. The profile will serve you well and reliably, having set it up once.
@@ -705,6 +713,18 @@ Lastly, customize the profile: add/exclude HDR formats and implement flexible la
 In the end your profile should look like this:
 
 ![Sonarr - WEBDL 1080p profile](assets/sonarr-profile.png)
+
+### Hardlinks
+
+To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/), all of the steps below must be carried out:
+1. Ensure the Sonarr container has access to the whole `/data` directory on the host, meaning you've set `services.sonarr.data=/data`
+2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
+    ```sh
+    sudo chown -R <uid>:<gid> /data
+    sudo chmod -R a=,a+rX,u+w,g+w /data
+    ```
+3. Go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked
+4. Go to Settings -> Media Management, Root Folders, and add a Root Folder with the path of `/data/library/tv`. The directory must be pre-created manually first. This is the path which you'll also use in Plex when adding a TV Series library
 
 ### Proxy
 
@@ -724,7 +744,11 @@ Prowlarr is an indexer manager that allows you to sync your indexers across all 
 
 Let's set up one basic torrent indexer (1337x, a torrent tracker), Flaresolverr, and our *arr apps to sync indexers to.
 
-Flaresolverr:
+### Flaresolverr setup
+
+Flaresolverr allows you to bypass Cloudflare captcha on protected websites.
+
+Setup:
 1. Go to Settings -> Indexers
 2. Click the big plus button and select FlareSolverr
 3. Set settings as follows:
@@ -733,7 +757,9 @@ Flaresolverr:
     - Request Timeout: `120`
 4. Click `Test` and `Save`
 
-Indexer:
+### Indexes setup
+
+Setup:
 1. Go to Indexers
 2. Click `Add Indexer` (the plus button)
 3. Search for `1337` and click on the entry shown below
@@ -744,10 +770,12 @@ Indexer:
     - Download link (fallback): `magnet`
     - Sort requested from site: `created`
     - Order requested from site: `desc`
-    - Tags: `flaresolverr`
+    - Tags: `flaresolverr` - make sure this matches the tag name you set for Flaresolverr
 5. Click `Test` and `Save`
 
-Arr Apps:
+### Arr apps setup
+
+Setup:
 1. Go to Settings -> Apps
 2. Set up Radarr:
     1. Click the big plus button and select Radarr
@@ -768,7 +796,7 @@ Arr Apps:
         - API Key: go to `sonarr.<domain>.<tld>/settings/general`, retrieve the API Key and paste it here
     3. Click `Test` and `Save`
 
-Great. Now your indexers will be automatically synced to Radarr and Sonarr. This is the time to add some other indexers of your liking before moving on.
+Great. Now your indexers will be automatically synced to Radarr and Sonarr. This is the time to add some other indexers of your choice before moving on.
 
 For detailed info refer to the [Trash Guides](https://trash-guides.info/Prowlarr/) and official [Servarr Wiki](https://wiki.servarr.com/en/prowlarr).
 
@@ -798,11 +826,13 @@ Ensure that you've set up the libraries as follows:
 
 ### Remote Access
 
-Make sure the remote access port is allowed in your firewall.
-The port can be changed via the `services.plex.ports.remoteAccess` value. By default it's `32400`.
-This allows your Plex instance to be discoverable & accessible from the outer networks (practically, from all the client apps). Configure your Plex instance as follows:
+This allows your Plex instance to be discoverable & accessible from the outer networks (practically, from the client apps). Configure your Plex instance as follows:
 
 ![Plex Remote Access](assets/plex-remote-access.png)
+
+The port can be changed via `services.plex.ports.remoteAccess`. By default it's `32400`. Note the port must be in the range of `30000-32767` due to the Kubernetes restrictions - see [Kubernetes#NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport).
+
+Make sure the remote access port is allowed in your firewall.
 
 ---
 
@@ -818,7 +848,9 @@ See the official docs at <https://jellyfin.org/docs/>.
 
 Available at `jellyseerr.<domain>.<tld>`.
 
-Jellyseerr is a customizable request system, which allows users to request movies & series in a easy-to-use and mobile-friendly interface. Jellyseerr integrates tightly with Radarr and Sonarr, putting download requests into the respective service. Jellyseerr is a fork of [Overseerr](https://github.com/sct/overseerr), but actively maintained. Plus, Jellyseerr supports Jellyfin and Emby in addition to Plex (just in case you'll want to ditch Plex).
+Jellyseerr is a customizable request system, which allows users to request movies & series in a easy-to-use and mobile-friendly interface. Jellyseerr integrates tightly with Radarr and Sonarr, putting download requests into the respective service.
+
+Jellyseerr is a fork of [Overseerr](https://github.com/sct/overseerr), but actively maintained. Plus, Jellyseerr supports Jellyfin and Emby in addition to Plex (just in case you'll want to ditch Plex).
 
 ![Jellyseerr - Preview](assets/jellyseerr-preview.jpg)
 
@@ -889,7 +921,7 @@ Great. Now anytime a user requests a media Jellyseerr will put a request to the 
 
 ## qBittorrent
 
-Available at `torrent.<domain>.<tld>`.
+Available at `qbittorrent.<domain>.<tld>`/`torrent.<domain>.<tld>`.
 
 Basic setup: follow the Trash Guides - <https://trash-guides.info/Downloaders/qBittorrent/Basic-Setup/>.
 
@@ -912,7 +944,11 @@ After finishing the guide above adjust the following settings as well:
     - Optional: Check `Use alternative WebUI` and type in the following in the box below: `/vuetorrent`. This will enable the alternative WebUI, [VueTorrent](https://github.com/VueTorrent/VueTorrent), which is more user/mobile-friendly
     - Click `Save`
 
-Now you need to allow the torrenting p2p port in your firewall, if you have one enabled. Otherwise you won't be considered an "active" seed, i.e. peers with a closed port won't be able to connect to you, which means you'll seed less and slower. By default this port is `32700`. The port may be changed via `services.qbittorrent.ports.p2p`. Note that the port must be in the range of `30000-32767` (see [Kubernetes#NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)).
+### Becoming an active seed
+
+Make sure to allow the torrenting p2p port in your firewall. Otherwise you won't be considered an "active" seed, i.e. peers with a closed port won't be able to connect to you, which means you'll seed less and slower.
+
+By default this port is `32700`. The port may be changed via `services.qbittorrent.ports.p2p`. Note the port must be in the range of `30000-32767` due to the Kubernetes restrictions - see [Kubernetes#NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport).
 
 For Debian/Ubuntu execute the following command:
 ```sh
@@ -924,9 +960,9 @@ ufw allow 32700/udp
 
 ## SABnzbd
 
-Available at `usenet.<domain>.<tld>`.
+Available at `sabnzbd.<domain>.<tld>`/`usenet.<domain>.<tld>`.
 
-Please refer to [Trash Guides](https://trash-guides.info/Downloaders/SABnzbd/Basic-Setup/) for setup instructions.
+Please refer to the [Trash Guides](https://trash-guides.info/Downloaders/SABnzbd/Basic-Setup/) for setup instructions.
 
 After finishing the guide above, make sure the temporary and completed download folders are set as follows:
 
@@ -946,11 +982,11 @@ This chart includes a few useful scripts found at [Trash Guides#SABnzbd Scripts]
 
 ## Flaresolverr
 
-Flaresolverr allows indexers to bypass Cloudflare captcha on such trackers as 1337x.
+Flaresolverr allows indexers to bypass Cloudflare captcha on protected trackers such as 1337x.
 
-Note the Flaresolverr image used by this Chart is a fork of the original one - [21hsmw/FlareSolverr](https://github.com/21hsmw/FlareSolverr). It's newer and based one the `nodriver` method. Practically, it's much more effective at solving captchas.
+Note the Flaresolverr image used by this Chart is a fork of the original one - [21hsmw/FlareSolverr](https://github.com/21hsmw/FlareSolverr). It's newer and based on the `nodriver` method. Practically, it's much more effective at solving captchas.
 
-Setup instructions are covered in the [Prowlarr](#prowlarr) section.
+Setup instructions are covered in the [Prowlarr](#flaresolverr-setup) section.
 
 ### Proxy
 
@@ -960,13 +996,15 @@ However if you set up a proxy in the Prowlarr settings (Settings -> General), it
 
 This means you can bypass both GeoIP restrictions and captcha when using Flaresolverr solely.
 
+Alternatively, you can pass Flaresolverr's traffic through a [VPN](#vpn).
+
 ---
 
 ## Myspeed
 
 Available at `myspeed.<domain>.<tld>`.
 
-You can choose between Ookla, LibreSpeed and Cloudflare speed test servers in the WebUI.
+You can choose between Ookla, LibreSpeed, and Cloudflare speed test providers in the WebUI.
 
 ---
 
@@ -974,7 +1012,7 @@ You can choose between Ookla, LibreSpeed and Cloudflare speed test servers in th
 
 Available at `pdf.<domain>.<tld>`.
 
-Note that the login feature is disabled by default as this service is already protected by Authentik. You can enable it by setting `services.stirlingpdf.enableLogin=true`.
+Authentication is disabled by default as this service is already protected by Authentik. You can enable it back by setting `services.stirlingpdf.enableLogin=true`.
 
 ---
 
@@ -984,15 +1022,16 @@ Available at `huginn.<domain>.<tld>`.
 
 The default username is `admin` and password is `password`. Please change the credentials shortly after installation.
 
-Unfortunately there's no way to disable auth or use forward auth, so you probably want to disable Authentik for Huginn and use the built-in auth system solely.
+Unfortunately there's no way to disable auth or use reverse proxy header auth, so you probably want to disable Authentik for Huginn and use the built-in auth system solely.
 This is especially true if you expect to run webhooks since Authentik would interfere with third-party services pushing updates to your instance.
-Don't forget to set `services.huginn.invitationCode` to a cryptographically secure random value. This will keep the strangers away from using your Huginn instance since it'll require them to have an invitation code to sign up.
+
+If you decide to open your Huginn instance directly, don't forget to set `services.huginn.invitationCode` to a cryptographically secure random value. This will keep the strangers away from using your Huginn instance since it'll require them to have an invitation code to sign up.
 
 ---
 
 ## Changedetectionio
 
-Available at `changedetection.<domain>.<tld>`.
+Available at `changedetectionio.<domain>.<tld>`/`changedetection.<domain>.<tld>`.
 
 Note that the playwright service (`services.playwright`) must be enabled in order to use the [Chrome/Javascript fetch method](https://github.com/dgtlmoon/changedetection.io/wiki/Playwright-content-fetcher).
 
@@ -1000,11 +1039,19 @@ Note that the playwright service (`services.playwright`) must be enabled in orde
 
 ## Archivebox
 
-Available at `archivebox.<domain>.<tld>`.
+Available at `archivebox.<domain>.<tld>`/`archive.<domain>.<tld>`.
+
+The default admin's username is `admin` and password is `admin`. These values can be controlled via `service.archivebox.adminUsername` and `service.archivebox.adminPassword`. The default admin user is only created on the first run, so make sure to adjust these values beforehand.
+
+If you happen to forget your password, you can change via cmd:
+```sh
+$ k exec -it deployments/archivebox -- bash
+root@archivebox-74d7bc6c49-kz6lh:/data# su - archivebox
+$ cd /data
+$ archivebox manage changepassword <username>
+```
 
 See the official docs at <https://github.com/ArchiveBox/ArchiveBox/wiki>.
-
-The default admin's username is `admin` and password is `admin`. These values can be controlled via `service.archivebox.adminUsername` and `service.archivebox.adminPassword`. The default user is only created on the first run, so make sure to adjust these values beforehand.
 
 ### Auth proxy header
 
@@ -1029,7 +1076,7 @@ Available at `gotify.<domain>.<tld>`.
 
 See the official docs at <https://gotify.net/docs/index>.
 
-The default admin's username is `admin` and password is `admin`. These values can be controlled via `service.gotify.adminUsername` and `service.gotify.adminPassword`. The default user is only created on the first run, so make sure to adjust these values beforehand.
+The default admin's username is `admin` and password is `admin`. These values can be controlled via `service.gotify.adminUsername` and `service.gotify.adminPassword`. The default admin user is only created on the first run, so make sure to adjust these values beforehand.
 
 ---
 
@@ -1038,9 +1085,9 @@ The default admin's username is `admin` and password is `admin`. These values ca
 I provided some sensible default configuration files at `files/kometa/default`. These are not used by default. You can either copy them to `files/kometa` and tune them to your liking or create your own config files from scratch.
 
 Any `.yaml` files you put in the directory `files/kometa` will be dynamically loaded into the config directory inside the container and used by Kometa if they follow proper name conventions. Note the file hierarchy should be flat.
-These files are Helm template files, so you can reference any Helm value as you would do normally in a template.
+These files are Helm template files, so you can reference any Helm value as you would normally do in a template.
 
-Make sure to actually put a config file named `config.yaml` into `files/kometa`, otherwise Kometa won't be working.
+Make sure to actually put a config file named `config.yaml` (and not `.yml`) into `files/kometa`, otherwise Kometa won't be working.
 
 See the official [Kometa wiki](https://kometa.wiki) for more details.
 
@@ -1054,13 +1101,13 @@ kubectl logs -f jobs/kometa-test-run
 
 ## The Lounge
 
-Available at `thelounge.<domain>.<tld>`.
+Available at `thelounge.<domain>.<tld>`/ `lounge.<domain>.<tld>`/`irc.<domain>.<tld>`.
 
 You must add a user in order to have persistent channels and history.
 Otherwise all of your channels will be lost once you exit the client.
 
-Here's what you need to do:
-1. Open `/config/config.js` with your editor and set `public: false`
+Here's how to do it:
+1. Open `/opt/thelounge/config/config.js` with your editor on the host and set `public: false`
 2. Restart the container: `kubectl rollout restart deployment thelounge`
 3. Add a new user: `kubectl exec -it deployment/thelounge -- s6-setuidgid abc thelounge add <username>`
     - You will be asked for a password that won't be echoed
@@ -1072,6 +1119,33 @@ Here's what you need to do:
         2024-10-22 03:01:33 [INFO] User <username> created.
         2024-10-22 03:01:33 [INFO] User file located at /config/users/<username>.json.
         ```
+
+---
+
+## Calibre Web Automated
+
+[Calibre Web Automated](https://github.com/crocodilestick/Calibre-Web-Automated) (CWA) is an advanced version of Calibre-web, which introduces a number of cool features like automatic ingestion/conversion service, Kindle EPUB fixer, and many others.
+
+### Auth proxy header
+
+CWA supports authentication via [Auth proxy header](#reverse-auth-proxy-header).
+This is already enabled.
+
+The user will be created automatically on the first login. The username of a created user will be set to the email of a SSO-authenticated user.
+
+---
+
+## Calibre Web Automated Book Downloader
+
+[Calibre-Web-Automated-Book-Downloader](https://github.com/calibrain/calibre-web-automated-book-downloader) allows you to download books from Anna's Archive directly to the CWA instance.
+
+If you're a [AA donator member](https://annas-archive.org/donate), you can provide an API token for faster downloads. Set it in `services.calibrebookdownloader.annasArchiveDonatorKey`. This will make downloads much, much faster.
+
+---
+
+## Openbooks
+
+[Openbooks](https://github.com/evan-buss/openbooks) allows you to download books from [IRCHighWay](https://irchighway.net/). It's configured to download books directly to the CWA instance.
 
 ---
 
@@ -1087,6 +1161,8 @@ See the official docs at <https://wiki.kavitareader.com/guides>.
 
 Available at `miniflux.<domain>.<tld>`/`rss.<domain>.<tld>`.
 
+I recommend you to adjust cleanup values to your liking. By default read entries will be removed after 180 days and unread entries after 360 days. You can set these values to `-1` to disable cleanup altogether.
+
 See the official docs at <https://miniflux.app/docs>.
 
 ### Auth proxy header
@@ -1095,3 +1171,11 @@ Miniflux supports authentication via [Auth proxy header](#reverse-auth-proxy-hea
 This is already enabled.
 
 The user will be created automatically on the first login. The username of a created user will be set to the email of a SSO-authenticated user.
+
+---
+
+## Mealie
+
+[Mealie](https://github.com/mealie-recipes/mealie) is a cooking recipe manager and meal planner.
+
+See the official docs at <https://docs.mealie.io/documentation/getting-started/introduction/>.
