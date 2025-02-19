@@ -79,9 +79,9 @@ libraries:
       - file: config/overlays/audience_rating.yml
     operations:
       # critic and audience ratings are fetched by Plex itself, given that Rotten Tomatoes is chosen as a ratings source
+      # you can fetch user ratings from IMDb by uncommenting the line below
+      # note this will overwrite the ratings supplied by your Plex users
       #
-      # we don't need to change user rating for use in jmxd overlays, so the line below is commented out
-      # although you can enable it if you wish
       # mass_user_rating_update: imdb
   TV Shows:
     collection_files:
@@ -101,8 +101,9 @@ libraries:
           use_audio: false
       - file: config/overlays/audience_rating.yml
     operations:
-      # tmdb ratings are not very good
-      # switch the audience rating to IMDb for use in jmxd overlays
+      # TMDB, which Plex uses for TV shows, is not very good in terms of accuracy,
+      # since its user base is much smaller than IMDb
+      # fetch audience rating from IMDb for use in jmxd overlays
       mass_audience_rating_update: imdb
 settings:
   sync_mode: sync

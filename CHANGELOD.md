@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[2.0.3] - 2025-02-19
+
+- Kometa: clear watchlist in Radarr/Sonarr before fetching it from IMDb/Letterboxd. Now watchlist always stays in sync with IMDb/Letterboxd
+
 ## \[2.0.2] - 2025-02-16
 
 - CWA-Book-Downloader: add customization of the AA Donator Key

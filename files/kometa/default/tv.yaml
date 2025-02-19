@@ -1,4 +1,7 @@
 collections:
+  Sonarr Clear Current Watchlist:
+    sonarr_taglist: imdb-watchlist
+    item_sonarr_tag.remove: imdb-watchlist
   IMDb Watchlist:
     collection_mode: show_items
     collection_order: custom

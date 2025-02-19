@@ -1,4 +1,7 @@
 collections:
+  Radarr Clear Current Watchlist:
+    radarr_taglist: imdb-watchlist, letterboxd-watchlist
+    item_radarr_tag.remove: imdb-watchlist, letterboxd-watchlist
   IMDb Watchlist:
     collection_mode: show_items
     collection_order: custom
