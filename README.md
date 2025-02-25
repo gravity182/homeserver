@@ -46,13 +46,19 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
 ## Features
 
 Chart features:
-- Great chart customization - all the important service settings are controlled through Helm values
+- Great chart customization - important service settings are controlled through Helm values
 - SSO authentication via [Authentik](https://github.com/goauthentik/authentik)
 - Automatic TLS certificates provisioning via [cert-manager](https://github.com/cert-manager/cert-manager)
 - Scheduled server backups via [Backrest](https://github.com/garethgeorge/backrest) backed by [restic](https://github.com/restic/restic)
 - VPN support - every service can connect to a WireGuard VPN. This is especially actual for such services as qBitTorrent for smooth Linux ISO downloading
 - Proper file permissions handling - you will never encounter permission issues
-- Follows best security practices - containers are not running as root
+- Follows best security practices - containers are running as a non-root user and with a read-only filesystem
+
+---
+
+## Quickstart / Documentation
+
+Please see [Installation](Installation.md).
 
 ---
 
@@ -60,12 +66,6 @@ Chart features:
 
 1. Move sensitive values to Kubernetes secrets
 2. Add hardware decoding support to Plex & Jellyfin
-
----
-
-## Installation
-
-Please see [Installation](Installation.md).
 
 ---
 

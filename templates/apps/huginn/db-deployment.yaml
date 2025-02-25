@@ -1,45 +1,40 @@
 {{- if .Values.services.huginn.enabled }}
-{{- $service := .Values.services.huginn -}}
+{{- $service := .Values.services.huginn  }}
+{{- $kind := "database" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $service.name }}-db
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: {{ $service.name }}-db
-    {{- include "homeserver.labels" . | indent 2 }}
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   revisionHistoryLimit: 3
   replicas: 1
   strategy:
     type: Recreate
   selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ $service.name }}-db
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: {{ $service.name }}-db
-        {{- include "homeserver.labels" . | indent 6 }}
+      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
     spec:
       containers:
         - name: postgres
           image: postgres:17
           imagePullPolicy: Always
           env:
-            - name: TZ
-              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
             - name: POSTGRES_USER
               value: {{ $service.db.user | quote }}
             - name: POSTGRES_PASSWORD
               value: {{ required "A valid $service.db.password required!" $service.db.password | quote }}
             - name: POSTGRES_DB
-              value: {{ $service.db.dbname | quote }}
+              value: {{ $service.db.dbName | quote }}
           ports:
             - name: postgres
               containerPort: 5432
               protocol: TCP
-          volumeMounts:
+          resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: data
               mountPath: /var/lib/postgresql/data
           livenessProbe:
@@ -48,11 +43,11 @@ spec:
                 - pg_isready
                 - -U
                 - {{ $service.db.user }}
-            initialDelaySeconds: 60
+            initialDelaySeconds: 30
             periodSeconds: 30
-      volumes:
+      volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         - name: data
           hostPath:
-            path: "{{ $service.db.data }}"
+            path: {{ $service.db.persistence.data | quote }}
             type: Directory
 {{- end }}

@@ -12,6 +12,8 @@ certmanager-values.y*
 !/files/homepage/default/*
 /files/kometa/*
 !/files/kometa/default/*
+/files/librechat/*
+!/files/librechat/default/*
 
 .DS_Store
 *.gz

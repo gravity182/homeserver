@@ -1,18 +1,15 @@
 {{- if .Values.services.qbittorrent.enabled }}
-{{- $service := .Values.services.qbittorrent -}}
+{{- $service := .Values.services.qbittorrent  }}
+{{- $kind := "app" }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $service.name }}-active-p2p
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: {{ $service.name }}-active-p2p
-    {{- include "homeserver.labels" . | indent 2 }}
-    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
+  name: "{{ include "common.names.name" ( dict "service" $service "kind" $kind ) }}-active-p2p"
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   type: NodePort
   selector:
-    app.kubernetes.io/name: {{ $service.name }}
   ports:
     - name: p2p
       port: {{ $service.ports.p2p }}

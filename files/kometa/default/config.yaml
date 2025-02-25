@@ -82,7 +82,9 @@ libraries:
       # you can fetch user ratings from IMDb by uncommenting the line below
       # note this will overwrite the ratings supplied by your Plex users
       #
-      # mass_user_rating_update: imdb
+    #   - mass_user_rating_update: imdb
+      - delete_collections:
+          configured: false
   TV Shows:
     collection_files:
       - file: config/tv.yaml
@@ -104,7 +106,9 @@ libraries:
       # TMDB, which Plex uses for TV shows, is not very good in terms of accuracy,
       # since its user base is much smaller than IMDb
       # fetch audience rating from IMDb for use in jmxd overlays
-      mass_audience_rating_update: imdb
+      - mass_audience_rating_update: imdb
+      - delete_collections:
+          configured: false
 settings:
   sync_mode: sync
   run_order:

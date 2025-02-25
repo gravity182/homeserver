@@ -1,0 +1,118 @@
+{{- if .Values.services.librechat.enabled }}
+{{- $service := .Values.services.librechat  }}
+{{- $kind := "database" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+    spec:
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+      securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list "data") "context" $ ) | nindent 8 }}
+      containers:
+        - name: mongo
+          image: bitnami/mongodb:8.0
+          imagePullPolicy: Always
+          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: MONGODB_DISABLE_ENFORCE_AUTH
+              value: "false"
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "no"
+            - name: MONGODB_PORT_NUMBER
+              value: "27017"
+            - name: MONGODB_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.db.secretName | quote }}
+                  key: mongodb-root-username
+                  optional: false
+            - name: MONGODB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.db.secretName | quote }}
+                  key: mongodb-root-password
+                  optional: false
+            - name: MONGODB_DATABASE
+              value: {{ $service.db.dbName | quote }}
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.db.secretName | quote }}
+                  key: mongodb-librechat-username
+                  optional: false
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.db.secretName | quote }}
+                  key: mongodb-librechat-password
+                  optional: false
+          ports:
+            - name: mongo
+              containerPort: 27017
+              protocol: TCP
+          resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: empty-dir
+              mountPath: /opt/bitnami/mongodb/conf
+              subPath: app-conf-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/mongodb/tmp
+              subPath: app-tmp-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/mongodb/logs
+              subPath: app-logs-dir
+            - name: empty-dir
+              mountPath: /.mongodb
+              subPath: mongosh-home
+            - name: data
+              mountPath: /bitnami/mongodb
+            - name: common-scripts
+              mountPath: /bitnami/scripts
+          {{- $livenessProbe := default .Values.livenessProbe $service.db.livenessProbe }}
+          {{- if $livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit $livenessProbe "enabled") "context" $) | nindent 12 }}
+            exec:
+              command:
+                - /bitnami/scripts/ping-mongodb.sh
+          {{- end }}
+          {{- $readinessProbe := default .Values.readinessProbe $service.db.readinessProbe }}
+          {{- if $readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit $readinessProbe "enabled") "context" $) | nindent 12 }}
+            exec:
+              command:
+                - /bitnami/scripts/readiness-probe.sh
+          {{- end }}
+          {{- $startupProbe := default .Values.startupProbe $service.db.startupProbe }}
+          {{- if $startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" (omit $startupProbe "enabled") "context" $) | nindent 12 }}
+            exec:
+              command:
+                - /bitnami/scripts/startup-probe.sh
+          {{- end }}
+      volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        - name: common-scripts
+          configMap:
+            name: {{ printf "%s-mongodb-common-scripts" ( include "common.names.name" ( dict "service" $service "kind" $kind ) ) | quote }}
+            defaultMode: 0o550
+        - name: data
+          hostPath:
+            path: {{ $service.db.persistence.data | quote }}
+            type: Directory
+{{- end }}

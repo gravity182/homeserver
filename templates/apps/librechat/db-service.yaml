@@ -1,0 +1,18 @@
+{{- if .Values.services.librechat.enabled }}
+{{- $service := .Values.services.librechat  }}
+{{- $kind := "database" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ $service.db.ports.mongo }}
+      targetPort: mongo
+      protocol: TCP
+      name: mongo
+  selector: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+{{- end }}

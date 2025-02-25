@@ -1,13 +1,11 @@
 {{- if .Values.services.homepage.enabled }}
-{{- $service := .Values.services.homepage -}}
+{{- $service := .Values.services.homepage  }}
+{{- $kind := "app" }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ $service.name }}
-  labels:
-    app.kubernetes.io/name: {{ $service.name }}
-    {{- include "homeserver.labels" . | indent 2 }}
-    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 rules:
   - apiGroups:
       - ""
@@ -52,17 +50,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ $service.name }}
-  labels:
-    app.kubernetes.io/name: {{ $service.name }}
-    {{- include "homeserver.labels" . | indent 2 }}
-    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ $service.name }}
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
 subjects:
   - kind: ServiceAccount
-    name: {{ $service.name }}
-    namespace: {{ .Release.Namespace }}
+    name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+    namespace: {{ include "common.names.namespace" . | quote }}
 {{- end }}

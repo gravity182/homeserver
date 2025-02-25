@@ -1,0 +1,74 @@
+{{- if .Values.services.calibre.enabled }}
+{{- $service := .Values.services.calibre  }}
+{{- $kind := "app" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ $service.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+    spec:
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+      securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list "data" "config" "ingest") "context" $ ) | nindent 8 }}
+      containers:
+        - name: calibre
+          image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
+          imagePullPolicy: {{ $service.image.pullPolicy }}
+          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+          ports:
+            - name: http
+              containerPort: 8083
+              protocol: TCP
+          resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: config
+              mountPath: /config
+            - name: ingest
+              mountPath: /cwa-book-ingest
+            - name: data
+              mountPath: /calibre-library
+            - name: gmail-credentials
+              mountPath: /app/calibre-web/gmail.json
+              subPath: gmail.json
+              readOnly: true
+      volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        - name: config
+          hostPath:
+            path: {{ $service.persistence.config | quote }}
+            type: Directory
+        - name: ingest
+          hostPath:
+            path: {{ $service.persistence.ingest | quote }}
+            type: Directory
+        - name: data
+          hostPath:
+            path: {{ $service.persistence.data | quote }}
+            type: Directory
+        - name: gmail-credentials
+          secret:
+            secretName: calibre-gmail-credentials
+            items:
+              - key: gmail.json
+                path: gmail.json
+            optional: true
+{{- end }}

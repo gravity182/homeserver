@@ -1,0 +1,55 @@
+{{- if .Values.services.huginn.enabled }}
+{{- $service := .Values.services.huginn  }}
+{{- $kind := "database-backup" }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+spec:
+  schedule: {{ $service.db.backup.scheduleCron }}
+  timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
+  successfulJobsHistoryLimit: 3
+  concurrencyPolicy: Replace
+  jobTemplate:
+    metadata:
+      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+    spec:
+      template:
+        metadata:
+          labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
+        spec:
+          automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+          enableServiceLinks: {{ .Values.enableServiceLinks }}
+          priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+          securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          containers:
+            - name: pgdump
+              image: postgres:17
+              imagePullPolicy: Always
+              securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              command: ["/bin/sh"]
+              args:
+                - -ec
+                - find /backup/ -mtime +{{ $service.db.backup.retentionDays }} -exec rm -f {} \; ; pg_dump -Fc -C > /backup/huginn_db_backup_$(date +"%Y_%m_%d").dump
+              env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+                - name: PGHOST
+                  value: {{ $service.db.name | quote }}
+                - name: PGUSER
+                  value: {{ $service.db.user | quote }}
+                - name: PGPASSWORD
+                  value: {{ required "A valid $service.db.password required!" $service.db.password | quote }}
+                - name: PGDATABASE
+                  value: {{ $service.db.dbName | quote }}
+              resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+                - name: backup
+                  mountPath: /backup
+          volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: backup
+              hostPath:
+                path: {{ $service.db.backup.dir | quote }}
+                type: Directory
+          restartPolicy: OnFailure
+{{- end }}

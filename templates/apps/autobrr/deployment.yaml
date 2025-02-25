@@ -1,66 +1,50 @@
 {{- if .Values.services.autobrr.enabled }}
-{{- $service := .Values.services.autobrr -}}
+{{- $service := .Values.services.autobrr  }}
+{{- $kind := "app" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: autobrr
-  namespace: {{ .Release.Namespace }}
-  labels:
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
     app.kubernetes.io/name: autobrr
-    {{- include "homeserver.labels" . | indent 2 }}
 spec:
   revisionHistoryLimit: 3
   replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
-    matchLabels:
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
       app.kubernetes.io/name: autobrr
   template:
     metadata:
-      labels:
+      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
         app.kubernetes.io/name: autobrr
-        {{- include "homeserver.labels" . | indent 6 }}
     spec:
-      securityContext:
-        fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
-      securityContext:
-        sysctls:
-          {{- if $service.vpn.enabled }}
-          {{- include "homeserver.vpn.wg-sysctls" . | indent 8 }}
-          {{- end }}
-      initContainers:
-        {{- if $service.vpn.enabled }}
-        {{- include "homeserver.vpn.wg-sidecar" . | indent 6 }}
-        {{- end }}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+      securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list "config") "context" $ ) | nindent 8 }}
       containers:
         - name: autobrr
-          image: "{{ $service.image.repository }}:{{ $service.image.tag }}"
+          image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
-          securityContext:
-            runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
-            runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
-            runAsNonRoot: true
-          env:
-            {{- range $key, $value := $service.env }}
-            - name: {{ $key | quote }}
-              value: {{ $value | quote }}
-            {{- end }}
-            - name: TZ
-              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           ports:
             - name: http
               containerPort: 7474
               protocol: TCP
-          volumeMounts:
+          resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: config
               mountPath: /config
-      volumes:
-        {{- if $service.vpn.enabled }}
-        {{- include "homeserver.vpn.wg-volumes" . | indent 6 }}
-        {{- end }}
+      volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         - name: config
           hostPath:
-            path: "{{ $service.config }}"
+            path: {{ $service.persistence.config | quote }}
             type: Directory
 {{- end }}

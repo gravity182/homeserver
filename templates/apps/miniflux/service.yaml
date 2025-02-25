@@ -1,14 +1,12 @@
 {{- if .Values.services.miniflux.enabled }}
-{{- $service := .Values.services.miniflux -}}
+{{- $service := .Values.services.miniflux  }}
+{{- $kind := "app" }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $service.name }}
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: {{ $service.name }}
-    {{- include "homeserver.labels" . | indent 2 }}
-    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
@@ -16,6 +14,5 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
-  selector:
-    app.kubernetes.io/name: {{ $service.name }}
+  selector: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 {{- end }}

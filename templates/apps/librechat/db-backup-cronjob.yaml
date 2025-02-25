@@ -1,0 +1,63 @@
+{{- if .Values.services.librechat.enabled }}
+{{- $service := .Values.services.librechat  }}
+{{- $kind := "database-backup" }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+spec:
+  schedule: {{ $service.db.backup.scheduleCron }}
+  timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
+  successfulJobsHistoryLimit: 3
+  concurrencyPolicy: Replace
+  jobTemplate:
+    metadata:
+      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+    spec:
+      template:
+        metadata:
+          labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
+        spec:
+          automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+          enableServiceLinks: {{ .Values.enableServiceLinks }}
+          priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+          securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          containers:
+            - name: mongodump
+              image: bitnami/mongodb:8.0
+              imagePullPolicy: Always
+              securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              command:
+                - /bin/sh
+                - -ec
+                - "mongodump --username=${MONGODB_ROOT_USER} --password=${MONGODB_ROOT_PASSWORD} --authenticationDatabase=admin --host=${MONGODB_SERVICE_NAME} --port=${MONGODB_PORT_NUMBER} --gzip --archive=/backup/mongodump-$(date '+%Y-%m-%d-%H-%M').gz"
+              env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+                - name: MONGODB_SERVICE_NAME
+                  value: {{ include "common.names.name" ( dict "service" $service "kind" "database" ) | quote }}
+                - name: MONGODB_PORT_NUMBER
+                  value: {{ $service.db.ports.mongo | quote }}
+                - name: MONGODB_ROOT_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $service.db.secretName | quote }}
+                      key: mongodb-root-username
+                      optional: false
+                - name: MONGODB_ROOT_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $service.db.secretName | quote }}
+                      key: mongodb-root-password
+                      optional: false
+              resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+                - name: backup
+                  mountPath: /backup
+          volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: backup
+              hostPath:
+                path: {{ $service.db.backup.dir | quote }}
+                type: Directory
+          restartPolicy: OnFailure
+{{- end }}

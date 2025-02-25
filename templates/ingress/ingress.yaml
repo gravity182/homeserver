@@ -2,13 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress
-  namespace: {{ .Release.Namespace }}
-  labels:
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "context" $ ) | nindent 4 }}
     app.kubernetes.io/name: ingress
-    {{- include "homeserver.labels" . | indent 2 }}
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-cert-issuer
-    traefik.ingress.kubernetes.io/router.middlewares: "{{ .Release.Namespace }}-forwardauth-authentik@kubernetescrd,{{ .Release.Namespace }}-security-headers@kubernetescrd"
+    traefik.ingress.kubernetes.io/router.middlewares: "{{ include "common.names.namespace" . }}-forwardauth-authentik@kubernetescrd,{{ include "common.names.namespace" . }}-security-headers@kubernetescrd"
     {{- range $key, $value := .Values.ingress.annotations }}
       {{ $key }}: {{ $value | quote }}
     {{- end }}
@@ -20,9 +19,9 @@ spec:
         - "{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
         - "*.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
   rules:
-    {{- range $k, $service := .Values.services }}
+    {{- range $_, $service := .Values.services }}
     {{- if and $service.enabled $service.exposed }}
-    {{- range $i, $host := $service.ingress }}
+    {{- range $_, $host := $service.ingress }}
     - host: "{{ $host }}.{{ $.Values.ingress.domain }}"
       http:
         paths:
@@ -30,15 +29,15 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ $service.name }}
+                name: {{ include "common.names.name" ( dict "service" $service "kind" "app" ) | quote }}
                 port:
                   number: {{ $service.ports.http }}
     {{- end }}
     {{- end }}
     {{- end }}
     {{- if .Values.ingress.rootService }}
-    {{- range $k, $service := .Values.services }}
-    {{- if and (and $service.enabled $service.exposed) (eq $service.name $.Values.ingress.rootService ) }}
+    {{- range $_, $service := .Values.services }}
+    {{- if and (and $service.enabled $service.exposed) (eq $service.name $.Values.ingress.rootService) }}
     - host: {{ $.Values.ingress.domain | quote }}
       http:
         paths:
@@ -46,7 +45,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ $service.name }}
+                name: {{ include "common.names.name" ( dict "service" $service "kind" "app" ) | quote }}
                 port:
                   number: {{ $service.ports.http }}
     {{- end }}

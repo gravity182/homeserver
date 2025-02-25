@@ -1,7 +1,14 @@
 collections:
-  Radarr Clear Current Watchlist:
-    radarr_taglist: imdb-watchlist, letterboxd-watchlist
-    item_radarr_tag.remove: imdb-watchlist, letterboxd-watchlist
+  Radarr Clear Current IMDb Watchlist:
+    radarr_taglist: imdb-watchlist
+    item_radarr_tag.remove: imdb-watchlist
+    sync_mode: append
+    build_collection: false
+  Radarr Clear Current Letterboxd Watchlist:
+    radarr_taglist: letterboxd-watchlist
+    item_radarr_tag.remove: letterboxd-watchlist
+    sync_mode: append
+    build_collection: false
   IMDb Watchlist:
     collection_mode: show_items
     collection_order: custom

@@ -1,87 +1,67 @@
 {{- if .Values.services.homepage.enabled }}
-{{- $service := .Values.services.homepage -}}
+{{- $service := .Values.services.homepage  }}
+{{- $kind := "app" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $service.name }}
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: {{ $service.name }}
-    {{- include "homeserver.labels" . | indent 2 }}
-    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   revisionHistoryLimit: 3
   replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ $service.name }}
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: {{ $service.name }}
-        {{- include "homeserver.labels" . | indent 6 }}
-        homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
+      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/apps/homepage/configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include "common.utils.checksumTemplate" ( dict "path" "/apps/homepage/configmap.yaml" "context" $ ) }}
     spec:
-      serviceAccountName: {{ $service.name }}
-      automountServiceAccountToken: true
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+      serviceAccountName: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
       dnsPolicy: ClusterFirst
-      enableServiceLinks: true
-      securityContext:
-        fsGroup: {{ required "A valid GID required!" .Values.host.gid }}
-      securityContext:
-        sysctls:
-          {{- if $service.vpn.enabled }}
-          {{- include "homeserver.vpn.wg-sysctls" . | indent 8 }}
-          {{- end }}
-      initContainers:
-        {{- if $service.vpn.enabled }}
-        {{- include "homeserver.vpn.wg-sidecar" . | indent 6 }}
-        {{- end }}
-        - name: add-homepage-config
-          image: busybox
+      securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list) "context" $ ) | nindent 8 }}
+        - name: init-homepage-config
+          image: {{ include "common.initContainer.utility-image" . | quote }}
           imagePullPolicy: IfNotPresent
+          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           command:
             - /bin/sh
-            - -c
-            - cp -rfL /tmp/config/* /app/config/ && chmod -R a=,a+rX,u+w,g+w /app/config
+            - -ec
+            - |-
+              cp -rfL /tmp/config/* /app/config/
+          resources: {{- include "common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
-            - name: config
+            - name: empty-dir
               mountPath: /app/config
+              subPath: app-config-dir
             - name: homepage-config
               mountPath: /tmp/config
       containers:
         - name: homepage
-          image: "{{ $service.image.repository }}:{{ $service.image.tag }}"
+          image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
-          env:
-            {{- range $key, $value := $service.env }}
-            - name: {{ $key | quote }}
-              value: {{ $value | quote }}
-            {{- end }}
-            - name: PUID
-              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
-            - name: PGID
-              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
-            - name: TZ
-              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           ports:
             - name: http
               containerPort: 3000
               protocol: TCP
-          volumeMounts:
-            - mountPath: /app/config
-              name: config
-      volumes:
-        {{- if $service.vpn.enabled }}
-        {{- include "homeserver.vpn.wg-volumes" . | indent 6 }}
-        {{- end }}
+          resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: empty-dir
+              mountPath: /app/config
+              subPath: app-config-dir
+      volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         - name: homepage-config
           configMap:
-            name: {{ $service.name }}
-        - name: config
-          emptyDir: {}
+            name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
 {{- end }}

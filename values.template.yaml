@@ -1,7 +1,20 @@
+## Host configuration
+##
 host:
-    tz: # REQUIRED; e.g. 'Europe/Berlin'
-    uid: # REQUIRED; obtain via `id -u`
-    gid: # REQUIRED; obtain via `id -g`
+    ## Host timezone
+    ## e.g. 'Europe/Berlin'
+    ##
+    tz: # REQUIRED
+    ## Host user's ID
+    ## Can be obtained via `id -u`
+    ##
+    uid: # REQUIRED
+    ## Host user's group ID
+    ## Can be obtained via `id -g`
+    ##
+    gid: # REQUIRED
+## cert-manager configuration
+##
 certmanager:
     namespace: cert-manager
     tlsSecretName: certs.letsencrypt.key.tls
@@ -9,68 +22,159 @@ certmanager:
         email: # REQUIRED; e.g. 'example@gmail.com'
         dns01:
             cfApiToken: # REQUIRED
+## Authentik configuration
+##
 authentik:
     namespace: authentik
     postgresql:
         auth:
-            password: "" # REQUIRED; set the same value as in authentik-values.yaml
-        backup: /opt/authentik/postgresql/backup
-        # backups schedule in the cron format
-        backupScheduleCron: "0 5 * * 0"
-        # backups will be kept for the specified number of days
-        backupRetentionDays: 180
+            password: "" # REQUIRED; set to the same value as in authentik-values.yaml
+        backup:
+            # host directory where to save backups
+            dir: /opt/authentik/postgresql/backup
+            # schedule cron
+            scheduleCron: "0 5 * * 0"
+            # how long to keep old backups (in days)
+            retentionDays: 180
+## Ingress configuration
+##
 ingress:
-    domain: # REQUIRED; e.g. 'example.com' (without a scheme)
-    # the service to serve when opening the root domain
-    # set to service.name; leave empty to disable
+    ## Your domain
+    ## e.g. 'example.com' (without a scheme)
+    ##
+    domain: # REQUIRED
+    ## The service to serve on the root domain
+    ## Set it to `services.<service>.name`. Leave empty to disable.
+    ##
     rootService: homepage
+    ## Custom annotations to add to the Ingress resource
+    ##
     annotations: {}
+## VPN configuration
+## To enable VPN for a service, set `services.<service_name>.vpn.enabled=true`
+##
 vpn:
-    secretRef: wireguard-conf-secret # the secret's name
-    secretKey: wg0.conf # key inside the secret containing a wg conf
+    ## Enables SYS_MODULE capability
+    ## Set to true if you're having issues with WireGuard
+    ##
+    sysModule: false
+    ## Secret's name containing the WireGuard configuration
+    ##
+    secretRef: wireguard-conf
+    ## Key inside the secret
+    ##
+    secretKey: wg0.conf
+## Whether information about services should be injected into pod's environment variable
+## The environment variables injected by service links are usually not needed, but can lead to slow boot times.
+## Recommended to keep it disabled.
+##
+enableServiceLinks: false
+## Whether to mount Service Account token in pods
+## Recommended to keep it disabled.
+##
+automountServiceAccountToken: false
+## Common labels to add to all the deployed resources. Evaluated as a template
+##
+## Usage:
+## commonLabels:
+##    app.kubernetes.io/managed-by: Helm
+##
+commonLabels: {}
+## Common annotations to add to all the deployed resources. Evaluated as a template
+##
+## Usage:
+## commonAnnotations:
+##    app.kubernetes.io/managed-by: Helm
+##
+commonAnnotations: {}
+## Pods' global liveness probe. Evaluated as a template.
+## Can be overriden by service-specific settings.
+## See https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+##
+livenessProbe:
+    enabled: false
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 10
+    failureThreshold: 6
+    successThreshold: 1
+## Pods' global readiness probe. Evaluated as a template.
+## see https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+##
+readinessProbe:
+    enabled: false
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+## Pods' global startup probe. Evaluated as a template.
+## Slow starting containers can be protected through startup probes
+## see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+##
+startupProbe:
+    enabled: false
+    initialDelaySeconds: 5
+    periodSeconds: 20
+    timeoutSeconds: 10
+    successThreshold: 1
+    failureThreshold: 30
+## Resources configuration
+##
+resources:
+    ## Whether resources management should be enabled
+    ## see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+    enabled: false
 services:
     backrest:
-        enabled: true
+        enabled: false
         exposed: true
         name: backrest
         replicaCount: 1
+        critical: false
         image:
             repository: garethgeorge/backrest
             tag: latest
             pullPolicy: IfNotPresent
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 9898
         ingress:
             - backrest
             - backup
+        userdata: /opt
+        persistence:
+            config: /opt/backrest/config
+            data: /opt/backrest/data
+            cache: /opt/backrest/cache
         vpn:
             enabled: false
-        userdata: /opt
-        data: /opt/backrest/data
-        config: /opt/backrest/config
-        cache: /opt/backrest/cache
-        env: {}
+        extraEnv: {}
     homepage:
-        enabled: true
+        enabled: false
         exposed: true
         name: homepage
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/gethomepage/homepage
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 3000
         ingress:
             - homepage
-        vpn:
-            enabled: false
         widgets:
-            # the value below are not mandatory get Homepage working, but it won't show useful info about the services
+            # the values below are not mandatory to get Homepage working, but widgets won't be working
             authentik:
                 apiKey: "" # go to Admin Portal > Directory > Tokens & App passwords and generate a new API key
             miniflux:
-                apiKey: "" # go to Settings -> API Keys and generate a new API key
+                apiKey: "-picw8=" # go to Settings -> API Keys and generate a new API key
             radarr:
                 apiKey: "" # go to Settings -> General and retrieve the API key
             sonarr:
@@ -84,7 +188,7 @@ services:
             autobrr:
                 apiKey: "" # go to Settings -> API Keys and generate a new API key
             jellyseerr:
-                apiKey: "" # go to Settings -> General and retrieve the API key
+                apiKey: "==" # go to Settings -> General and retrieve the API key
             tautulli:
                 apiKey: "" # go to Settings -> Web Interface and retrieve the API key
             jellyfin:
@@ -92,50 +196,64 @@ services:
             sabnzbd:
                 apiKey: "" # go to Settings -> General and retrieve the API key
             changedetection:
-                apiKey: "" # go to Settings -> API and retrieve the API key
+                apiKey: ""
             gotify:
                 apiKey: "" # go to Clients and generate a new client
             kavita:
-                username: ""
-                password: ""
+                username:
+                password:
             calibre:
-                username: ""
-                password: ""
-        env: {}
+                username:
+                password:
+            mealie:
+                apiKey: ""
+        vpn:
+            enabled: false
+        extraEnv: {}
     plex:
         enabled: false
         exposed: true
         name: plex
         replicaCount: 1
+        critical: true
         image:
-            repository: lscr.io/linuxserver/plex
-            tag: "1.41.4"
-            pullPolicy: IfNotPresent
+            repository: ghcr.io/onedr0p/plex
+            tag: rolling
+            pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
-            http: 32400
+            http: 8080
             # make sure to open the remote access port in your firewall
             # you can change this port but it should be in range of 30000-32767 (k8s NodePort)
             remoteAccess: 32400
         ingress:
             - plex
-        vpn:
-            enabled: false
         # get a claim code at https://www.plex.tv/claim/
         # note the code is only active for 5 minutes
         claim: # REQUIRED
-        config: /opt/plex/config
-        # the container should have access only to the media library directory
-        library: /data/library
-        env: {}
+        persistence:
+            config: /opt/plex/config
+            library: /data/library
+        vpn:
+            enabled: false
+        extraEnv: {}
     jellyfin:
         enabled: false
         exposed: true
         name: jellyfin
         replicaCount: 1
+        critical: false
         image:
             repository: lscr.io/linuxserver/jellyfin
             tag: latest
             pullPolicy: Always
+        securityContext:
+            # the Linuxserver image uses s6-overlay,
+            # which has its own mechanism for switching to a non-root user via PUID/GUID
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 8096
             udp: 7359
@@ -143,39 +261,48 @@ services:
             - jellyfin
         vpn:
             enabled: false
-        config: /opt/jellyfin/config
-        # the container should have access only to the media library directory
-        library: /data/library
-        env: {}
+        persistence:
+            config: /opt/jellyfin/config
+            library: /data/library
+        extraEnv: {}
     autobrr:
         enabled: false
         exposed: true
         name: autobrr
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/autobrr/autobrr
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 7474
         ingress:
             - autobrr
+        persistence:
+            config: /opt/autobrr/config
         vpn:
             enabled: false
-        config: /opt/autobrr/config
-        env:
+        extraEnv:
             # see the full list of supported env vars
             # https://autobrr.com/installation/docker#environment-variables
             #
     qbittorrent:
         enabled: false
         exposed: true
-        name: torrent
+        name: qbittorrent
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/qbittorrent
-            tag: latest
+            repository: ghcr.io/onedr0p/qbittorrent
+            tag: "5"
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 8080
             # make sure the p2p port is allowed in your firewall
@@ -184,178 +311,228 @@ services:
         ingress:
             - qbittorrent
             - torrent
+        # enables VueTorrent
+        # see https://github.com/VueTorrent/VueTorrent
+        # set '/vuetorrent' in the qBittorrent -> Web UI settings
+        useVuetorrent: true
+        persistence:
+            config: /opt/qbittorrent/config
+            # the container should have access only to the torrent downloads directory
+            data: /data/torrents
         vpn:
             enabled: false
-        dockerMods: ghcr.io/vuetorrent/vuetorrent-lsio-mod:latest
-        config: /opt/qbittorrent/config
-        # the container should have access only to the torrent downloads directory
-        data: /data/torrents
-        env: {}
+        extraEnv: {}
     sabnzbd:
         enabled: false
         exposed: true
-        name: usenet
+        name: sabnzbd
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/sabnzbd
-            tag: latest
+            repository: ghcr.io/onedr0p/sabnzbd
+            tag: "4"
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 8080
         ingress:
             - sabnzbd
             - usenet
+        persistence:
+            config: /opt/sabnzbd/config
+            data: /data/usenet
         vpn:
             enabled: false
-        config: /opt/sabnzbd/config
-        # the container should have access only to the usenet downloads directory
-        data: /data/usenet
-        env: {}
+        extraEnv: {}
     prowlarr:
         enabled: false
         exposed: true
         name: prowlarr
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/prowlarr
-            tag: latest
+            repository: ghcr.io/onedr0p/prowlarr
+            tag: "1"
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 9696
         ingress:
             - prowlarr
+        persistence:
+            config: /opt/prowlarr/config
         vpn:
             enabled: false
-        config: /opt/prowlarr/config
-        env: {}
+        extraEnv: {}
     radarr:
         enabled: false
         exposed: true
         name: radarr
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/radarr
-            tag: latest
+            repository: ghcr.io/onedr0p/radarr
+            tag: "5"
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 7878
         ingress:
             - radarr
+            - movies
+            - movie
+        persistence:
+            config: /opt/radarr/config
+            data: /data
         vpn:
             enabled: false
-        config: /opt/radarr/config
-        # the container must have access to the whole data directory
-        # otherwise hardlinks won't be working
-        data: /data
-        env: {}
+        extraEnv: {}
     sonarr:
         enabled: false
         exposed: true
         name: sonarr
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/sonarr
-            tag: latest
+            repository: ghcr.io/onedr0p/sonarr
+            tag: "4"
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 8989
         ingress:
             - sonarr
+            - tv
+        persistence:
+            config: /opt/sonarr/config
+            data: /data
         vpn:
             enabled: false
-        config: /opt/sonarr/config
-        # the container must have access to the whole data directory
-        # otherwise hardlinks won't be working
-        data: /data
-        env: {}
+        extraEnv: {}
     lidarr:
-        enabled: true
+        enabled: false
         exposed: true
         name: lidarr
         replicaCount: 1
+        critical: false
         image:
             repository: lscr.io/linuxserver/lidarr
             tag: latest
             pullPolicy: Always
+        securityContext:
+            # the Linuxserver image uses s6-overlay,
+            # which has its own mechanism for switching to a non-root user via PUID/GUID
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 8686
         ingress:
             - lidarr
+            - music
+        persistence:
+            config: /opt/lidarr/config
+            data: /data
         vpn:
             enabled: false
-        config: /opt/lidarr/config
-        # the container must have access to the whole data directory
-        # otherwise hardlinks won't be working
-        data: /data
-        env: {}
+        extraEnv: {}
     whisparr:
         enabled: false
         exposed: true
         name: whisparr
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/hotio/whisparr
-            tag: latest
+            tag: v3
             pullPolicy: Always
+        securityContext:
+            # the Hotio image uses s6-overlay,
+            # which has its own mechanism for switching to a non-root user via PUID/GUID
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 6969
         ingress:
             - whisparr
+            - porn
+            - xxx
+        persistence:
+            config: /opt/whisparr/config
+            data: /data
         vpn:
             enabled: false
-        config: /opt/whisparr/config
-        # the container must have access to the whole data directory
-        # otherwise hardlinks won't be working
-        data: /data
-        env: {}
+        extraEnv: {}
     bazarr:
         enabled: false
         exposed: true
         name: bazarr
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/bazarr
-            tag: latest
+            repository: ghcr.io/onedr0p/bazarr
+            tag: "1"
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 6767
         ingress:
             - bazarr
+            - subtitles
+            - subtitle
+        persistence:
+            config: /opt/bazarr/config
+            data: /data
         vpn:
             enabled: false
-        config: /opt/bazarr/config
-        # the container must have access to the whole data directory
-        # otherwise hardlinks won't be working
-        data: /data
-        env: {}
+        extraEnv: {}
     jellyseerr:
         enabled: false
         exposed: true
         name: jellyseerr
         replicaCount: 1
+        critical: false
         image:
             repository: fallenbagel/jellyseerr
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 5055
         ingress:
             - jellyseerr
+        persistence:
+            config: /opt/jellyseerr/config
         vpn:
             enabled: false
-        config: /opt/jellyseerr/config
-        env: {}
+        extraEnv: {}
     flaresolverr:
         enabled: false
         exposed: false
         name: flaresolverr
         replicaCount: 1
+        critical: false
         image:
             # up to date fork of FlareSolverr
             # uses nodriver method instead of obsolete undetected-chromedriver
             repository: 21hsmw/flaresolverr
             tag: nodriver
             pullPolicy: Always
+        securityContext:
+            # throws exception if strict, hard to debug
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 8191
         ingress:
@@ -367,7 +544,7 @@ services:
         driver: nodriver
         logLevel: INFO
         lang: en_US
-        env:
+        extraEnv:
             # see the full list of supported env vars
             # https://github.com/21hsmw/FlareSolverr?tab=readme-ov-file#environment-variables
             #
@@ -376,43 +553,43 @@ services:
         exposed: true
         name: tautulli
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/tautulli
-            tag: latest
+            repository: ghcr.io/onedr0p/tautulli
+            tag: "2"
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 8181
         ingress:
             - tautulli
+        persistence:
+            config: /opt/tautulli/config
         vpn:
             enabled: false
-        config: /opt/tautulli/config
-        env: {}
+        extraEnv: {}
     kometa:
         enabled: false
         exposed: false
         name: kometa
         replicaCount: 1
+        critical: false
         image:
             repository: kometateam/kometa
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 8181
-        ingress:
-        vpn:
-            enabled: false
-        config: /opt/kometa/config
-        # when to run the Kometa job
-        # runs at 5AM by default
-        # use https://crontab.guru for building and checking your cron value
+        ingress: {}
+        persistence:
+            config: /opt/kometa/config
         scheduleCron: "0 5 * * *"
-        # whether to enable jmxd overlays
-        # see https://github.com/jmxd/Kometa for details
-        # personally, I find them minimalistic and best-looking
-        enableJmxdOverlays: False
-        # the .connections entries below are not mandatory if you don't plan using my default profile
-        # although these vars are very common so high chance you will need them in your own configuration too
+        enableJmxdOverlays: True
         connections:
             tmdb:
                 apiKey: ""
@@ -426,62 +603,79 @@ services:
                 apiKey: ""
             radarr:
                 apiKey: "" # go to Settings -> General and retrieve the API key
-                qualityProfile: "" # set the quality profile name which you configured in Radarr
-                rootFolderPath: "" # set the root folder path; e.g. /data/library/movies
+                rootFolderPath: /data/library/movies # your library path
+                qualityProfile: "Best 1080p" # your quality profile name
             sonarr:
                 apiKey: "" # go to Settings -> General and retrieve the API key
-                qualityProfile: "" # set the quality profile name which you configured in Sonarr
-                rootFolderPath: "" # set the root folder path; e.g. /data/library/tv
-        env:
+                rootFolderPath: /data/library/tv # your library path
+                qualityProfile: "Best 1080p" # your quality profile name
+        vpn:
+            enabled: false
+        extraEnv:
             # see the full list of supported env vars
             # https://kometa.wiki/en/latest/kometa/environmental
-            #
     thelounge:
         enabled: false
         exposed: true
         name: thelounge
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/thelounge
-            tag: latest
+            repository: thelounge/thelounge
+            tag: "4"
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 9000
         ingress:
             - thelounge
             - lounge
             - irc
+        persistence:
+            config: /opt/thelounge/config
         vpn:
             enabled: false
-        config: /opt/thelounge/config
-        env: {}
+        extraEnv: {}
     myspeed:
-        enabled: true
+        enabled: false
         exposed: true
         name: myspeed
         replicaCount: 1
+        critical: false
         image:
             repository: germannewsmaker/myspeed
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 5216
         ingress:
             - myspeed
             - speedtest
+        persistence:
+            config: /opt/myspeed/config
         vpn:
             enabled: false
-        config: /opt/myspeed/config
-        env: {}
+        extraEnv: {}
     stirlingpdf:
         enabled: false
         exposed: true
-        name: pdf
+        name: stirlingpdf
         replicaCount: 1
+        critical: false
         image:
             repository: frooodle/s-pdf
             tag: latest
             pullPolicy: Always
+        securityContext:
+            # unfortunately the image needs root access
+            # in order to install packages
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 8080
         ingress:
@@ -492,114 +686,133 @@ services:
             enabled: false
         enableLogin: false
         installBookAndAdvancedHtmlOps: true
-        langs: "en_GB,en_US"
-        config: /opt/stirlingpdf/config
-        logs: /opt/stirlingpdf/logs
-        env:
+        langs: "en_US"
+        persistence:
+            config: /opt/stirlingpdf/config
+        extraEnv:
             # see the full list of supported env vars
             # https://github.com/Stirling-Tools/Stirling-PDF?tab=readme-ov-file#customisation
             #
-            # UI_APP_NAME: "My very own Stirling PDF"
     miniflux:
         enabled: false
         exposed: true
-        name: rss
+        name: miniflux
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/miniflux/miniflux
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 8080
         ingress:
             - miniflux
             - rss
-        vpn:
-            enabled: false
-        db:
-            name: miniflux-db
-            user: miniflux
-            # generate a password for the postgres user
-            # e.g. `pwgen -s -B -n 14 1`
-            password: # REQUIRED
-            dbname: miniflux
-            ports:
-                postgres: 5432
-            data: /opt/miniflux/postgresql/17/data
-            backup: /opt/miniflux/postgresql/17/backup
-            # backups schedule cron
-            backupScheduleCron: "0 5 * * 0"
-            # backups will be kept for the specified number of days
-            backupRetentionDays: 180
         # number of days after which marking read items as removed; set to -1 to disable this feature
-        cleanupArchiveReadDays: 180
+        cleanupArchiveReadDays: 3600
         # number of days after which marking unread items as removed; set to -1 to disable this feature
         cleanupArchiveUnreadDays: 360
         # cleanup job frequency
         cleanupFrequencyHours: 24
-        env: {}
+        vpn:
+            enabled: false
+        db:
+            dbName: miniflux
+            user: miniflux
+            # generate a password for the postgres user
+            # e.g. `pwgen -s -B -n 14 1`
+            password: # REQUIRED
+            securityContext:
+                strict: false
+            resourcesPreset: "micro"
+            ports:
+                postgres: 5432
+            persistence:
+                data: /opt/miniflux/postgresql/17/data
+            backup:
+                dir: /opt/miniflux/postgresql/17/backup
+                scheduleCron: "0 5 * * 0"
+                retentionDays: 180
+                securityContext:
+                    strict: false
+                resourcesPreset: "micro"
+        extraEnv: {}
     huginn:
         enabled: false
         exposed: true
         name: huginn
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/huginn/huginn
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 3000
         ingress:
             - huginn
-        vpn:
-            enabled: false
-        db:
-            name: huginn-db
-            user: huginn
-            # generate a password for the postgres user
-            # e.g. `pwgen -s -B -n 14 1`
-            password: # REQUIRED
-            dbname: huginn
-            ports:
-                postgres: 5432
-            data: /opt/huginn/postgresql/17/data
-            backup: /opt/huginn/postgresql/17/backup
-            # backups schedule cron
-            backupScheduleCron: "0 5 * * 0"
-            # backups will be kept for the specified number of days
-            backupRetentionDays: 180
         # generate a secret token
         # e.g. `openssl rand -base64 32`
         appSecretToken: # REQUIRED
         # leave empty if you don't want to require the inv code for registration
         # usually not needed as this service is already protected by Authentik
         invitationCode: ""
-        env:
-            # see the full list of supported env vars
-            # https://github.com/huginn/huginn/blob/master/.env.example
-            #
+        vpn:
+            enabled: false
+        db:
+            dbName: huginn
+            user: huginn
+            # generate a password for the postgres user
+            # e.g. `pwgen -s -B -n 14 1`
+            password: # REQUIRED
+            ports:
+                postgres: 5432
+            securityContext:
+                strict: false
+            resourcesPreset: "micro"
+            persistence:
+                data: /opt/huginn/postgresql/17/data
+            backup:
+                dir: /opt/huginn/postgresql/17/backup
+                scheduleCron: "0 5 * * 0"
+                retentionDays: 180
+                securityContext:
+                    strict: false
+                resourcesPreset: "micro"
+        extraEnv: {}
     playwright:
         enabled: false
         exposed: false
         name: playwright
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/browserless/chromium
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 3000
         ingress:
-        vpn:
-            enabled: false
         # generate a secret token
         # e.g. `openssl rand -base64 32`
         token: # REQUIRED
         timeout: 60000
         maxConcurrentSessions: 10
         maxQueueLength: 10
-        config: /opt/playwright/config
-        env:
+        persistence:
+            config: /opt/playwright/config
+        vpn:
+            enabled: false
+        extraEnv:
             # see the full list of supported env vars
             # https://docs.browserless.io/docker/config
             #
@@ -608,10 +821,14 @@ services:
         exposed: true
         name: changedetection
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/changedetection.io
-            tag: latest
+            repository: ghcr.io/dgtlmoon/changedetection.io
+            tag: "0"
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 5000
         ingress:
@@ -625,47 +842,54 @@ services:
             stealth: true
             headless: true
             args: ["--lang=en-US", "--hide-scrollbars"]
-        config: /opt/changedetectionio/config
-        env:
+        persistence:
+            config: /opt/changedetectionio/config
+        extraEnv:
             # see the full list of supported env vars
-            # https://github.com/dgtlmoon/changedetection.io/blob/master/docker-compose.yml#L12
+            # https://github.com/dgtlmoon/changedetection.io/blob/master/docker-compose.yml#L11
             #
     archivebox:
         enabled: false
         exposed: true
         name: archivebox
         replicaCount: 1
+        critical: false
         image:
             repository: archivebox/archivebox
             tag: latest
             pullPolicy: Always
+        securityContext:
+            # uses its own mechanism for switching to a non-root user via PUID/GUID
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 8000
         ingress:
             - archivebox
             - archive
-        vpn:
-            enabled: false
+        persistence:
+            data: /opt/archivebox/data
         adminUsername: admin
         adminPassword: admin
         mediaMaxSize: 750m
         timeout: 120
         saveTitle: true
         saveFavicon: true
-        saveWget: true
-        saveWarc: true
-        savePdf: true
-        saveScreenshot: true
-        saveDom: true
+        saveWget: false
+        saveWarc: false
+        savePdf: false
+        saveScreenshot: false
+        saveDom: false
         saveSinglefile: true
         saveReadability: true
-        saveMercury: true
-        saveGit: true
-        saveMedia: true
-        saveArchiveDotOrg: true
+        saveMercury: false
+        saveGit: false
+        saveMedia: false
+        saveArchiveDotOrg: false
         userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
-        data: /opt/archivebox/data
-        env:
+        vpn:
+            enabled: false
+        extraEnv:
             # see the full list of supported env vars
             # https://github.com/ArchiveBox/ArchiveBox/wiki/Configuration
             #
@@ -674,24 +898,31 @@ services:
         exposed: true
         name: apprise
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/apprise-api
-            tag: latest
+            repository: ghcr.io/caronc/apprise
+            tag: "1.1"
             pullPolicy: Always
+        securityContext:
+            # incompatible with read-only file system
+            # though non-root user is supported
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 8000
         ingress:
             - apprise
-        vpn:
-            enabled: false
         logLevel: INFO
         statefulMode: simple
         # attach size is limited to 500 Mb at max
         attachSizeMegabytes: 500
         defaultConfigId: apprise
         defaultTheme: dark
-        config: /opt/apprise/config
-        env:
+        persistence:
+            config: /opt/apprise/config
+        vpn:
+            enabled: false
+        extraEnv:
             # see the full list of supported env vars
             # https://github.com/caronc/apprise-api?tab=readme-ov-file#environment-variables
             #
@@ -700,22 +931,27 @@ services:
         exposed: true
         name: gotify
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/gotify/server
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 80
         ingress:
             - gotify
-        vpn:
-            enabled: false
         adminUsername: admin
         adminPassword: admin
         databaseDialect: sqlite3
         databaseConnection: data/gotify.db
-        data: /opt/gotify/data
-        env:
+        persistence:
+            data: /opt/gotify/data
+        vpn:
+            enabled: false
+        extraEnv:
             # see the full list of supported env vars
             # https://gotify.net/docs/config#environment-variables
             #
@@ -724,28 +960,39 @@ services:
         exposed: true
         name: kavita
         replicaCount: 1
+        critical: false
         image:
-            repository: lscr.io/linuxserver/kavita
+            repository: ghcr.io/kareadita/kavita
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 5000
         ingress:
             - kavita
+        persistence:
+            config: /opt/kavita/config
+            library: /data/library/books
         vpn:
             enabled: false
-        config: /opt/kavita/config
-        library: /data/library/books
-        env: {}
+        extraEnv: {}
     calibre:
         enabled: false
         exposed: true
         name: calibre
         replicaCount: 1
+        critical: false
         image:
             repository: crocodilestick/calibre-web-automated
             tag: latest
             pullPolicy: Always
+        securityContext:
+            # the image uses s6-overlay,
+            # which has its own mechanism for switching to a non-root user via PUID/GUID
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 8083
         ingress:
@@ -753,32 +1000,37 @@ services:
             - books
         vpn:
             enabled: false
-        config: /opt/calibre-web-automated/config
-        ingest: /opt/calibre-web-automated/ingest
-        data: /data/library/books
-        env: {}
+        persistence:
+            config: /opt/calibre-web-automated/config
+            ingest: /opt/calibre-web-automated/ingest
+            data: /data/library/books
+        extraEnv: {}
     calibrebookdownloader:
         enabled: false
         exposed: true
-        name: calibrebookdownloader
+        name: calibre-book-downloader
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/calibrain/calibre-web-automated-book-downloader
             tag: latest
             pullPolicy: Always
+        securityContext:
+            # the image has its own mechanism for switching to a non-root user via UID/UID
+            strict: false
+        resourcesPreset: "micro"
         ports:
             http: 8084
         ingress:
             - calibre-book-downloader
             - annas-archive
             - anna-archive
-        # Anna's Archive is blocked in some countries, you can use a VPN to bypass the block
-        vpn:
-            enabled: false
         # bypasses Cloudflare's protection when downloading books from Anna's Archive
+        # enabling this option will automatically deploy a separate service, CloudflareBypassForScraping
+        # see https://github.com/sarperavci/CloudflareBypassForScraping
         useCfBypass: true
         # preferred books language, you can add more languages separated by a comma
-        bookLanguage: "en,ru"
+        bookLanguage: "en"
         # restricts the search to specific formats
         # you can add more formats separated by a comma
         # pay attention to compatibility with CWA - some formats may not be ingested
@@ -786,83 +1038,185 @@ services:
         # note: formats are sorted in the order of preference
         supportedFormats: "epub,azw,azw3,azw4,mobi,fb2,cbz,cbr,cb7,cbc,chm,pdf,djvu,docx,fbz,html,htmlz,lit,lrf,odt,prc,pdb,pml,rb,rtf,snb,tcr,txtz"
         annasArchiveDonatorKey: # set your donator key if you have one; this will make downloads much, much faster
-        env: {}
+        # Anna's Archive is blocked in some countries, you can use a VPN to bypass the block
+        vpn:
+            enabled: false
+        extraEnv: {}
     openbooks:
         enabled: false
         exposed: true
         name: openbooks
         replicaCount: 1
+        critical: false
         image:
             repository: evanbuss/openbooks
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 8080
         ingress:
             - openbooks
             - irchighway
             - highway
-        vpn:
-            enabled: false
         # your IRC name, it will be used to identify you in the IRC channel
         ircname: # REQUIRED
-        # if true, won't send files to browser
+        # if true, won't send files to browser; in other words, it'll only send files to Calibre for ingestion
         noBrowserDownloads: false
-        env: {}
+        vpn:
+            enabled: false
     convertx:
         enabled: false
         exposed: true
         name: convertx
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/c4illin/convertx
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 3000
         ingress:
             - convertx
             - convert
+        # set to 0 to disable auto-delete
+        autoDeleteEveryNHours: 24
+        persistence:
+            data: /opt/convertx/data
         vpn:
             enabled: false
-        data: /opt/convertx/data
-        autoDeleteEveryNHours: 24
-        env: {}
+        extraEnv:
+            # see available env vars
+            # https://github.com/C4illin/ConvertX?tab=readme-ov-file#environment-variables
+            #
     pinchflat:
         enabled: false
         exposed: true
         name: pinchflat
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/kieraneglin/pinchflat
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
         ports:
             http: 8945
         ingress:
             - pinchflat
         vpn:
             enabled: false
-        config: /opt/pinchflat/config
-        data: /data/library/videos
-        env: {}
+        persistence:
+            config: /opt/pinchflat/config
+            data: /data/library/videos
+        extraEnv: {}
     mealie:
         enabled: false
         exposed: true
         name: mealie
         replicaCount: 1
+        critical: false
         image:
             repository: ghcr.io/mealie-recipes/mealie
             tag: latest
             pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "medium"
         ports:
             http: 9000
         ingress:
             - mealie
             - recipes
             - recipe
+        tokenTimeHours: 4320
+        persistence:
+            data: /opt/mealie/data
         vpn:
             enabled: false
-        tokenTimeHours: 168
-        data: /opt/mealie/data
-        env: {}
+        extraEnv: {}
+    librechat:
+        enabled: false
+        exposed: true
+        name: librechat
+        replicaCount: 1
+        critical: false
+        image:
+            repository: ghcr.io/danny-avila/librechat
+            tag: latest
+            pullPolicy: Always
+        securityContext:
+            strict: true
+        resourcesPreset: "micro"
+        ports:
+            http: 3080
+        ingress:
+            - librechat
+            - ai
+        # secret containing sensitive values
+        # must contain the following keys:
+        # - creds-key: the key used to encrypt the credentials
+        # - creds-iv: the IV used to encrypt the credentials
+        # - jwt-secret: the secret used to sign the JWT tokens
+        # - jwt-refresh-secret: JWT Refresh Token
+        #
+        # you can generate creds at https://www.librechat.ai/toolkit/creds_generator
+        secretName: librechat-secret
+        # list endpoints separated by comma
+        # you can configure custom endpoints in files/librechat.yaml
+        endpoints: "OpenRouter"
+        db:
+            # database name
+            # it's a name internal to mongo, not the k8s resource
+            # automatically created at startup
+            dbName: librechat
+            securityContext:
+                strict: true
+            resourcesPreset: "micro"
+            ports:
+                mongo: 27017
+            persistence:
+                data: /opt/librechat/mongo/8
+            # secret containing the required db sensitive values
+            # must contain the following keys:
+            # - mongodb-root-username: root user username
+            # - mongodb-root-password: root user password
+            # - mongodb-librechat-username: librechat user username
+            # - mongodb-librechat-password: librechat user password
+            #
+            # The librechat user, which is used by the app, is restricted in privileges and has access only to the `dbName` database
+            # The root user is used by the backup cronjob
+            #
+            secretName: librechat-db-secret
+            backup:
+                dir: /opt/librechat/mongo/8/backup
+                scheduleCron: "0 5 * * 0"
+                retentionDays: 180
+                securityContext:
+                    strict: true
+                resourcesPreset: "micro"
+            extraEnv:
+                # see all the available env variables
+                # https://github.com/bitnami/containers/blob/main/bitnami/mongodb/README.md#configuration
+                #
+                # log only info messages
+                # everything above 0 is debug logging
+                - name: MONGODB_SYSTEM_LOG_VERBOSITY
+                  value: 0
+        vpn:
+            enabled: false
+        extraEnvFromSecret:
+        extraEnvSecrets:
+            # you can pass your API keys here
+            # - name: OPENROUTER_KEY
+            #   secretName: librechat-openrouter-api-key-secret
+            #   secretKey: openrouter-api-key
+        extraEnv: {}

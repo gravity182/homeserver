@@ -1,72 +1,54 @@
 {{- if .Values.services.changedetectionio.enabled }}
-{{- $service := .Values.services.changedetectionio -}}
+{{- $service := .Values.services.changedetectionio  }}
+{{- $kind := "app" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $service.name }}
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: {{ $service.name }}
-    {{- include "homeserver.labels" . | indent 2 }}
-    homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   revisionHistoryLimit: 3
   replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ $service.name }}
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: {{ $service.name }}
-        {{- include "homeserver.labels" . | indent 6 }}
-        homeserver/vpn: {{ $service.vpn.enabled | default false | ternary "true" "false" | quote }}
+      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
     spec:
-      securityContext:
-        sysctls:
-          {{- if $service.vpn.enabled }}
-          {{- include "homeserver.vpn.wg-sysctls" . | indent 8 }}
-          {{- end }}
-      initContainers:
-        {{- if $service.vpn.enabled }}
-        {{- include "homeserver.vpn.wg-sidecar" . | indent 6 }}
-        {{- end }}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+      securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list "config") "context" $ ) | nindent 8 }}
       containers:
         - name: changedetectionio
-          image: "{{ $service.image.repository }}:{{ $service.image.tag }}"
+          image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
-          env:
-            {{- range $key, $value := $service.env }}
-            - name: {{ $key | quote }}
-              value: {{ $value | quote }}
-            {{- end }}
-            - name: PUID
-              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
-            - name: PGID
-              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
-            - name: TZ
-              value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: BASE_URL
-              value: https://{{ $service.name }}.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
-            {{- if .Values.services.playwright.enabled }}
+              value: {{ include "common.utils.ingressUrl" ( dict "service" $service "context" $ ) | quote }}
+            {{- $playwright := .Values.services.playwright }}
+            {{- if $playwright.enabled }}
             - name: PLAYWRIGHT_DRIVER_URL
-              value: ws://{{ $service.name }}:{{ $service.ports.http }}?token={{ required "A valid $service.token required!" $service.token }}&launch={{ mustToJson $service.playwrightLaunchOptions }}
+              value: {{ include "common.utils.serviceUrl" ( dict "service" $playwright "scheme" "ws" "context" $ ) }}?token={{ required "A valid playwright token required!" $playwright.token }}&launch={{ mustToJson $service.playwrightLaunchOptions }}
             {{- end }}
           ports:
             - name: http
               containerPort: 5000
               protocol: TCP
-          volumeMounts:
+          resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: config
-              mountPath: /config
-      volumes:
-        {{- if $service.vpn.enabled }}
-        {{- include "homeserver.vpn.wg-volumes" . | indent 6 }}
-        {{- end }}
+              mountPath: /datastore
+      volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         - name: config
           hostPath:
-            path: {{ $service.config | quote }}
+            path: {{ $service.persistence.config | quote }}
             type: Directory
 {{- end }}

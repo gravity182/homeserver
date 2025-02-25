@@ -4,13 +4,13 @@
 - [Installation](#installation-1)
 - [Chart customization](#chart-customization)
     - [VPN](#vpn)
-    - [Environment variables](#environment-variables)
 - [File permissions](#file-permissions)
-- [Do not run containers as root](#do-not-run-containers-as-root)
+- [Rootless \& read-only containers](#rootless--read-only-containers)
+- [Choosing a perfect Docker image](#choosing-a-perfect-docker-image)
 - [Folder Structure](#folder-structure)
 - [Hard links \& Instant moves](#hard-links--instant-moves)
 - [Cert-manager](#cert-manager)
-- [Authentik. Forward auth](#authentik-forward-auth)
+- [Authentik](#authentik)
     - [Setup](#setup)
 - [Reverse Auth Proxy Header](#reverse-auth-proxy-header)
 - [Homepage](#homepage)
@@ -110,7 +110,7 @@ ingress:
     domain: # REQUIRED; e.g. 'example.com' (without a scheme)
 ```
 
-The user with the specified UID/GID must exist on the host machine and should be unprivileged. See the [File permissions](#file-permissions) section for details.
+The user with the specified UID/GID must exist on the host machine and must be unprivileged. See the [File permissions](#file-permissions) section for details.
 
 Finally, install the server:
 ```sh
@@ -120,12 +120,12 @@ Finally, install the server:
 The script will install the [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager/), the [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik), and finally this Helm chart. Give it a couple of minutes to spin up and self-initialize.
 If you want to customize cert-manager or Authentik before installation, please adjust `certmanager-values.yaml` or `authentik-values.yaml` respectively. This requires you to be familiar with these charts. Otherwise don't touch anything but required params.
 
-After installation, please carry out all the steps from the [#cert-manager](#cert-manager) and [#Authentik](#authentik-forward-auth) sections below.
+After installation, please carry out all the steps from the [#cert-manager](#cert-manager) and [#Authentik](#authentik) sections below.
 
 Having verified that cert-manager and Authentik are functioning properly, you can proceed to enabling individual services.
 All services are optional. Just enable the ones you need.
 
-Service sections in `values.yaml` should be self-explanatory since all important variables are documented. The required parameters are marked with a `# REQUIRED` commment, the rest can be left default or changed to your liking. Make sure that directories used by a service do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
+Service sections in `values.yaml` should be self-explanatory as all important variables are documented. The required parameters are marked with a `# REQUIRED` commment, the rest can be left default or adjusted to your liking. Make sure that directories used by a service do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
 
 This document covers most of the services used in this chart and provides some useful notes. Return to this document if you're having troubles. Open an issue in this GitHub repo if your problem is not covered here. Please ensure that it's an indeed chart's issue and always read the service's docs first.
 
@@ -140,32 +140,219 @@ Have fun!
 Every service is customizable to great extent.
 I tried to minimize the need for direct editing of the template files, leveraging Helm values for commonly used environment variables and settings.
 
-Please refer to the respective section of any service in `values.template.yaml` - all values are described and documented over there.
-
 Generally the service section adheres to the following format - read comments for explanations:
+
 ```yaml
 services:
     homepage:
-        enabled: true # controls if the service is enabled
-        exposed: true # controls if the service is exposed publicly through the ingress
-        name: homepage # service name; controls the names of the created k8s services/pods/jobs
-        replicaCount: 1 # number of deployment replicas; normally only one required for each service
+        # ---
+        # MANDATORY SECTION
+        # ---
+        # whether the service is enabled at all
+        enabled: true
+        # whether the service is exposed publicly through the ingress
+        exposed: true
+        # service name; controls the names of deployed k8s resources
+        name: homepage
+        # number of deployment replicas; normally only one required for each service
+        replicaCount: 1
+        # whether the service is critical
+        # i.e. its priority will be higher
+        critical: true
+        # image settings
+        # I do not recommend changing the default image,
+        # since some predefined settings and env vars might be incompatible with a new image
         image:
-            repository: ghcr.io/gethomepage/homepage # image name
-            tag: latest # image tag (version)
-            pullPolicy: Always # image pull policy
+            # image name
+            repository: ghcr.io/gethomepage/homepage
+            # image tag (version)
+            tag: latest
+            # image pull policy
+            pullPolicy: Always
+        # ports used by the respective k8s service
+        # usually you don't need to touch this
+        # doesn't affect the container ports
         ports:
-            http: 3000 # port used by the respective k8s service. Doesn't affect the container port as it's usually fixed and set by the image or service maintainer
-        ingress: # controls subdomains under which this service is served and publicly exposed. Ignored if exposed=false
+            http: 3000
+        # controls security context
+        # strict security context means the container will be running rootless and read-only
+        #
+        # I DO NOT recommend touching default values
+        # moreover, for some apps it was disabled on purpose as they're simply incompatible and will fail when enabled
+        # that is, you *can* disable it but not the other way around
+        securityContext:
+            strict: false
+        # resources preset
+        # available values are '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+        resourcesPreset: "micro"
+        # controls subdomains under which this service is served and publicly exposed
+        #
+        # ignored if exposed=false
+        #
+        # a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters,
+        # '-' or '.', and must start and end with an alphanumeric character
+        ingress:
             - subdomain1
             - sub-domain2
+        # controls paths to persistence dirs on the *host* if any
+        persistence:
+            data: /data
+        # enables VPN for this service. Please see the respective section of this guide for important details
         vpn:
-            enabled: false # enables VPN for this service. Please see the respective section of this guide for important details
-        env: # custom env vars passed as is to the respective pod
-            VAR1: foo
-            VAR2: |-
-                foo
-                bar
+            enabled: false
+        # ---
+        # OPTIONAL section - overrides
+        # these values are not required to define,
+        # but can be used to override global/default settings
+        # ---
+        # controls a liveness probe
+        # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-liveness-command
+        livenessProbe:
+            enabled: true
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 6
+            successThreshold: 1
+        # controls a readiness probe
+        # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes
+        readinessProbe:
+            enabled: true
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+            successThreshold: 1
+        # controls a startup probe
+        # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+        startupProbe:
+            enabled: false
+            initialDelaySeconds: 5
+            periodSeconds: 20
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 30
+        # extra labels
+        extraLabels:
+            my-custom-label: "foo"
+            my-custom-template-label: "{{ .Release.Name }}" # Helm templates supported
+        # extra volume mounts
+        extraVolumeMounts:
+            - name: cache-dir
+              mountPath: /app/cache
+        # extra volumes
+        extraVolumes:
+            - name: cache-dir
+              emptyDir: {}
+        # extra env vars populated from a config map
+        # maps to envFrom.configMapRef
+        extraEnvFromCM: my-custom-configmap
+        # extra env vars populated from a secret
+        # maps to envFrom.secretRef
+        extraEnvFromSecret: my-custom-secret
+        # extra env vars populated from a secret's key (secretKeyRef)
+        extraEnvSecrets:
+            - name: FOO
+              secretName: my-secret
+              secretKey: my-password
+        # extra env vars
+        extraEnv:
+            - name: FOO
+              value: bar
+            - name: FOO_TEMPLATE
+              value: '{{ .Release.Name }}' # Helm templates supported
+            - name: FOO_MULTILINE
+              value: |-
+                  #/bin/bash
+                  echo "Hello"
+```
+
+Some services depend on a database. In this case your service definition will look like this:
+
+```yaml
+services:
+    librechat:
+        # service definition
+        # ...
+        db:
+            # ---
+            # MANDATORY SECTION
+            # ---
+            # database name
+            # it's a name internal to postgres/mongo, not a k8s resource
+            dbName: librechat
+            # a secret containing some required sensitive values
+            secretName: librechat-db-secret
+            # ports used by the respective k8s service
+            ports:
+                mongo: 27017
+            # controls paths to persistence dirs on the *host* if any
+            persistence:
+                data: /opt/librechat/mongo/8
+            # controls security context
+            securityContext:
+                strict: false
+            # resources preset
+            # available values are '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+            resourcesPreset: "micro"
+            # ---
+            # OPTIONAL section - overrides
+            # these values are not required to define,
+            # but can be used to override global/default ones
+            #
+            # vpn is not supported
+            # ---
+            livenessProbe: {}
+            readinessProbe: {}
+            startupProbe: {}
+            extraLabels: {}
+            extraVolumeMounts: {}
+            extraVolumes: {}
+            extraEnvSecrets: {}
+            extraEnv: {}
+```
+
+Moreover, a database definition contains the periodic backup settings (cronjob):
+
+```yaml
+services:
+    librechat:
+        # service definition
+        # ...
+        db:
+            # database definition
+            # ...
+            # periodic backup settings (cronjob)
+            backup:
+                # ---
+                # MANDATORY SECTION
+                # ---
+                # path to the directory on the *host* where to save backups
+                dir: /opt/librechat/mongo/8/backup
+                # backup schedule
+                # use https://crontab.guru for validation
+                scheduleCron: "0 5 * * 0"
+                # how long to keep old backups (in days)
+                retentionDays: 180
+                # controls security context
+                securityContext:
+                    strict: false
+                # resources preset
+                # available values are '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+                resourcesPreset: "micro"
+                # ---
+                # OPTIONAL section
+                # these values are not required to define,
+                # but can be used to override global/default ones
+                #
+                # vpn is not supported
+                # probes are not supported
+                # ---
+                extraLabels: {}
+                extraVolumeMounts: {}
+                extraVolumes: {}
+                extraEnvSecrets: {}
+                extraEnv: {}
 ```
 
 If you feel like there could be even more customization, please open an issue in this GitHub repo.
@@ -217,41 +404,7 @@ services:
       enabled: true
 ```
 
-That's all. Now this service's traffic will be going through a VPN.
-
-### Environment variables
-
-Every service supports passing custom environment variables to the respective pod.
-
-This feature is completely optional and doesn't require you to do anything if you don't need to pass custom env vars.
-
-Set `services.<service_name>.env` to a dictionary in the following format:
-```yaml
-services:
-  service_name:
-    env:
-      VAR1: foo
-      VAR2: |-
-        multi-
-        line
-        env
-        var
-```
-
-Note these custom env vars will *not* take precedence over those that are already set in the deployment's template. Please use the predefined variables instead.
-
-For instance, Stirling-PDF can be customized this way, apart from the predefined env vars:
-```yaml
-services:
-  stirlingpdf:
-    langs: "en_GB" # predefined var - maps to the 'LANGS' env var in the template
-    env:
-      # see the full list of supported env vars
-      # https://github.com/Stirling-Tools/Stirling-PDF?tab=readme-ov-file#customisation
-      #
-      # a custom var passed as is to the pod
-      UI_APP_NAME: "My very own Stirling PDF"
-```
+That's all. Now this service's traffic will be routed to a VPN.
 
 ---
 
@@ -270,13 +423,38 @@ This facilitates the usage of [host path volumes](https://kubernetes.io/docs/con
 
 ---
 
-## Do not run containers as root
+## Rootless & read-only containers
 
-This chart follows best security practices by not running the container's main process as root whenever possible.
-This limits priviliges of the process even in case of breaking out of a container.
+This chart follows best security practices by running the container's main process as a non-root user and as a read-only root filesystem.
 
-The user who runs the main process is the user you specified in `host.uid`/`host.gid`.
+This behaviour is controlled by `services.<service>.securityContext.strict`.
+
+I DO NOT recommend changing these values.
+It's always better to run rootless as it vastly limits the priviliges of the process and attack surface even in case of breaking out of a container.
+Some images are simply not compatible though, that's why for some services this setting is disabled.
+
+The UID/GID of the user which runs the main process are set to values you specified in `host.uid`/`host.gid`.
 This is why your host user must be unpriviliged.
+
+---
+
+## Choosing a perfect Docker image
+
+Here I wanna briefly describe the principles I follow when chossing Docker images for this chart.
+
+The images should be:
+1. Simple: they just do what they should do - run the application. No complex startup scripts, no init system
+2. One process per container
+3. Self-contained: everything is built in to the image. No installing things at startup
+4. Compatible with running as a non-root user and as a read-only filesystem
+
+This is why I try to avoid the linuxserver.io/hotio images as much as possible. They are simply the opposite of everything I strive for:
+- The base image is very large
+- Custom init system and complex startup scripts, backed by the notorious [s6-overlay](https://github.com/just-containers/s6-overlay)
+- Custom mechanism for switching to a less privileged user. This approach has one major drawback: the app is still running as a root during a small window at startup. The native Docker/Kubernetes mechanism is more secure since it forces the app to run as a non-root from the very beginning
+- Incompatible with read-only filesystem. Even though they claim otherwise, I couldn't make it work with Kubernetes
+
+An example of perfect images would be [onedr0p](https://github.com/onedr0p/containers)'s ones - they are simple and rootless by design.
 
 ---
 
@@ -307,7 +485,7 @@ data
     └── xxx
 ```
 
-You're free to change the paths as you'd like though. Just to remember to reflect the changes in the `values.yaml`.
+You're free to change the paths as you'd like. Just remember to reflect the changes in the `values.yaml`.
 
 The names of sub-folders for torrent downloads (movies, tv, etc.) are controlled by a download category you use. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/torrents/movies` directory will be created by qBittorrent automatically. E.g. your qBittorrent setup can look like this:
 
@@ -474,7 +652,7 @@ Great. Your root domain and sub-domains are secure now. The TLS certificate will
 
 ---
 
-## Authentik. Forward auth
+## Authentik
 
 Authentik is a SSO authentication service, which is used as a forward authentication provider to Traefik.
 
@@ -629,7 +807,7 @@ To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardli
 2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
     ```sh
     sudo chown -R <uid>:<gid> /data
-    sudo chmod -R a=,a+rX,u+w,g+w /data
+    sudo chmod -R a=,ug+rX,u+w /data
     ```
 3. Go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked
 4. Go to Settings -> Media Management, Root Folders, and add a Root Folder with the path of `/data/library/movies`. The directory must be pre-created manually first. This is the path which you'll also use in Plex when adding a Movies library
@@ -721,7 +899,7 @@ To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardli
 2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
     ```sh
     sudo chown -R <uid>:<gid> /data
-    sudo chmod -R a=,a+rX,u+w,g+w /data
+    sudo chmod -R a=,ug+rX,u+w /data
     ```
 3. Go to Settings -> Media Management, Importing, and ensure `Use Hardlinks instead of Copy` is checked
 4. Go to Settings -> Media Management, Root Folders, and add a Root Folder with the path of `/data/library/tv`. The directory must be pre-created manually first. This is the path which you'll also use in Plex when adding a TV Series library
@@ -927,8 +1105,15 @@ Basic setup: follow the Trash Guides - <https://trash-guides.info/Downloaders/qB
 
 After finishing the guide above adjust the following settings as well:
 1. Advanced:
-    - Torrent content removing mode: `Delete files permanently`
-    - Click `Save`
+    - qBittorrent Section:
+        - Torrent content removing mode: `Delete files permanently`
+        - Click `Save`
+    - libtorrent Section:
+        - Disk IO type: `Simple pread/pwrite` - this will make memory behavior on LB 2.x [much better](https://github.com/onedr0p/containers/issues/1173#issuecomment-2596802544)
+        - Disk IO read mode: `Disable OS cache`
+        - Disk IO write mode: `Enable OS cache`
+        - Use piece extent affinity: checked
+        - Send upload piece suggestions: checked
 2. Downloads:
     - Saving Management:
         - Default Torrent Management Mode: `Automatic`
@@ -939,8 +1124,8 @@ After finishing the guide above adjust the following settings as well:
     - Click `Save`
 3. WebUI:
     - Authentication:
-        - Check `Bypass authentication for clients on localhost`
-        - Check `Bypass authentication for clients in whitelisted IP subnets` and type in the following IP subnet in the box below: `10.42.0.0/16`. This (private) IP address range is used by Kubernetes pods and this will allow the services like Radarr, Sonarr, and Prowlarr to interact with qBittorrent without auth
+        - Bypass authentication for clients on localhost: checked
+        - Bypass authentication for clients in whitelisted IP subnets: type in the following IP subnet in the box below: `10.42.0.0/16`. This private IP address range is used by Kubernetes pods and this will allow the services like Radarr, Sonarr, and Prowlarr to interact with qBittorrent without auth
     - Optional: Check `Use alternative WebUI` and type in the following in the box below: `/vuetorrent`. This will enable the alternative WebUI, [VueTorrent](https://github.com/VueTorrent/VueTorrent), which is more user/mobile-friendly
     - Click `Save`
 

@@ -1,13 +1,12 @@
 {{- if .Values.services.huginn.enabled }}
-{{- $service := .Values.services.huginn -}}
+{{- $service := .Values.services.huginn  }}
+{{- $kind := "database" }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $service.name }}-db
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: {{ $service.name }}-db
-    {{- include "homeserver.labels" . | indent 2 }}
+  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
@@ -15,6 +14,5 @@ spec:
       targetPort: postgres
       protocol: TCP
       name: postgres
-  selector:
-    app.kubernetes.io/name: {{ $service.name }}-db
+  selector: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 {{- end }}
