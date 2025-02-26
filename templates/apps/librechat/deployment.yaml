@@ -20,8 +20,8 @@ spec:
       annotations:
         checksum/config: {{ include "common.utils.checksumTemplate" ( dict "path" "/apps/librechat/configmap.yaml" "context" $ ) }}
     spec:
-      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
-      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      automountServiceAccountToken: {{ include "common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
+      enableServiceLinks: {{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
       priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
       securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}

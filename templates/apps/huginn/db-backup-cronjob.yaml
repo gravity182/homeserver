@@ -20,8 +20,8 @@ spec:
         metadata:
           labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
         spec:
-          automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
-          enableServiceLinks: {{ .Values.enableServiceLinks }}
+          automountServiceAccountToken: {{ include "common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
+          enableServiceLinks: {{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
           priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
           securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           containers:
@@ -33,6 +33,7 @@ spec:
               args:
                 - -ec
                 - find /backup/ -mtime +{{ $service.db.backup.retentionDays }} -exec rm -f {} \; ; pg_dump -Fc -C > /backup/huginn_db_backup_$(date +"%Y_%m_%d").dump
+              envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
                 - name: PGHOST
                   value: {{ $service.db.name | quote }}

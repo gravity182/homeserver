@@ -35,15 +35,19 @@ Usage:
 {{- if not $preset -}}
 {{- printf "Resources preset is missing" | fail -}}
 {{- end -}}
+{{- if not (eq $preset "none") -}}
 {{ include "common.resources.preset" (dict "type" $preset) }}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
 {{/* Env from for containers.
 Usage:
 {{ include "common.container.envFrom" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "common.container.envFrom" (dict "context" $) }}
 */}}
 {{- define "common.container.envFrom" -}}
+{{- if and (hasKey . "service") (hasKey . "kind") -}}
 {{- $extraEnvFromCM := include "common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraEnvFromCM") -}}
 {{- $extraEnvFromSecret := include "common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraEnvFromSecret") -}}
 {{- if $extraEnvFromCM }}
@@ -56,6 +60,7 @@ Usage:
     name: {{ $extraEnvFromSecret | quote }}
     optional: false
 {{- end }}
+{{- end -}}
 {{- end -}}
 
 {{/* Env vars for containers.

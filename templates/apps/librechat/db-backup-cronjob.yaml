@@ -20,8 +20,8 @@ spec:
         metadata:
           labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
         spec:
-          automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
-          enableServiceLinks: {{ .Values.enableServiceLinks }}
+          automountServiceAccountToken: {{ include "common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
+          enableServiceLinks: {{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
           priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
           securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           containers:
@@ -33,6 +33,7 @@ spec:
                 - /bin/sh
                 - -ec
                 - "mongodump --username=${MONGODB_ROOT_USER} --password=${MONGODB_ROOT_PASSWORD} --authenticationDatabase=admin --host=${MONGODB_SERVICE_NAME} --port=${MONGODB_PORT_NUMBER} --gzip --archive=/backup/mongodump-$(date '+%Y-%m-%d-%H-%M').gz"
+              envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
                 - name: MONGODB_SERVICE_NAME
                   value: {{ include "common.names.name" ( dict "service" $service "kind" "database" ) | quote }}

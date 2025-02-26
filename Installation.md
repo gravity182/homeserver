@@ -183,7 +183,8 @@ services:
         securityContext:
             strict: false
         # resources preset
-        # available values are '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+        # available values are 'none', '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+        # when set to 'none', resources management is not used for this service
         resourcesPreset: "micro"
         # controls subdomains under which this service is served and publicly exposed
         #
@@ -201,11 +202,18 @@ services:
         vpn:
             enabled: false
         # ---
-        # OPTIONAL section - overrides
+        # OPTIONAL section
         # these values are not required to define,
         # but can be used to override global/default settings
         # ---
+        # whether service account token should be mounted
+        # overrides the global setting
+        automountServiceAccountToken: true
+        # whether service links should be injected as env vars
+        # overrides the global settings
+        enableServiceLinks: true
         # controls a liveness probe
+        # overrides the global settings
         # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-liveness-command
         livenessProbe:
             enabled: true
@@ -215,6 +223,7 @@ services:
             failureThreshold: 6
             successThreshold: 1
         # controls a readiness probe
+        # overrides the global settings
         # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes
         readinessProbe:
             enabled: true
@@ -224,6 +233,7 @@ services:
             failureThreshold: 6
             successThreshold: 1
         # controls a startup probe
+        # overrides the global settings
         # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
         startupProbe:
             enabled: false
@@ -293,21 +303,26 @@ services:
             securityContext:
                 strict: false
             # resources preset
-            # available values are '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+            # available values are 'none', '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+            # when set to 'none', resources management is not used for this service
             resourcesPreset: "micro"
             # ---
-            # OPTIONAL section - overrides
+            # OPTIONAL section
             # these values are not required to define,
             # but can be used to override global/default ones
             #
             # vpn is not supported
             # ---
+            automountServiceAccountToken: true
+            enableServiceLinks: true
             livenessProbe: {}
             readinessProbe: {}
             startupProbe: {}
             extraLabels: {}
             extraVolumeMounts: {}
             extraVolumes: {}
+            extraEnvFromCM:
+            extraEnvFromSecret:
             extraEnvSecrets: {}
             extraEnv: {}
 ```
@@ -338,7 +353,8 @@ services:
                 securityContext:
                     strict: false
                 # resources preset
-                # available values are '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+                # available values are 'none', '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+                # when set to 'none', resources management is not used for this service
                 resourcesPreset: "micro"
                 # ---
                 # OPTIONAL section
@@ -348,9 +364,13 @@ services:
                 # vpn is not supported
                 # probes are not supported
                 # ---
+                automountServiceAccountToken: true
+                enableServiceLinks: true
                 extraLabels: {}
                 extraVolumeMounts: {}
                 extraVolumes: {}
+                extraEnvFromCM:
+                extraEnvFromSecret:
                 extraEnvSecrets: {}
                 extraEnv: {}
 ```

@@ -55,3 +55,31 @@ Usage:
 {{ include "common.tplvalues.render" (dict "value" $extraVolumes "context" .context) }}
 {{- end }}
 {{- end -}}
+
+{{/* Get a automountServiceAccountToken value for pods.
+Usage:
+{{ include "common.pod.automountServiceAccountToken" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "common.pod.automountServiceAccountToken" (dict "context" $) }}
+*/}}
+{{- define "common.pod.automountServiceAccountToken" -}}
+{{- $value := required ".Values.automountServiceAccountToken is missing" .context.Values.automountServiceAccountToken -}}
+{{- $valueOverride := "" -}}
+{{- if and (hasKey . "service") (hasKey . "kind") -}}
+{{- $valueOverride = include "common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "automountServiceAccountToken") -}}
+{{- end -}}
+{{- default $value $valueOverride -}}
+{{- end -}}
+
+{{/* Get a enableServiceLinks value for pods.
+Usage:
+{{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "common.pod.enableServiceLinks" (dict "context" $) }}
+*/}}
+{{- define "common.pod.enableServiceLinks" -}}
+{{- $value := required ".Values.enableServiceLinks is missing" .context.Values.enableServiceLinks -}}
+{{- $valueOverride := "" -}}
+{{- if and (hasKey . "service") (hasKey . "kind") -}}
+{{- $valueOverride = include "common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "enableServiceLinks") -}}
+{{- end -}}
+{{- default $value $valueOverride -}}
+{{- end -}}
