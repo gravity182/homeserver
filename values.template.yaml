@@ -126,6 +126,7 @@ resources:
     ## see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
     enabled: false
 ## Services configuration
+##
 services:
     backrest:
         enabled: false

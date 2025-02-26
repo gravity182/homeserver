@@ -21,10 +21,6 @@ spec:
       automountServiceAccountToken: {{ include "common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
       enableServiceLinks: {{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
       priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
-      enableServiceLinks: {{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
-      {{- if $service.critical }}
-      priorityClassName: "{{ include "common.names.namespace" . }}-high-priority"
-      {{- end }}
       securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list "config" "library") "context" $ ) | nindent 8 }}
