@@ -732,13 +732,6 @@ Give it a couple of minutes for changes to take effect. Log out of your admin ac
 
 Great. Now we have a working SSO authentication.
 
-Note that not every service (e.g. Huginn) supports disabling of the built-in authentication or using a proxy authentication (mapping an Authentik's user to an internal service's user by the usage of an http header; e.g. see the Miniflux setup).
-
-There's no easy solution to this.
-You will have to either log in twice or bypass such a service in Authentik completely. By going the latter way you'll be only relying on whatever auth system that service provides, which may contain its own security flaws. Personally, I still keep such services behind Authentik because it only requires you to login once and a session is usually kept for a long time (weeks or even months depending on your setup).
-
-Actually, sometimes you want to keep internal service's auth in case it allows you to have different user "profiles". Once again, an example of such a service is Huginn. This might be benefitable when you're not the only user of your home server.
-
 ---
 
 ## Reverse Auth Proxy Header
@@ -748,20 +741,23 @@ SSO is great. I love being able to log in only once and use all of my services w
 This is however not always possible.
 Some services support disabling of the authentication altogether. Notably, the whole *arr stack. This is good. There's no need to authenticate again if you've already gone through SSO auth.
 
-Some services require authentication and there's no way to bypass it. For instance, Kavita. This is not good. You'll have to log in twice for such services: first in SSO and then in the service itself. This is not as bad as it sounds though: a SSO session usually lives for a week or longer, depending on your Authentik configuration.
+Some services require authentication and there's no way to bypass it. For instance, Kavita. This is not good. You'll have to log in twice for such services: first in SSO and then in the service itself.
 
-Some services support the notion of "Reverse auth proxy header".
-When service accepts a request with such a header, it authenticates the user automatically, mapping a username from the header to an internal user. The presence of this header means that user was already authenticated upstream.
+You can bypass Authentik's auth on such service if you wish. By going this way you'll only be relying on whatever auth system that service provides, which may contain security flaws.
+Personally, I still keep such services behind Authentik. This is not as bad as it sounds: a SSO session usually lives for a week or longer, depending on your Authentik configuration, so you'll have to login twice very rarely.
+
+Finally, some services support the notion of a "Reverse auth proxy header".
+When service accepts a request with such a header, it authenticates the user automatically, mapping a username from the header to an internal user. The presence of this header means a user has already been authenticated upstream.
 There are multiple Authentik headers you can select from: `X-authentik-username`, `X-authentik-name`, or `X-authentik-email`. Choose the one containing the actual service's internal username.
 
-Once you go with this approach, make sure the service is actually covered by Authentik. You cannot let the service to be accessed directly anymore, since the service trusts the Proxy Auth header unconditionally with the implication that a user has already been authentication upstream.
+Once you go with this approach, make sure the service is actually covered by Authentik. You cannot let the service to be accessed directly, since the service trusts the Proxy Auth Header unconditionally with the implication that a user has already been authentication upstream.
 
-The list of the services that support Auth proxy header:
-- Miniflux
-- Calibre-web
-- Archivebox
+The list of the services that support Auth Proxy Header:
+- [Miniflux](#miniflux)
+- [Calibre-Web-Automated](#calibre-web-automated)
+- [Archivebox](#archivebox)
 
-These services are already configured with support for Auth proxy header.
+See additional notes on each service in the respective sections.
 
 ---
 
@@ -788,7 +784,7 @@ One of the most important parts of the whole stack. Configuring your profile pro
 
 First we need to set up [Naming Scheme](https://trash-guides.info/Radarr/Radarr-recommended-naming-scheme/) and [Quality Settings](https://trash-guides.info/Radarr/Radarr-Quality-Settings-File-Size/). Please carry out these guides before continuing.
 
-Now we can start creating our perfect profile. We'll take the Trash Guides' profiles as a base - select one of the following:
+Now we can start creating our perfect profile. We'll take the Trash Guides' profiles as a base - select one of the following and implement it:
 - [HD Bluray + WEB](https://trash-guides.info/Radarr/radarr-setup-quality-profiles/#hd-bluray-web) - if you prefer HD quality (Bluray-720p/1080p). Size: ~6-15 GB depending on the runtime
 - [UHD Bluray + WEB](https://trash-guides.info/Radarr/radarr-setup-quality-profiles/#uhd-bluray-web) - if you prefer UHD quality (Bluray-2160p). Size: ~20-60 GB depending on the runtime
 - [Remux + WEB 1080p](https://trash-guides.info/Radarr/radarr-setup-quality-profiles/#remux-web-1080p) - if you prefer Remux-1080p quality. Size: ~20-40 GB depending on the runtime
@@ -797,7 +793,7 @@ Now we can start creating our perfect profile. We'll take the Trash Guides' prof
 > [!WARNING]
 > Carry out ALL the steps from the guides above. Don't leave out a single step. The Trash Guides' profiles is the best you can get out of Radarr.
 
-Now let's customize our profile a bit:
+Once you're finished with the profile, let's customize it a bit:
 1. Optional: disable quality upgrade. Personally I never needed this
 2. Add a few custom formats:
     - [Teaser/Trailer](#teasertrailer) with a score of `-10000` - to filter out teasers & trailers (do you really need them?)
@@ -904,7 +900,7 @@ Unfortunately there's no easy way to sync Radarr and Sonarr profiles, so you'll 
 
 Similar to Radarr, ensure to set up [Naming Scheme](https://trash-guides.info/Sonarr/Sonarr-recommended-naming-scheme/) and [Quality Settings](https://trash-guides.info/Sonarr/Sonarr-Quality-Settings-File-Size/) first.
 
-We'll take Trash Guides' profiles as a base - select one of the following:
+We'll take Trash Guides' profiles as a base - select one of the following and implement it:
 - [WEB-1080p](https://trash-guides.info/Sonarr/sonarr-setup-quality-profiles/#web-1080p) - if you prefer 720p/1080p WEBDL quality
 - [WEB-2160p](https://trash-guides.info/Sonarr/sonarr-setup-quality-profiles/#web-2160p) - if you prefer 2160p WEBDL quality
 
