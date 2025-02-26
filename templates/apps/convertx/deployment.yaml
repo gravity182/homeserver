@@ -41,6 +41,9 @@ spec:
               protocol: TCP
           resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: empty-dir
+              mountPath: /home/bun/.config
+              subPath: bun-config
             - name: data
               mountPath: /app/data
       volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
