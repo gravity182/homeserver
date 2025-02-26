@@ -197,15 +197,17 @@ services:
             - sub-domain2
         # controls paths to persistence dirs on the *host* if any
         persistence:
+            config: /opt/service/config
             data: /data
-        # enables VPN for this service. Please see the respective section of this guide for important details
-        vpn:
-            enabled: false
         # ---
         # OPTIONAL section
         # these values are not required to define,
         # but can be used to override global/default settings
         # ---
+        # enables VPN for this service
+        # please see the respective section of this guide for important details
+        vpn:
+            enabled: true
         # whether service account token should be mounted
         # overrides the global setting
         automountServiceAccountToken: true
