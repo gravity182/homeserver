@@ -47,9 +47,9 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
 
 Chart features:
 - Great chart customization - important service settings are controlled through Helm values
-- SSO authentication via [Authentik](https://github.com/goauthentik/authentik)
-- Automatic TLS certificates provisioning via [cert-manager](https://github.com/cert-manager/cert-manager)
-- Scheduled server backups via [Backrest](https://github.com/garethgeorge/backrest) backed by [restic](https://github.com/restic/restic)
+- SSO authentication powered by [Authentik](https://github.com/goauthentik/authentik)
+- Automatic TLS certificates provisioning powered by [cert-manager](https://github.com/cert-manager/cert-manager)
+- Scheduled server backups powered by [Backrest](https://github.com/garethgeorge/backrest) and backed by [restic](https://github.com/restic/restic)
 - VPN support - every service can connect to a WireGuard VPN. This is especially actual for such services as qBitTorrent for smooth Linux ISO downloading
 - Proper file permissions handling - you will never encounter permission issues
 - Follows best security practices - containers are running as a non-root user and with a read-only filesystem
