@@ -28,7 +28,6 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
 - Utilities:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/miniflux-light.png"> [Miniflux](https://github.com/dysosmus/miniflux) - RSS feed reader
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/stirling-pdf.png"> [Stirling PDF](https://github.com/Stirling-Tools/Stirling-PDF) - PDF Manipulation Tool
-    - <img width="15" height="15" src="https://github.com/thelounge/thelounge/blob/master/client/img/logo-grey-bg-152x152px.png?raw=true"> [The Lounge](https://github.com/thelounge/thelounge) - IRC Client
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/the-lounge.png"> [The Lounge](https://github.com/thelounge/thelounge) - IRC Client
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/convertx.png"> [Convertx](https://github.com/C4illin/ConvertX) - File conversion
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/mealie.png"> [Mealie](https://github.com/mealie-recipes/mealie) - Cooking recipe manager
