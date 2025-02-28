@@ -1172,12 +1172,14 @@ services:
         #
         # you can generate creds at https://www.librechat.ai/toolkit/creds_generator
         secretName: librechat-secret
-        persistence:
-            # directory where to keep user-uploaded images
-            clientImages: /opt/librechat/client/images
         # list endpoints separated by comma
         # you can configure custom endpoints in files/librechat.yaml
         endpoints: "OpenRouter"
+        # custom footer
+        customFooter: ""
+        persistence:
+            # directory where to keep user-uploaded images
+            clientImages: /opt/librechat/client/images
         db:
             # database name
             # it's a name internal to mongo, not the k8s resource

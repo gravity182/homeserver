@@ -35,6 +35,8 @@ spec:
           env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: CONFIG_PATH
               value: /config/librechat.yaml
+            - name: CUSTOM_FOOTER
+              value: {{ $service.customFooter | quote }}
             - name: ENDPOINTS
               value: {{ $service.endpoints | quote }}
             - name: SEARCH
