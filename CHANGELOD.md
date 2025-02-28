@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## \[3.0.3] - 2025-02-28
 
 - Librechat: Fix image uploading for read-only fs. Had to create a few temporary empty dirs
+- Librechat: Persist user-uploaded images. Now the value `services.librechat.persistence.clientImages` is required
 
 ## \[3.0.2] - 2025-02-26
 

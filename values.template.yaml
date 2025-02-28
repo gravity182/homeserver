@@ -1165,20 +1165,23 @@ services:
             - ai
         # secret containing sensitive values
         # must contain the following keys:
-        # - creds-key: the key used to encrypt the credentials
-        # - creds-iv: the IV used to encrypt the credentials
+        # - creds-key: 32-byte key (64 characters in hex) for securely storing credentials
+        # - creds-iv: 16-byte IV (32 characters in hex) for securely storing credentials
         # - jwt-secret: the secret used to sign the JWT tokens
         # - jwt-refresh-secret: JWT Refresh Token
         #
         # you can generate creds at https://www.librechat.ai/toolkit/creds_generator
         secretName: librechat-secret
+        persistence:
+            # directory where to keep user-uploaded images
+            clientImages: /opt/librechat/client/images
         # list endpoints separated by comma
         # you can configure custom endpoints in files/librechat.yaml
         endpoints: "OpenRouter"
         db:
             # database name
             # it's a name internal to mongo, not the k8s resource
-            # automatically created at startup
+            # the database is created automatically at startup
             dbName: librechat
             securityContext:
                 strict: true

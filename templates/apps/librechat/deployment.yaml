@@ -25,7 +25,7 @@ spec:
       priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
       securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-        {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list) "context" $ ) | nindent 8 }}
+        {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list "client-images") "context" $ ) | nindent 8 }}
       containers:
         - name: librechat
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
@@ -84,21 +84,21 @@ spec:
           resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: empty-dir
-              mountPath: /app/data
-              subPath: app-data-dir
-            - name: empty-dir
-              mountPath: /app/api/logs
-              subPath: app-api-logs-dir
-            - name: empty-dir
               mountPath: /app/uploads
               subPath: app-uploads-dir
             - name: empty-dir
+              mountPath: /app/api/logs
+              subPath: app-api-logs-dir
+            - name: client-images
               mountPath: /app/client/public/images
-              subPath: app-client-public-images-dir
             - name: config
               mountPath: /config
       volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         - name: config
           configMap:
             name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+        - name: client-images
+          hostPath:
+            path: {{ $service.persistence.clientImages | quote }}
+            type: Directory
 {{- end }}
