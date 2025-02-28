@@ -88,7 +88,13 @@ spec:
               subPath: app-data-dir
             - name: empty-dir
               mountPath: /app/api/logs
-              subPath: app-logs-dir
+              subPath: app-api-logs-dir
+            - name: empty-dir
+              mountPath: /app/uploads
+              subPath: app-uploads-dir
+            - name: empty-dir
+              mountPath: /app/client/public/images
+              subPath: app-client-public-images-dir
             - name: config
               mountPath: /config
       volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
