@@ -1332,9 +1332,9 @@ Here's how to do it:
 ### Auth proxy header
 
 CWA supports authentication via [Auth proxy header](#reverse-auth-proxy-header).
-This is already enabled.
-
-The user will be created automatically on the first login. The username of a created user will be set to the email of a SSO-authenticated user.
+You need to enable it in the Settings -> Edit Basic Configuration -> Feature Configuration:
+1. `Allow Reverse Proxy Authentication`: checked
+2. Reverse Proxy Header Name: type in `X-authentik-email`
 
 ---
 
