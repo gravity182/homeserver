@@ -1177,6 +1177,9 @@ services:
         endpoints: "OpenRouter"
         # custom footer
         customFooter: ""
+        # how long an auth session lives
+        # 180 days (15552000000 milliseconds) by default
+        refreshTokenExpiryMilliseconds: 15552000000
         persistence:
             # directory where to keep user-uploaded images
             clientImages: /opt/librechat/client/images

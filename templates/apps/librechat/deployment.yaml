@@ -41,6 +41,8 @@ spec:
               value: {{ $service.endpoints | quote }}
             - name: SEARCH
               value: "false"
+            - name: REFRESH_TOKEN_EXPIRY
+              value: {{ $service.refreshTokenExpiryMilliseconds | quote }}
             - name: CREDS_KEY
               valueFrom:
                 secretKeyRef:
