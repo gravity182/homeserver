@@ -1,10 +1,19 @@
 {{/*
-Returns a utility image used by init containers.
+Returns a utility image name used by init containers.
 Usage:
 {{ include "common.initContainer.utility-image" . }}
 */}}
 {{- define "common.initContainer.utility-image" -}}
 {{- "chainguard/bash:latest" -}}
+{{- end -}}
+
+{{/*
+Returns a git image name used by init containers.
+Usage:
+{{ include "common.initContainer.git-image" . }}
+*/}}
+{{- define "common.initContainer.git-image" -}}
+{{- "alpine/git:latest" -}}
 {{- end -}}
 
 {{/*

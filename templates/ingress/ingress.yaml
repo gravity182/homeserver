@@ -19,19 +19,19 @@ spec:
         - "{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
         - "*.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
   rules:
-    {{- range $_, $service := .Values.services }}
+    {{- range $service := .Values.services }}
     {{- if and $service.enabled $service.exposed }}
-    {{- range $_, $host := $service.ingress }}
-    - host: "{{ $host }}.{{ $.Values.ingress.domain }}"
+    {{- range $host := $service.ingress }}
+    - host: {{ printf "%s.%s" $host $.Values.ingress.domain | quote }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: {{ include "common.names.name" ( dict "service" $service "kind" "app" ) | quote }}
+                name: {{ include "common.names.name" (dict "service" $service "kind" "app") | quote }}
                 port:
-                  number: {{ $service.ports.http }}
+                  number: {{ required (printf "HTTP port is missing for service '%s'" $service.name) $service.ports.http }}
     {{- end }}
     {{- end }}
     {{- end }}
@@ -47,7 +47,7 @@ spec:
               service:
                 name: {{ include "common.names.name" ( dict "service" $service "kind" "app" ) | quote }}
                 port:
-                  number: {{ $service.ports.http }}
+                  number: {{ required (printf "HTTP port is missing for service '%s'" $service.name) $service.ports.http }}
     {{- end }}
     {{- end }}
     {{- end }}

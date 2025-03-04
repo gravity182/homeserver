@@ -46,7 +46,7 @@ spec:
                   mountPath: /tmp/config
             {{- if $service.enableJmxdOverlays }}
             - name: init-jmxd-overlays
-              image: alpine/git
+              image: {{ include "common.initContainer.git-image" . | quote }}
               imagePullPolicy: IfNotPresent
               securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               command:
@@ -57,7 +57,7 @@ spec:
                     && git clone --depth=1 https://github.com/jmxd/Kometa.git /config/overlays/jmxd \
                     && cp -rfL /config/overlays/jmxd/overlays/* /config/overlays/ \
                     && rm -rf /config/overlays/jmxd \
-                    && echo "Kometa jmxd overlays enabled. See https://github.com/jmxd/Kometa.git for details"
+                    && echo "Kometa jmxd overlays enabled. See https://github.com/jmxd/Kometa for details"
               resources: {{- include "common.resources.preset" (dict "type" "nano") | nindent 16 }}
               volumeMounts:
                 - name: config
