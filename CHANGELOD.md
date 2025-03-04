@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## \[3.0.5] - 2025-03-04
 
 - Librechat: Added customization of a refresh token expiry duration via `refreshTokenExpiryMilliseconds`
+- Librechat: Added customization of `ALLOW_SOCIAL_LOGIN`/`ALLOW_EMAIL_LOGIN` env vars
+- Librechat: Added more clarifications in comments of `values.template.yaml`
 
 ## \[3.0.4] - 2025-03-02
 

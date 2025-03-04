@@ -35,6 +35,14 @@ spec:
           env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: CONFIG_PATH
               value: /config/librechat.yaml
+            - name: DOMAIN_SERVER
+              value: {{ include "common.utils.ingressUrl" ( dict "service" $service "context" $ ) | quote }}
+            - name: DOMAIN_CLIENT
+              value: {{ include "common.utils.ingressUrl" ( dict "service" $service "context" $ ) | quote }}
+            - name: ALLOW_EMAIL_LOGIN
+              value: {{ $service.allowEmailLogin | quote }}
+            - name: ALLOW_SOCIAL_LOGIN
+              value: {{ $service.allowSocialLogin | quote }}
             - name: CUSTOM_FOOTER
               value: {{ $service.customFooter | quote }}
             - name: ENDPOINTS

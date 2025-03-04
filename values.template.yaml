@@ -1163,7 +1163,7 @@ services:
         ingress:
             - librechat
             - ai
-        # secret containing sensitive values
+        # secret containing the required sensitive values
         # must contain the following keys:
         # - creds-key: 32-byte key (64 characters in hex) for securely storing credentials
         # - creds-iv: 16-byte IV (32 characters in hex) for securely storing credentials
@@ -1172,14 +1172,32 @@ services:
         #
         # you can generate creds at https://www.librechat.ai/toolkit/creds_generator
         secretName: librechat-secret
-        # list endpoints separated by comma
-        # you can configure custom endpoints in files/librechat.yaml
-        endpoints: "OpenRouter"
-        # custom footer
-        customFooter: ""
+        # endpoints available for usage, separated by comma
+        #
+        # openAI is a built-in endpoint
+        # env var OPENAI_API_KEY containing the api key is required
+        # see https://www.librechat.ai/docs/configuration/dotenv#openai
+        #
+        # OpenRouter is a custom endpoint configured in files/default/librechat.yaml
+        # env var OPENROUTER_KEY containing the api key is required
+        # see https://www.librechat.ai/docs/configuration/librechat_yaml/ai_endpoints/openrouter
+        #
+        # you can pass your API keys securely via extraEnvSecrets (see the example below)
+        #
+        # remove these endpoints and add your own ones if needed
+        # you can configure the endpoints however you want, that's just an example
+        endpoints: "openAI,OpenRouter"
+        # whether to allow login via email
+        allowEmailLogin: true
+        # whether to allow login via socials
+        # you need this to use an OpenID provider (e.g. Authentik)
+        allowSocialLogin: true
         # how long an auth session lives
         # 180 days (15552000000 milliseconds) by default
         refreshTokenExpiryMilliseconds: 15552000000
+        # custom footer
+        # keep it empty to remove that unnecessary footer mentioning Librechat details
+        customFooter: ""
         persistence:
             # directory where to keep user-uploaded images
             clientImages: /opt/librechat/client/images
@@ -1195,7 +1213,7 @@ services:
                 mongo: 27017
             persistence:
                 data: /opt/librechat/mongo/8
-            # secret containing the required db sensitive values
+            # secret containing the required sensitive values
             # must contain the following keys:
             # - mongodb-root-username: root user username
             # - mongodb-root-password: root user password
@@ -1225,8 +1243,17 @@ services:
             enabled: false
         extraEnvFromSecret:
         extraEnvSecrets:
-            # you can pass your API keys here
+            # you can pass your API keys and other secrets securely here
+            #
+            # - name: OPENAI_API_KEY
+            #   secretName: librechat-endpoints-secret
+            #   secretKey: librechat-openai-api-key
             # - name: OPENROUTER_KEY
-            #   secretName: librechat-openrouter-api-key-secret
-            #   secretKey: openrouter-api-key
-        extraEnv: {}
+            #   secretName: librechat-endpoints-secret
+            #   secretKey: librechat-openrouter-api-key
+        extraEnv:
+            # see all the available env variables
+            # https://www.librechat.ai/docs/configuration/dotenv
+            #
+            # - name: DEBUG_LOGGING
+            #   value: "true"
