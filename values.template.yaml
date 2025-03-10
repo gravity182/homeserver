@@ -24,7 +24,7 @@ cert-manager:
   namespace: cert-manager
   crds:
     # CRDs must be installed manually
-    # otherwise chart installation fails as dependent cert-manager's CRDs are not installed first for some reason
+    # otherwise chart installation fails as dependent cert-manager subchart's CRDs are not installed first for some reason
     # see the similar issue https://github.com/kedacore/charts/issues/226
     enabled: false
     keep: true

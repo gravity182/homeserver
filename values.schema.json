@@ -423,134 +423,17 @@
     "livenessProbe": {
       "type": "object",
       "description": "Pods' global liveness probe",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "Enable liveness probe",
-          "default": true
-        },
-        "initialDelaySeconds": {
-          "type": "integer",
-          "description": "Initial delay seconds",
-          "default": 30
-        },
-        "periodSeconds": {
-          "type": "integer",
-          "description": "Period seconds",
-          "default": 20
-        },
-        "timeoutSeconds": {
-          "type": "integer",
-          "description": "Timeout seconds",
-          "default": 10
-        },
-        "failureThreshold": {
-          "type": "integer",
-          "description": "Failure threshold",
-          "default": 6
-        },
-        "successThreshold": {
-          "type": "integer",
-          "description": "Success threshold",
-          "default": 1
-        }
-      },
-      "required": [
-        "enabled",
-        "initialDelaySeconds",
-        "periodSeconds",
-        "timeoutSeconds",
-        "failureThreshold",
-        "successThreshold"
-      ]
+      "$ref": "#/defs/livenessProbe"
     },
     "readinessProbe": {
       "type": "object",
       "description": "Pods' global readiness probe",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "Enable readiness probe",
-          "default": true
-        },
-        "initialDelaySeconds": {
-          "type": "integer",
-          "description": "Initial delay seconds",
-          "default": 5
-        },
-        "periodSeconds": {
-          "type": "integer",
-          "description": "Period seconds",
-          "default": 10
-        },
-        "timeoutSeconds": {
-          "type": "integer",
-          "description": "Timeout seconds",
-          "default": 5
-        },
-        "failureThreshold": {
-          "type": "integer",
-          "description": "Failure threshold",
-          "default": 6
-        },
-        "successThreshold": {
-          "type": "integer",
-          "description": "Success threshold",
-          "default": 1
-        }
-      },
-      "required": [
-        "enabled",
-        "initialDelaySeconds",
-        "periodSeconds",
-        "timeoutSeconds",
-        "failureThreshold",
-        "successThreshold"
-      ]
+      "$ref": "#/defs/readinessProbe"
     },
     "startupProbe": {
       "type": "object",
       "description": "Pods' global startup probe",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "Enable startup probe",
-          "default": false
-        },
-        "initialDelaySeconds": {
-          "type": "integer",
-          "description": "Initial delay seconds",
-          "default": 5
-        },
-        "periodSeconds": {
-          "type": "integer",
-          "description": "Period seconds",
-          "default": 20
-        },
-        "timeoutSeconds": {
-          "type": "integer",
-          "description": "Timeout seconds",
-          "default": 10
-        },
-        "successThreshold": {
-          "type": "integer",
-          "description": "Success threshold",
-          "default": 1
-        },
-        "failureThreshold": {
-          "type": "integer",
-          "description": "Failure threshold",
-          "default": 30
-        }
-      },
-      "required": [
-        "enabled",
-        "initialDelaySeconds",
-        "periodSeconds",
-        "timeoutSeconds",
-        "successThreshold",
-        "failureThreshold"
-      ]
+      "$ref": "#/defs/startupProbe"
     },
     "resources": {
       "type": "object",
@@ -768,6 +651,135 @@
     "services"
   ],
   "defs": {
+    "livenessProbe": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable liveness probe",
+          "default": true
+        },
+        "initialDelaySeconds": {
+          "type": "integer",
+          "description": "Initial delay seconds",
+          "default": 30
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "description": "Period seconds",
+          "default": 20
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Timeout seconds",
+          "default": 10
+        },
+        "failureThreshold": {
+          "type": "integer",
+          "description": "Failure threshold",
+          "default": 6
+        },
+        "successThreshold": {
+          "type": "integer",
+          "description": "Success threshold",
+          "default": 1
+        }
+      },
+      "required": [
+        "enabled",
+        "initialDelaySeconds",
+        "periodSeconds",
+        "timeoutSeconds",
+        "failureThreshold",
+        "successThreshold"
+      ]
+    },
+    "readinessProbe": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable readiness probe",
+          "default": true
+        },
+        "initialDelaySeconds": {
+          "type": "integer",
+          "description": "Initial delay seconds",
+          "default": 5
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "description": "Period seconds",
+          "default": 10
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Timeout seconds",
+          "default": 5
+        },
+        "failureThreshold": {
+          "type": "integer",
+          "description": "Failure threshold",
+          "default": 6
+        },
+        "successThreshold": {
+          "type": "integer",
+          "description": "Success threshold",
+          "default": 1
+        }
+      },
+      "required": [
+        "enabled",
+        "initialDelaySeconds",
+        "periodSeconds",
+        "timeoutSeconds",
+        "failureThreshold",
+        "successThreshold"
+      ]
+    },
+    "startupProbe": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable startup probe",
+          "default": false
+        },
+        "initialDelaySeconds": {
+          "type": "integer",
+          "description": "Initial delay seconds",
+          "default": 5
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "description": "Period seconds",
+          "default": 20
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Timeout seconds",
+          "default": 10
+        },
+        "successThreshold": {
+          "type": "integer",
+          "description": "Success threshold",
+          "default": 1
+        },
+        "failureThreshold": {
+          "type": "integer",
+          "description": "Failure threshold",
+          "default": 30
+        }
+      },
+      "required": [
+        "enabled",
+        "initialDelaySeconds",
+        "periodSeconds",
+        "timeoutSeconds",
+        "successThreshold",
+        "failureThreshold"
+      ]
+    },
     "commonProperties": {
       "type": "object",
       "properties": {
@@ -962,6 +974,18 @@
                   "default": false
                 }
               }
+            },
+            "livenessProbe": {
+              "description": "Service liveness probe. Overrides the global value",
+              "$ref": "#/defs/livenessProbe"
+            },
+            "readinessProbe": {
+              "description": "Service readiness probe. Overrides the global value",
+              "$ref": "#/defs/readinessProbe"
+            },
+            "startupProbe": {
+              "description": "Service startup probe. Overrides the global value",
+              "$ref": "#/defs/startupProbe"
             }
           },
           "required": [
@@ -990,6 +1014,18 @@
             "ports": {
               "type": "object",
               "description": "Ports configuration"
+            },
+            "livenessProbe": {
+              "description": "Database liveness probe. Overrides the global value",
+              "$ref": "#/defs/livenessProbe"
+            },
+            "readinessProbe": {
+              "description": "Database readiness probe. Overrides the global value",
+              "$ref": "#/defs/readinessProbe"
+            },
+            "startupProbe": {
+              "description": "Database startup probe. Overrides the global value",
+              "$ref": "#/defs/startupProbe"
             }
           },
           "required": [
