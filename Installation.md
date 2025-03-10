@@ -2,6 +2,10 @@
 
 **Table of Contents:**
 - [Installation](#installation-1)
+- [Post-installation](#post-installation)
+    - [Authentik](#authentik)
+        - [Setup](#setup)
+    - [Cert-manager](#cert-manager)
 - [Chart customization](#chart-customization)
     - [VPN](#vpn)
 - [File permissions](#file-permissions)
@@ -9,9 +13,6 @@
 - [Choosing a perfect Docker image](#choosing-a-perfect-docker-image)
 - [Folder Structure](#folder-structure)
 - [Hard links \& Instant moves](#hard-links--instant-moves)
-- [Cert-manager](#cert-manager)
-- [Authentik](#authentik)
-    - [Setup](#setup)
 - [Reverse Auth Proxy Header](#reverse-auth-proxy-header)
 - [Homepage](#homepage)
 - [Radarr](#radarr)
@@ -74,23 +75,6 @@ Prerequisites:
     - Zone Resources:
         - Include - All Zones
 
-Copy `authentik-values.template.yaml` to `authentik-values.yaml` and set the following *required* parameters:
-```yaml
-authentik:
-    secret_key: # REQUIRED; generate via `pwgen -s -B -n 50 1`
-    postgresql:
-        password: # REQUIRED; set the same value as in postgresql.auth.password
-server:
-    ingress:
-        hosts:
-            - "" # REQUIRED; MUST be set to 'authentik.<domain>.<tld>', e.g. 'authentik.example.com'
-postgresql:
-    auth:
-        password: # REQUIRED; generate via `pwgen -s -B -n 50 1`
-```
-
-Copy `certmanager-values.template.yaml` to `certmanager-values.yaml`. No required parameters to set here.
-
 Copy `values.template.yaml` to `values.yaml` and set the following *minimum required* parameters:
 ```yaml
 host:
@@ -98,10 +82,27 @@ host:
     uid: # REQUIRED; obtain via `id -u`
     gid: # REQUIRED; obtain via `id -g`
 authentik:
+    namespaceOverride: authentik # REQUIRED; set a separate namespace where to install the Authentik chart
+    authentik:
+        secret_key: # REQUIRED; generate via `pwgen -s -B -n 50 1`
+        postgresql:
+            password: # REQUIRED; set the same value as in postgresql.auth.password
+    server:
+        ingress:
+            hosts:
+                - "" # REQUIRED; MUST be set to 'authentik.<domain>.<tld>', e.g. 'authentik.example.com'
+    authentik-remote-cluster:
+        namespaceOverride: authentik # REQUIRED; set a separate namespace where to install the Authentik chart
     postgresql:
+        namespaceOverride: authentik # REQUIRED; set a separate namespace where to install the Authentik chart
         auth:
-            password: "" # REQUIRED; set the same value as in authentik-values.yaml
-certmanager:
+            password: # REQUIRED; generate via `pwgen -s -B -n 50 1`
+    # redis bitnami subchart
+    redis:
+        namespaceOverride: authentik # REQUIRED; set a separate namespace where to install the Authentik chart
+cert-manager:
+  namespace: cert-manager # REQUIRED; set a separate namespace where to install the cert-manager chart
+tls:
     acme:
         email: # REQUIRED; e.g. 'example@gmail.com'
         dns01:
@@ -117,21 +118,181 @@ Finally, install the server:
 ./bin/install.sh
 ```
 
-The script will install the [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager/), the [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik), and finally this Helm chart. Give it a couple of minutes to spin up and self-initialize.
-If you want to customize cert-manager or Authentik before installation, please adjust `certmanager-values.yaml` or `authentik-values.yaml` respectively. This requires you to be familiar with these charts. Otherwise don't touch anything but required params.
+The script will install this Helm chart with all the required subcharts (Authentik, cert-manager). Give it a couple of minutes to spin up and self-initialize.
 
-After installation, please carry out all the steps from the [#cert-manager](#cert-manager) and [#Authentik](#authentik) sections below.
+If you want to customize [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager#configuration) or [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik#values) before installation, please adjust `cert-manager`/`authentik` sections respectively. All values are passed as is to the respective subcharts.
+
+Once the script finishes its job, please see the [Post-Installation](#post-installation) section - we'll verify cert-manager and configure Authentik. Do not skip this step - otherwise you'll have issues connecting to your home server.
 
 Having verified that cert-manager and Authentik are functioning properly, you can proceed to enabling individual services.
 All services are optional. Just enable the ones you need.
 
-Service sections in `values.yaml` should be self-explanatory as all important variables are documented. The required parameters are marked with a `# REQUIRED` commment, the rest can be left default or adjusted to your liking. Make sure that directories used by a service do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
+All sections in `values.yaml` should be self-explanatory as important variables are documented. The required parameters are marked with a `# REQUIRED` commment, the rest can be left default or adjusted to your liking. Make sure that directories used by a service (usually specified in the `persistence` subsection) do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
 
-This document covers most of the services used in this chart and provides some useful notes. Return to this document if you're having troubles. Open an issue in this GitHub repo if your problem is not covered here. Please ensure that it's an indeed chart's issue and always read the service's docs first.
+This chart supplies with a helpful JSON Schema. If you have a supported editor like VS Code with a [RedHat's YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml), you'll see autosuggestions and field descriptions right in your editor.
+
+Finally, give a read to the [Chart customization](#chart-customization) section to learn how to customize your setup.
+
+This document covers most of the services used in this chart and provides some useful notes on each of them.
+Return to this document if you're having troubles. Open an issue in this GitHub repo if your problem is not covered here.
 
 If you're a newbie, it's especially worth to give this document a read from start to finish. It has detailed instructions for core services like [Plex](#plex), [Radarr](#radarr)/[Sonarr](#sonarr), [Jellyseerr](#jellyseerr), and [qBittorrent](#qbittorrent).
 
 Have fun!
+
+---
+
+## Post-installation
+
+### Authentik
+
+Authentik is a SSO authentication service. It acts as a forward authentication provider in this chart.
+
+Here's how it works: Traefik, which is a ingress/reverse proxy of this setup, delegates authentication to Authentik and requires user to be authenticated before accessing any of the ingress paths. If Authentik responds with 2XX code, access is granted and the original request is performed. Otherwise request is rejected.
+
+Authentik itself, however, may bypass auth on specific paths. This depends on your configuration.
+For instance, you might want to exclude Plex from auth. Otherwise app clients would be unable to communicate with it.
+
+![Traefik - ForwardAuth middleware](assets/traefik_authforward.webp)
+
+#### Setup
+
+The instructions below are absolutely necessary to carry out. Otherwise you will have issues accessing your services.
+
+Go to `https://authentik.<domain>.<tld>/if/flow/initial-setup/` and carry out the initial setup, creating the admin user.
+
+Now go to `https://authentik.<domain>.<tld>`, log in via the newly created admin user, and open the Admin Dashboard.
+
+Go to Applications, click `Create with Wizard` and set settings as follows:
+1. Application Details:
+    - Name: `Homeserver`
+2. Provider type:
+    - Select `Forward Auth (Domain Level)`
+3. Provider Configuration:
+    - Name: `Homeserver`
+    - Authentication flow: `default-authentication-flow (Welcome to authentik!)`
+    - Authorization flow: `default-provider-authorization-implicit-consent (Authorize Application)`
+    - External host: `authentik.<domain>.<tld>`
+    - Cookie domain: `<domain>.<tld>`
+    - Token validity: `hours=168` (1 week; you can select any value to your liking)
+    - Advanced protocol settings:
+        - Unauthenticated paths:
+            ```text
+            plex.<domain>.<tld>
+            jellyfin.<domain>.<tld>
+            jellyseerr.<domain>.<tld>
+            ```
+4. Click Submit
+
+Now go to Flows and Stages -> Outposts, select `authentik Embedded Outpost`, click `Edit` and move our application to the right pane (from Available to Selected).
+
+Next we want to allow the users you share your Plex Media Server with to log in via their Plex account. Go to Directory -> Federations and Social login and click `Create`. Set settings as follows:
+1. Select type
+    - Select `Plex Source`
+2. Create Plex Source
+    - Name: `Plex`
+    - Icon: leave empty to use the Authentik's default Plex icon, or type in the URL to your own icon. Personally, I like the look of [Self-Hosted Dashboard Icons](https://selfh.st/icons/), including their [Plex icon](https://cdn.jsdelivr.net/gh/selfhst/icons/svg/plex.svg) specifically
+    - Protocol settings:
+        - Click `Load servers` and log in via the Plex account for which you claimed a Plex Media Server
+        - Optional: Switch off `Allow friends to authenticate via Plex, even if you don't share any servers` in order to forbid your friends you DON'T share your Plex Media Server with to log in
+
+Now go to Flows and Stages -> Stages, select `default-authentication-identification`, click Edit and move the newly created Plex source to the right pane (from Available to Selected).
+
+Give it a couple of minutes for changes to take effect. Log out of your admin account and verify that Plex-based authentication is working by going to one of the services (e.g. `radarr.<domain>.<tld>`) and trying to log in via your Plex account.
+
+Great. Now we have a working SSO authentication.
+
+---
+
+### Cert-manager
+
+First let's check that the certificate has been issued correctly:
+```sh
+kubectl describe certificate
+```
+
+A healthy output would be:
+```yaml
+Name:         certs.letsencrypt.key.tls
+Namespace:    homeserver
+Labels:       app.kubernetes.io/managed-by=Helm
+              app.kubernetes.io/name=ingress
+Annotations:  <none>
+API Version:  cert-manager.io/v1
+Kind:         Certificate
+Metadata:
+  Creation Timestamp:  2024-10-01T14:05:20Z
+  Generation:          1
+  Owner References:
+    API Version:           networking.k8s.io/v1
+    Block Owner Deletion:  true
+    Controller:            true
+    Kind:                  Ingress
+    Name:                  ingress
+    UID:                   cd6653b6-fa75-46b1-950b-9f0e6606279c
+  Resource Version:        31289
+  UID:                     67a18d86-1995-46b0-9bd6-d480c2a197fd
+Spec:
+  Dns Names:
+    <domain>.<tld>
+    *.<domain>.<tld>
+  Issuer Ref:
+    Group:      cert-manager.io
+    Kind:       ClusterIssuer
+    Name:       letsencrypt-cert-issuer
+  Secret Name:  certs.letsencrypt.key.tls
+  Usages:
+    digital signature
+    key encipherment
+Status:
+  Conditions:
+    Last Transition Time:  2024-10-01T14:08:01Z
+    Message:               Certificate is up to date and has not expired
+    Observed Generation:   1
+    Reason:                Ready
+    Status:                True
+    Type:                  Ready
+  Not After:               2024-12-30T13:09:29Z
+  Not Before:              2024-10-01T13:09:30Z
+  Renewal Time:            2024-11-30T13:09:29Z
+  Revision:                1
+```
+
+if no certificates found, wait a few more minutes until cert-manager finishes its job. If output is still empty, `Status.Conditions.Message` is not `Certificate is up to date and has not expired`, or there are errors in the events, then something went wrong. Check the cert-manager's logs:
+```sh
+kubectl -n cert-manager logs -l app=certmanager
+```
+
+Let's conduct one more check via `openssl`:
+```sh
+openssl s_client -servername <domain.tld> -connect <domain.tld>:443
+```
+
+A healthy output would start with:
+```text
+CONNECTED(00000003)
+depth=2 C = US, O = Internet Security Research Group, CN = ISRG Root X1
+verify return:1
+depth=1 C = US, O = Let's Encrypt, CN = R10
+verify return:1
+depth=0 CN = <domain>.<tld>
+verify return:1
+---
+Certificate chain
+ 0 s:CN = <domain>.<tld>
+   i:C = US, O = Let's Encrypt, CN = R10
+   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
+   v:NotBefore: Oct  1 13:09:30 2024 GMT; NotAfter: Dec 30 13:09:29 2024 GMT
+ 1 s:C = US, O = Let's Encrypt, CN = R10
+   i:C = US, O = Internet Security Research Group, CN = ISRG Root X1
+   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
+   v:NotBefore: Mar 13 00:00:00 2024 GMT; NotAfter: Mar 12 23:59:59 2027 GMT
+...
+```
+
+If you see a certificate issued for your domain, then everything works properly. No need to do anything. Otherwise check the cert-manager's logs.
+
+Great. Your root domain and sub-domains are secure now. The TLS certificate will be renewed automatically before expiration. If you want to learn more about this topic, please refer to the [cert-manager docs](https://cert-manager.io/docs/).
 
 ---
 
@@ -577,160 +738,6 @@ Note the number in the first column - `4849714`. It's an *[inode](https://en.wik
 By the way, data won't be deleted from your filesystem until you delete all the hardlinks. Practically this means you have to delete a movie from both Radarr and qBittorrent whenever you want to claim back some space.
 
 The above does not apply to SABnzbd as Usenet protocol doesn't even have a notion of seeding so there's no need to have multiple hardlinks. However, the *arr stack will still benefit from having an access to the whole data directory, since it'll be able to [move downloads instantly](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/#what-are-instant-moves-atomic-moves).
-
----
-
-## Cert-manager
-
-The instructions below are absolutely necessary to carry out. Otherwise you might have issues connecting to your server.
-
-First let's check that the certificate has been issued correctly:
-```sh
-kubectl describe certificate
-```
-
-A healthy output would be:
-```yaml
-Name:         certs.letsencrypt.key.tls
-Namespace:    homeserver
-Labels:       app.kubernetes.io/managed-by=Helm
-              app.kubernetes.io/name=ingress
-Annotations:  <none>
-API Version:  cert-manager.io/v1
-Kind:         Certificate
-Metadata:
-  Creation Timestamp:  2024-10-01T14:05:20Z
-  Generation:          1
-  Owner References:
-    API Version:           networking.k8s.io/v1
-    Block Owner Deletion:  true
-    Controller:            true
-    Kind:                  Ingress
-    Name:                  ingress
-    UID:                   cd6653b6-fa75-46b1-950b-9f0e6606279c
-  Resource Version:        31289
-  UID:                     67a18d86-1995-46b0-9bd6-d480c2a197fd
-Spec:
-  Dns Names:
-    <domain>.<tld>
-    *.<domain>.<tld>
-  Issuer Ref:
-    Group:      cert-manager.io
-    Kind:       ClusterIssuer
-    Name:       letsencrypt-cert-issuer
-  Secret Name:  certs.letsencrypt.key.tls
-  Usages:
-    digital signature
-    key encipherment
-Status:
-  Conditions:
-    Last Transition Time:  2024-10-01T14:08:01Z
-    Message:               Certificate is up to date and has not expired
-    Observed Generation:   1
-    Reason:                Ready
-    Status:                True
-    Type:                  Ready
-  Not After:               2024-12-30T13:09:29Z
-  Not Before:              2024-10-01T13:09:30Z
-  Renewal Time:            2024-11-30T13:09:29Z
-  Revision:                1
-```
-
-if no certificates found, wait a few more minutes until cert-manager finishes its job. If output is still empty, `Status.Conditions.Message` is not `Certificate is up to date and has not expired`, or there are errors in the Events, then something went wrong. Check the cert-manager's logs:
-```sh
-kubectl -n cert-manager logs -l app=certmanager
-```
-
-Let's conduct one more check via `openssl`:
-```sh
-openssl s_client -servername <domain.tld> -connect <domain.tld>:443
-```
-
-A healthy output would start with:
-```text
-CONNECTED(00000003)
-depth=2 C = US, O = Internet Security Research Group, CN = ISRG Root X1
-verify return:1
-depth=1 C = US, O = Let's Encrypt, CN = R10
-verify return:1
-depth=0 CN = <domain>.<tld>
-verify return:1
----
-Certificate chain
- 0 s:CN = <domain>.<tld>
-   i:C = US, O = Let's Encrypt, CN = R10
-   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
-   v:NotBefore: Oct  1 13:09:30 2024 GMT; NotAfter: Dec 30 13:09:29 2024 GMT
- 1 s:C = US, O = Let's Encrypt, CN = R10
-   i:C = US, O = Internet Security Research Group, CN = ISRG Root X1
-   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
-   v:NotBefore: Mar 13 00:00:00 2024 GMT; NotAfter: Mar 12 23:59:59 2027 GMT
-...
-```
-
-If you see `Let's Encrypt` and your domain in the output, then everything works properly. No need to do anything.
-
-Great. Your root domain and sub-domains are secure now. The TLS certificate will be renewed automatically before expiration. If you want to learn more about this topic, please refer to the [cert-manager docs](https://cert-manager.io/docs/).
-
----
-
-## Authentik
-
-Authentik is a SSO authentication service, which is used as a forward authentication provider to Traefik.
-
-Traefik, which is a reverse proxy of this setup, delegates authentication to Authentik and requires user to be authenticated before accessing any of the ingress paths. If Authentik responds with 2XX code, access is granted and the original request is performed.
-
-Authentik itself, however, may bypass auth on specific paths. This depends on your configuration.
-For instance, you might want to exclude Plex from auth. Otherwise app clients would be unable to communicate with it.
-
-![Traefik - ForwardAuth middleware](assets/traefik_authforward.webp)
-
-### Setup
-
-The instructions below are absolutely necessary to carry out. Otherwise you will have issues accessing your services.
-
-Go to `https://authentik.<domain>.<tld>/if/flow/initial-setup/` and carry out the initial setup, creating the admin user.
-
-Now go to `https://authentik.<domain>.<tld>`, log in via the newly created admin user, and open the Admin Dashboard.
-
-Go to Applications, click `Create with Wizard` and set settings as follows:
-1. Application Details:
-    - Name: `Homeserver`
-2. Provider type:
-    - Select `Forward Auth (Domain Level)`
-3. Provider Configuration:
-    - Name: `Homeserver`
-    - Authentication flow: `default-authentication-flow (Welcome to authentik!)`
-    - Authorization flow: `default-provider-authorization-implicit-consent (Authorize Application)`
-    - External host: `authentik.<domain>.<tld>`
-    - Cookie domain: `<domain>.<tld>`
-    - Token validity: `hours=168` (1 week; you can select any value to your liking)
-    - Advanced protocol settings:
-        - Unauthenticated paths:
-            ```text
-            plex.<domain>.<tld>
-            jellyfin.<domain>.<tld>
-            jellyseerr.<domain>.<tld>
-            ```
-4. Click Submit
-
-Now go to Flows and Stages -> Outposts, select `authentik Embedded Outpost`, click `Edit` and move our application to the right pane (from Available to Selected).
-
-Next we want to allow the users you share your Plex Media Server with to log in via their Plex account. Go to Directory -> Federations and Social login and click `Create`. Set settings as follows:
-1. Select type
-    - Select `Plex Source`
-2. Create Plex Source
-    - Name: `Plex`
-    - Icon: leave empty to use the Authentik's default Plex icon, or type in the URL to your own icon. Personally, I like the look of [Self-Hosted Dashboard Icons](https://selfh.st/icons/), including their [Plex icon](https://cdn.jsdelivr.net/gh/selfhst/icons/svg/plex.svg) specifically
-    - Protocol settings:
-        - Click `Load servers` and log in via the Plex account for which you claimed a Plex Media Server
-        - Optional: Switch off `Allow friends to authenticate via Plex, even if you don't share any servers` in order to forbid your friends you DON'T share your Plex Media Server with to log in
-
-Now go to Flows and Stages -> Stages, select `default-authentication-identification`, click Edit and move the newly created Plex source to the right pane (from Available to Selected).
-
-Give it a couple of minutes for changes to take effect. Log out of your admin account and verify that Plex-based authentication is working by going to one of the services (e.g. `radarr.<domain>.<tld>`) and trying to log in via your Plex account.
-
-Great. Now we have a working SSO authentication.
 
 ---
 

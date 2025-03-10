@@ -111,7 +111,7 @@ vpn:
   ## Set to true if you're having issues with WireGuard
   ##
   sysModule: false
-  ## Secret's name containing the WireGuard configuration
+  ## Name of the secret containing the WireGuard configuration
   ##
   secretRef: wireguard-conf
   ## Key inside the secret
