@@ -1,0 +1,2918 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Homeserver values.yaml schema",
+  "description": "Helpful JSON Schema to validate and configure your self-hosted homeserver",
+  "type": "object",
+  "properties": {
+    "host": {
+      "type": "object",
+      "description": "Host configuration",
+      "properties": {
+        "tz": {
+          "type": "string",
+          "description": "Host timezone",
+          "examples": [ "Europe/Berlin" ]
+        },
+        "uid": {
+          "type": "integer",
+          "description": "Host user's ID\nObtainable via `id -u`",
+          "examples": [ 1000 ]
+        },
+        "gid": {
+          "type": "integer",
+          "description": "Host user's group ID\nObtainable via `id -g`",
+          "examples": [ 1000 ]
+        }
+      },
+      "required": [
+        "tz",
+        "uid",
+        "gid"
+      ]
+    },
+    "cert-manager": {
+      "type": "object",
+      "description": "cert-manager subchart configuration",
+      "$ref": "https://raw.githubusercontent.com/cert-manager/cert-manager/refs/tags/v1.17.1/deploy/charts/cert-manager/values.schema.json"
+    },
+    "tls": {
+      "type": "object",
+      "description": "Automatic TLS certificate provisioning configuration\nDepends on cert-manager",
+      "properties": {
+        "tlsSecretName": {
+          "type": "string",
+          "description": "TLS secret name",
+          "examples": [ "certs.letsencrypt.key.tls" ]
+        },
+        "acme": {
+          "type": "object",
+          "description": "ACME configuration",
+          "properties": {
+            "email": {
+              "type": "string",
+              "description": "ACME email",
+              "examples": [ "example@gmail.com" ]
+            },
+            "dns01": {
+              "type": "object",
+              "description": "DNS01 configuration",
+              "properties": {
+                "cfApiToken": {
+                  "type": "string",
+                  "description": "Cloudflare API token"
+                }
+              },
+              "required": [
+                "cfApiToken"
+              ]
+            }
+          },
+          "required": [
+            "email",
+            "dns01"
+          ]
+        }
+      },
+      "required": [
+        "tlsSecretName",
+        "acme"
+      ]
+    },
+    "authentik": {
+      "type": "object",
+      "description": "Authentik subchart configuration",
+      "properties": {
+        "namespaceOverride": {
+          "type": "string",
+          "description": "Namespace override",
+          "default": "authentik"
+        },
+        "authentik": {
+          "type": "object",
+          "description": "Authentik configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Authentik",
+              "default": true
+            },
+            "secret_key": {
+              "type": "string",
+              "description": "Secret key"
+            },
+            "error_reporting": {
+              "type": "object",
+              "description": "Error reporting configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable error reporting",
+                  "default": false
+                }
+              },
+              "required": [
+                "enabled"
+              ]
+            },
+            "postgresql": {
+              "type": "object",
+              "description": "PostgreSQL connection configuration",
+              "properties": {
+                "password": {
+                  "type": "string",
+                  "description": "PostgreSQL password",
+                  "default": ""
+                }
+              },
+              "required": [
+                "password"
+              ]
+            }
+          },
+          "required": [
+            "enabled",
+            "secret_key",
+            "error_reporting",
+            "postgresql"
+          ]
+        },
+        "server": {
+          "type": "object",
+          "description": "Server configuration",
+          "properties": {
+            "metrics": {
+              "type": "object",
+              "description": "Metrics configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable metrics",
+                  "default": false
+                }
+              },
+              "required": [
+                "enabled"
+              ]
+            },
+            "ingress": {
+              "type": "object",
+              "description": "Ingress configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable ingress",
+                  "default": true
+                },
+                "ingressClassName": {
+                  "type": "string",
+                  "description": "Ingress class name",
+                  "default": "traefik"
+                },
+                "hosts": {
+                  "type": "array",
+                  "description": "List of hosts",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "enabled",
+                "ingressClassName",
+                "hosts"
+              ]
+            }
+          },
+          "required": [
+            "metrics",
+            "ingress"
+          ]
+        },
+        "worker": {
+          "type": "object",
+          "description": "Worker configuration",
+          "properties": {
+            "serviceAccountName": {
+              "type": "string",
+              "description": "Service account name",
+              "default": "authentik"
+            }
+          },
+          "required": [
+            "serviceAccountName"
+          ]
+        },
+        "serviceAccount": {
+          "type": "object",
+          "description": "Service account configuration",
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "description": "Create service account",
+              "default": true
+            }
+          },
+          "required": [
+            "create"
+          ]
+        },
+        "authentik-remote-cluster": {
+          "type": "object",
+          "description": "authentik-remote-cluster subchart configuration",
+          "properties": {
+            "namespaceOverride": {
+              "type": "string",
+              "description": "Namespace override",
+              "default": "authentik"
+            },
+            "fullnameOverride": {
+              "type": "string",
+              "description": "Fullname override",
+              "default": "authentik"
+            },
+            "serviceAccountSecret": {
+              "type": "object",
+              "description": "Service account secret configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable service account secret",
+                  "default": false
+                }
+              },
+              "required": [
+                "enabled"
+              ]
+            }
+          },
+          "required": [
+            "namespaceOverride",
+            "fullnameOverride",
+            "serviceAccountSecret"
+          ]
+        },
+        "postgresql": {
+          "type": "object",
+          "description": "PostgreSQL Bitnami subchart configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable PostgreSQL",
+              "default": true
+            },
+            "namespaceOverride": {
+              "type": "string",
+              "description": "Namespace override",
+              "default": "authentik"
+            },
+            "auth": {
+              "type": "object",
+              "description": "Authentication configuration",
+              "properties": {
+                "password": {
+                  "type": "string",
+                  "description": "PostgreSQL password",
+                  "default": ""
+                }
+              },
+              "required": [
+                "password"
+              ]
+            },
+            "backup": {
+              "type": "object",
+              "description": "Backup configuration",
+              "properties": {
+                "dir": {
+                  "type": "string",
+                  "description": "Backup directory",
+                  "examples": [ "/opt/service/postgresql/17/backup" ]
+                },
+                "scheduleCron": {
+                  "type": "string",
+                  "description": "Schedule cron",
+                  "examples": [ "0 5 * * *" ]
+                },
+                "retentionDays": {
+                  "type": "integer",
+                  "description": "Retention days",
+                  "examples": [ 180 ]
+                }
+              },
+              "required": [
+                "dir",
+                "scheduleCron",
+                "retentionDays"
+              ]
+            }
+          },
+          "required": [
+            "enabled",
+            "namespaceOverride",
+            "auth",
+            "backup"
+          ]
+        },
+        "redis": {
+          "type": "object",
+          "description": "Redis Bitnami subchart configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Redis",
+              "default": true
+            },
+            "namespaceOverride": {
+              "type": "string",
+              "description": "Namespace override",
+              "default": "authentik"
+            }
+          },
+          "required": [
+            "enabled",
+            "namespaceOverride"
+          ]
+        }
+      },
+      "required": [
+        "namespaceOverride",
+        "authentik",
+        "server",
+        "worker",
+        "serviceAccount",
+        "authentik-remote-cluster",
+        "postgresql",
+        "redis"
+      ]
+    },
+    "ingress": {
+      "type": "object",
+      "description": "Ingress configuration",
+      "properties": {
+        "domain": {
+          "type": "string",
+          "description": "Your domain without a scheme",
+          "examples": [ "example.com" ]
+        },
+        "rootService": {
+          "type": "string",
+          "description": "The service to serve on the root domain",
+          "default": "homepage",
+          "examples": [ "homepage" ]
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Custom annotations to add to the Ingress resource",
+          "default": { }
+        }
+      },
+      "required": [
+        "domain",
+        "rootService",
+        "annotations"
+      ]
+    },
+    "vpn": {
+      "type": "object",
+      "description": "VPN configuration",
+      "properties": {
+        "sysModule": {
+          "type": "boolean",
+          "description": "Enables SYS_MODULE capability",
+          "default": false
+        },
+        "secretRef": {
+          "type": "string",
+          "description": "Secret's name containing the WireGuard configuration",
+          "default": "wireguard-conf-linuxserver",
+          "examples": [ "wireguard-conf-linuxserver" ]
+        },
+        "secretKey": {
+          "type": "string",
+          "description": "Key inside the secret",
+          "default": "wg0.conf",
+          "examples": [ "wg0.conf" ]
+        }
+      },
+      "required": [
+        "sysModule",
+        "secretRef",
+        "secretKey"
+      ]
+    },
+    "enableServiceLinks": {
+      "type": "boolean",
+      "description": "Whether information about services should be injected into pod's environment variable",
+      "default": false
+    },
+    "automountServiceAccountToken": {
+      "type": "boolean",
+      "description": "Whether to mount Service Account token in pods",
+      "default": false
+    },
+    "commonLabels": {
+      "type": "object",
+      "description": "Common labels to add to all the deployed resources",
+      "default": { }
+    },
+    "commonAnnotations": {
+      "type": "object",
+      "description": "Common annotations to add to all the deployed resources",
+      "default": { }
+    },
+    "livenessProbe": {
+      "type": "object",
+      "description": "Pods' global liveness probe",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable liveness probe",
+          "default": true
+        },
+        "initialDelaySeconds": {
+          "type": "integer",
+          "description": "Initial delay seconds",
+          "default": 30
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "description": "Period seconds",
+          "default": 20
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Timeout seconds",
+          "default": 10
+        },
+        "failureThreshold": {
+          "type": "integer",
+          "description": "Failure threshold",
+          "default": 6
+        },
+        "successThreshold": {
+          "type": "integer",
+          "description": "Success threshold",
+          "default": 1
+        }
+      },
+      "required": [
+        "enabled",
+        "initialDelaySeconds",
+        "periodSeconds",
+        "timeoutSeconds",
+        "failureThreshold",
+        "successThreshold"
+      ]
+    },
+    "readinessProbe": {
+      "type": "object",
+      "description": "Pods' global readiness probe",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable readiness probe",
+          "default": true
+        },
+        "initialDelaySeconds": {
+          "type": "integer",
+          "description": "Initial delay seconds",
+          "default": 5
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "description": "Period seconds",
+          "default": 10
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Timeout seconds",
+          "default": 5
+        },
+        "failureThreshold": {
+          "type": "integer",
+          "description": "Failure threshold",
+          "default": 6
+        },
+        "successThreshold": {
+          "type": "integer",
+          "description": "Success threshold",
+          "default": 1
+        }
+      },
+      "required": [
+        "enabled",
+        "initialDelaySeconds",
+        "periodSeconds",
+        "timeoutSeconds",
+        "failureThreshold",
+        "successThreshold"
+      ]
+    },
+    "startupProbe": {
+      "type": "object",
+      "description": "Pods' global startup probe",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable startup probe",
+          "default": false
+        },
+        "initialDelaySeconds": {
+          "type": "integer",
+          "description": "Initial delay seconds",
+          "default": 5
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "description": "Period seconds",
+          "default": 20
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Timeout seconds",
+          "default": 10
+        },
+        "successThreshold": {
+          "type": "integer",
+          "description": "Success threshold",
+          "default": 1
+        },
+        "failureThreshold": {
+          "type": "integer",
+          "description": "Failure threshold",
+          "default": 30
+        }
+      },
+      "required": [
+        "enabled",
+        "initialDelaySeconds",
+        "periodSeconds",
+        "timeoutSeconds",
+        "successThreshold",
+        "failureThreshold"
+      ]
+    },
+    "resources": {
+      "type": "object",
+      "description": "Resources configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable resources management",
+          "default": false
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "services": {
+      "type": "object",
+      "description": "Services configuration",
+      "properties": {
+        "backrest": {
+          "description": "Backrest configuration\nhttps://github.com/garethgeorge/backrest",
+          "$ref": "#/defs/backrestService"
+        },
+        "homepage": {
+          "description": "Homepage configuration\nhttps://github.com/gethomepage/homepage",
+          "$ref": "#/defs/homepageService"
+        },
+        "plex": {
+          "description": "Plex configuration\nhttps://www.plex.tv/",
+          "$ref": "#/defs/plexService"
+        },
+        "jellyfin": {
+          "description": "Jellyfin configuration\nhttps://github.com/jellyfin/jellyfin",
+          "$ref": "#/defs/jellyfinService"
+        },
+        "autobrr": {
+          "description": "Autobrr configuration\nhttps://github.com/autobrr/autobrr",
+          "$ref": "#/defs/autobrrService"
+        },
+        "qbittorrent": {
+          "description": "Qbittorrent configuration\nhttps://github.com/qbittorrent/qBittorrent",
+          "$ref": "#/defs/qbittorrentService"
+        },
+        "sabnzbd": {
+          "description": "Sabnzbd configuration\nhttps://github.com/sabnzbd/sabnzbd",
+          "$ref": "#/defs/sabnzbdService"
+        },
+        "prowlarr": {
+          "description": "Prowlarr configuration\nhttps://github.com/Prowlarr/Prowlarr",
+          "$ref": "#/defs/prowlarrService"
+        },
+        "radarr": {
+          "description": "Radarr configuration\nhttps://github.com/Radarr/Radarr",
+          "$ref": "#/defs/radarrService"
+        },
+        "sonarr": {
+          "description": "Sonarr configuration\nhttps://github.com/Sonarr/Sonarr",
+          "$ref": "#/defs/sonarrService"
+        },
+        "lidarr": {
+          "description": "Lidarr configuration\nhttps://github.com/Lidarr/Lidarr",
+          "$ref": "#/defs/lidarrService"
+        },
+        "whisparr": {
+          "description": "Whisparr configuration\nhttps://github.com/Whisparr/Whisparr",
+          "$ref": "#/defs/whisparrService"
+        },
+        "bazarr": {
+          "description": "Bazarr configuration\nhttps://github.com/morpheus65535/bazarr",
+          "$ref": "#/defs/bazarrService"
+        },
+        "jellyseerr": {
+          "description": "Jellyseerr configuration\nhttps://github.com/Fallenbagel/jellyseerr",
+          "$ref": "#/defs/jellyseerrService"
+        },
+        "flaresolverr": {
+          "description": "Flaresolverr configuration\nhttps://github.com/21hsmw/FlareSolverr",
+          "$ref": "#/defs/flaresolverrService"
+        },
+        "tautulli": {
+          "description": "Tautulli configuration\nhttps://github.com/Tautulli/Tautulli",
+          "$ref": "#/defs/tautulliService"
+        },
+        "kometa": {
+          "description": "Kometa configuration\nhttps://github.com/Kometa-Team/Kometa",
+          "$ref": "#/defs/kometaService"
+        },
+        "thelounge": {
+          "description": "Thelounge configuration\nhttps://github.com/thelounge/thelounge",
+          "$ref": "#/defs/theloungeService"
+        },
+        "myspeed": {
+          "description": "Myspeed configuration\nhttps://github.com/gnmyt/myspeed",
+          "$ref": "#/defs/myspeedService"
+        },
+        "stirlingpdf": {
+          "description": "Stirlingpdf configuration\nhttps://github.com/Stirling-Tools/Stirling-PDF",
+          "$ref": "#/defs/stirlingpdfService"
+        },
+        "miniflux": {
+          "description": "Miniflux configuration\nhttps://github.com/miniflux/v2",
+          "$ref": "#/defs/minifluxService"
+        },
+        "huginn": {
+          "description": "Huginn configuration\nhttps://github.com/huginn/huginn",
+          "$ref": "#/defs/huginnService"
+        },
+        "playwright": {
+          "description": "Playwright configuration\nhttps://github.com/browserless/browserless",
+          "$ref": "#/defs/playwrightService"
+        },
+        "changedetectionio": {
+          "description": "Changedetectionio configuration\nhttps://github.com/dgtlmoon/changedetection.io",
+          "$ref": "#/defs/changedetectionioService"
+        },
+        "archivebox": {
+          "description": "Archivebox configuration\nhttps://github.com/ArchiveBox/ArchiveBox",
+          "$ref": "#/defs/archiveboxService"
+        },
+        "apprise": {
+          "description": "Apprise configuration\nhttps://github.com/caronc/apprise-api",
+          "$ref": "#/defs/appriseService"
+        },
+        "gotify": {
+          "description": "Gotify configuration\nhttps://github.com/gotify/server",
+          "$ref": "#/defs/gotifyService"
+        },
+        "kavita": {
+          "description": "Kavita configuration\nhttps://github.com/Kareadita/Kavita",
+          "$ref": "#/defs/kavitaService"
+        },
+        "calibre": {
+          "description": "Calibre-Web-Automated configuration\nhttps://github.com/crocodilestick/Calibre-Web-Automated",
+          "$ref": "#/defs/calibreService"
+        },
+        "calibrebookdownloader": {
+          "description": "Calibre-book-downloader configuration\nhttps://github.com/calibrain/calibre-web-automated-book-downloader",
+          "$ref": "#/defs/calibreBookDownloaderService"
+        },
+        "openbooks": {
+          "description": "Openbooks configuration\nhttps://github.com/evan-buss/openbooks",
+          "$ref": "#/defs/openbooksService"
+        },
+        "convertx": {
+          "description": "Convertx configuration\nhttps://github.com/C4illin/ConvertX",
+          "$ref": "#/defs/convertxService"
+        },
+        "pinchflat": {
+          "description": "Pinchflat configuration\nhttps://github.com/kieraneglin/pinchflat",
+          "$ref": "#/defs/pinchflatService"
+        },
+        "mealie": {
+          "description": "Mealie configuration\nhttps://github.com/mealie-recipes/mealie",
+          "$ref": "#/defs/mealieService"
+        },
+        "librechat": {
+          "description": "Librechat configuration\nhttps://github.com/danny-avila/LibreChat",
+          "$ref": "#/defs/librechatService"
+        }
+      },
+      "required": [
+        "backrest",
+        "homepage",
+        "plex",
+        "jellyfin",
+        "autobrr",
+        "qbittorrent",
+        "sabnzbd",
+        "prowlarr",
+        "radarr",
+        "sonarr",
+        "lidarr",
+        "whisparr",
+        "bazarr",
+        "jellyseerr",
+        "flaresolverr",
+        "tautulli",
+        "kometa",
+        "thelounge",
+        "myspeed",
+        "stirlingpdf",
+        "miniflux",
+        "huginn",
+        "playwright",
+        "changedetectionio",
+        "archivebox",
+        "apprise",
+        "gotify",
+        "kavita",
+        "calibre",
+        "calibrebookdownloader",
+        "openbooks",
+        "convertx",
+        "pinchflat",
+        "mealie",
+        "librechat"
+      ]
+    }
+  },
+  "required": [
+    "host",
+    "cert-manager",
+    "tls",
+    "authentik",
+    "ingress",
+    "vpn",
+    "enableServiceLinks",
+    "automountServiceAccountToken",
+    "commonLabels",
+    "commonAnnotations",
+    "livenessProbe",
+    "readinessProbe",
+    "startupProbe",
+    "resources",
+    "services"
+  ],
+  "defs": {
+    "commonProperties": {
+      "type": "object",
+      "properties": {
+        "securityContext": {
+          "type": "object",
+          "description": "Security context configuration",
+          "properties": {
+            "strict": {
+              "type": "boolean",
+              "description": "Enable strict security context (read-only fs & nonroot)",
+              "default": true
+            }
+          },
+          "required": [
+            "strict"
+          ]
+        },
+        "resourcesPreset": {
+          "type": "string",
+          "description": "Resources preset.\nSet 'none' to disable resource limits for the service",
+          "enum": [ "none", "2xnano", "xnano", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge" ],
+          "examples": [ "medium" ]
+        },
+        "automountServiceAccountToken": {
+          "type": "boolean",
+          "description": "Automount service account token. Overrides the global value",
+          "default": false
+        },
+        "enableServiceLinks": {
+          "type": "boolean",
+          "description": "Enable service links. Overrides the global value",
+          "default": false
+        },
+        "extraEnv": {
+          "type": "array",
+          "description": "Extra environment variables",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Env var name"
+              },
+              "value": {
+                "type": "string",
+                "description": "Env var value"
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ]
+          }
+        },
+        "extraEnvSecrets": {
+          "type": "array",
+          "description": "Extra environment variables populated from secrets",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Env var name"
+              },
+              "secretName": {
+                "type": "string",
+                "description": "Secret name"
+              },
+              "secretKey": {
+                "type": "string",
+                "description": "Secret key"
+              }
+            },
+            "required": [
+              "name",
+              "secretName",
+              "secretKey"
+            ]
+          }
+        },
+        "extraEnvFromCM": {
+          "type": "string",
+          "description": "Extra environment variables populated from a config map"
+        },
+        "extraEnvFromSecret": {
+          "type": "string",
+          "description": "Extra environment variables populated from a secret"
+        },
+        "extraVolumes": {
+          "type": "array",
+          "description": "Extra volumes",
+          "items": {
+            "type": "object"
+          }
+        },
+        "extraVolumeMounts": {
+          "type": "array",
+          "description": "Extra volume mounts",
+          "items": {
+            "type": "object"
+          }
+        },
+        "extraLabels": {
+          "type": "object",
+          "description": "Extra labels. Merges with the global value"
+        },
+        "extraAnnotations": {
+          "type": "object",
+          "description": "Extra annotations. Merges with the global value"
+        }
+      },
+      "required": [
+        "securityContext",
+        "resourcesPreset"
+      ]
+    },
+    "serviceCommon": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/commonProperties"
+        },
+        {
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable the service",
+              "default": true
+            },
+            "exposed": {
+              "type": "boolean",
+              "description": "Expose the service publicly via ingress",
+              "default": true
+            },
+            "name": {
+              "type": "string",
+              "description": "Controls the names of the deployed k8s resources"
+            },
+            "replicaCount": {
+              "type": "integer",
+              "description": "Number of replicas",
+              "default": 1
+            },
+            "critical": {
+              "type": "boolean",
+              "description": "Give the service higher priority",
+              "default": false
+            },
+            "image": {
+              "type": "object",
+              "description": "Image configuration",
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "description": "Image repository"
+                },
+                "tag": {
+                  "type": "string",
+                  "description": "Image tag",
+                  "examples": [ "latest" ]
+                },
+                "pullPolicy": {
+                  "type": "string",
+                  "description": "Image pull policy",
+                  "enum": [ "Always", "IfNotPresent", "Never" ]
+                }
+              },
+              "required": [
+                "repository",
+                "tag",
+                "pullPolicy"
+              ]
+            },
+            "ports": {
+              "type": "object",
+              "description": "Ports configuration"
+            },
+            "ingress": {
+              "type": "array",
+              "description": "Ingress configuration",
+              "items": {
+                "type": "string"
+              }
+            },
+            "vpn": {
+              "type": "object",
+              "description": "VPN configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable VPN",
+                  "default": false
+                }
+              }
+            }
+          },
+          "required": [
+            "enabled",
+            "exposed",
+            "name",
+            "replicaCount",
+            "critical",
+            "image",
+            "securityContext",
+            "resourcesPreset",
+            "ports",
+            "ingress"
+          ]
+        }
+      ]
+    },
+    "serviceDbCommon": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/commonProperties"
+        },
+        {
+          "properties": {
+            "ports": {
+              "type": "object",
+              "description": "Ports configuration"
+            }
+          },
+          "required": [
+            "ports"
+          ]
+        }
+      ]
+    },
+    "serviceDbBackupCommon": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/commonProperties"
+        },
+        {
+          "properties": {
+            "dir": {
+              "type": "string",
+              "description": "Backup directory",
+              "examples": [ "/opt/service/postgresql/17/backup" ]
+            },
+            "scheduleCron": {
+              "type": "string",
+              "description": "Schedule cron",
+              "examples": [ "0 5 * * *" ]
+            },
+            "retentionDays": {
+              "type": "integer",
+              "description": "Retention days",
+              "examples": [ 180 ]
+            }
+          },
+          "required": [
+            "dir",
+            "scheduleCron",
+            "retentionDays"
+          ]
+        }
+      ]
+    },
+    "backrestService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "userdata": {
+              "type": "string",
+              "description": "Userdata directory",
+              "default": "/opt"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory",
+                  "default": "/opt/backrest/config"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory",
+                  "default": "/opt/backrest/data"
+                },
+                "cache": {
+                  "type": "string",
+                  "description": "Cache directory",
+                  "default": "/opt/backrest/cache"
+                }
+              },
+              "required": [
+                "config",
+                "data",
+                "cache"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "homepageService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "widgets": {
+              "type": "object",
+              "description": "Widgets configuration",
+              "properties": {
+                "authentik": {
+                  "type": "object",
+                  "description": "Authentik widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Admin Portal > Directory > Tokens & App passwords and generate a new API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "miniflux": {
+                  "type": "object",
+                  "description": "Miniflux widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> API Keys and generate a new API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "radarr": {
+                  "type": "object",
+                  "description": "Radarr widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> General and retrieve the API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "sonarr": {
+                  "type": "object",
+                  "description": "Sonarr widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> General and retrieve the API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "lidarr": {
+                  "type": "object",
+                  "description": "Lidarr widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> General and retrieve the API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "bazarr": {
+                  "type": "object",
+                  "description": "Bazarr widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> General and retrieve the API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "prowlarr": {
+                  "type": "object",
+                  "description": "Prowlarr widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> General and retrieve the API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "autobrr": {
+                  "type": "object",
+                  "description": "Autobrr widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> API Keys and generate a new API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "jellyseerr": {
+                  "type": "object",
+                  "description": "Jellyseerr widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> General and retrieve the API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "tautulli": {
+                  "type": "object",
+                  "description": "Tautulli widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> Web Interface and retrieve the API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "jellyfin": {
+                  "type": "object",
+                  "description": "Jellyfin widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> API Keys and generate a new API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "sabnzbd": {
+                  "type": "object",
+                  "description": "Sabnzbd widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> General and retrieve the API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "changedetection": {
+                  "type": "object",
+                  "description": "Changedetection widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "gotify": {
+                  "type": "object",
+                  "description": "Gotify widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Clients and generate a new client"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "kavita": {
+                  "type": "object",
+                  "description": "Kavita widget configuration",
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "description": "Kavita username"
+                    },
+                    "password": {
+                      "type": "string",
+                      "description": "Kavita password"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "password"
+                  ]
+                },
+                "calibre": {
+                  "type": "object",
+                  "description": "Calibre widget configuration",
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "description": "Calibre username"
+                    },
+                    "password": {
+                      "type": "string",
+                      "description": "Calibre password"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "password"
+                  ]
+                },
+                "mealie": {
+                  "type": "object",
+                  "description": "Mealie widget configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                }
+              },
+              "required": [
+                "authentik",
+                "miniflux",
+                "radarr",
+                "sonarr",
+                "lidarr",
+                "bazarr",
+                "prowlarr",
+                "autobrr",
+                "jellyseerr",
+                "tautulli",
+                "jellyfin",
+                "sabnzbd",
+                "changedetection",
+                "gotify",
+                "kavita",
+                "calibre",
+                "mealie"
+              ]
+            }
+          },
+          "required": [
+            "widgets"
+          ]
+        }
+      ]
+    },
+    "plexService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "claim": {
+              "type": "string",
+              "description": "Plex claim token"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "library": {
+                  "type": "string",
+                  "description": "Library directory"
+                }
+              },
+              "required": [
+                "config",
+                "library"
+              ]
+            }
+          },
+          "required": [
+            "claim",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "jellyfinService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "library": {
+                  "type": "string",
+                  "description": "Library directory"
+                }
+              },
+              "required": [
+                "config",
+                "library"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "autobrrService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "qbittorrentService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "useVuetorrent": {
+              "type": "boolean",
+              "description": "Use Vuetorrent"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "config",
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "useVuetorrent",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "sabnzbdService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "config",
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "prowlarrService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "radarrService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "config",
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "sonarrService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "config",
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "lidarrService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "config",
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "whisparrService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "config",
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "bazarrService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "config",
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "jellyseerrService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "flaresolverrService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "driver": {
+              "type": "string",
+              "description": "Driver",
+              "default": "nodriver"
+            },
+            "logLevel": {
+              "type": "string",
+              "description": "Log level",
+              "default": "INFO"
+            },
+            "lang": {
+              "type": "string",
+              "description": "Language",
+              "default": "en_US"
+            }
+          },
+          "required": [
+            "driver",
+            "logLevel",
+            "lang"
+          ]
+        }
+      ]
+    },
+    "tautulliService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "kometaService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "scheduleCron": {
+              "type": "string",
+              "description": "Schedule cron"
+            },
+            "enableJmxdOverlays": {
+              "type": "boolean",
+              "description": "Enable JMXD overlays"
+            },
+            "connections": {
+              "type": "object",
+              "description": "Connections configuration",
+              "properties": {
+                "tmdb": {
+                  "type": "object",
+                  "description": "TMDB configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "API key"
+                    },
+                    "language": {
+                      "type": "string",
+                      "description": "Language"
+                    },
+                    "region": {
+                      "type": "string",
+                      "description": "Region"
+                    }
+                  },
+                  "required": [
+                    "apiKey",
+                    "language",
+                    "region"
+                  ]
+                },
+                "imdb": {
+                  "type": "object",
+                  "description": "IMDB configuration",
+                  "properties": {
+                    "userId": {
+                      "type": "string",
+                      "description": "User ID"
+                    }
+                  },
+                  "required": [
+                    "userId"
+                  ]
+                },
+                "letterboxd": {
+                  "type": "object",
+                  "description": "Letterboxd configuration",
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "description": "Username"
+                    }
+                  },
+                  "required": [
+                    "username"
+                  ]
+                },
+                "plex": {
+                  "type": "object",
+                  "description": "Plex configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "API key"
+                    }
+                  },
+                  "required": [
+                    "apiKey"
+                  ]
+                },
+                "radarr": {
+                  "type": "object",
+                  "description": "Radarr configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> General and retrieve the API key"
+                    },
+                    "rootFolderPath": {
+                      "type": "string",
+                      "description": "Root folder path"
+                    },
+                    "qualityProfile": {
+                      "type": "string",
+                      "description": "Quality profile"
+                    }
+                  },
+                  "required": [
+                    "apiKey",
+                    "rootFolderPath",
+                    "qualityProfile"
+                  ]
+                },
+                "sonarr": {
+                  "type": "object",
+                  "description": "Sonarr configuration",
+                  "properties": {
+                    "apiKey": {
+                      "type": "string",
+                      "description": "go to Settings -> General and retrieve the API key"
+                    },
+                    "rootFolderPath": {
+                      "type": "string",
+                      "description": "Root folder path"
+                    },
+                    "qualityProfile": {
+                      "type": "string",
+                      "description": "Quality profile"
+                    }
+                  },
+                  "required": [
+                    "apiKey",
+                    "rootFolderPath",
+                    "qualityProfile"
+                  ]
+                }
+              },
+              "required": [
+                "tmdb",
+                "imdb",
+                "letterboxd",
+                "plex",
+                "radarr",
+                "sonarr"
+              ]
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "scheduleCron",
+            "enableJmxdOverlays",
+            "connections",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "theloungeService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "myspeedService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "stirlingpdfService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "enableLogin": {
+              "type": "boolean",
+              "description": "Enable login"
+            },
+            "installBookAndAdvancedHtmlOps": {
+              "type": "boolean",
+              "description": "Install book and advanced HTML ops"
+            },
+            "langs": {
+              "type": "string",
+              "description": "Languages"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": { "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "enableLogin",
+            "installBookAndAdvancedHtmlOps",
+            "langs",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "minifluxService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "db": {
+              "type": "object",
+              "description": "Database configuration",
+              "allOf": [
+                {
+                  "$ref": "#/defs/serviceDbCommon"
+                },
+                {
+                  "properties": {
+                    "dbName": {
+                      "type": "string",
+                      "description": "Database name"
+                    },
+                    "user": {
+                      "type": "string",
+                      "description": "Database user"
+                    },
+                    "password": {
+                      "type": "string",
+                      "description": "Database password"
+                    },
+                    "persistence": {
+                      "type": "object",
+                      "description": "Persistence configuration",
+                      "properties": {
+                        "data": {
+                          "type": "string",
+                          "description": "Data directory"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    "backup": {
+                      "type": "object",
+                      "description": "Backup configuration",
+                      "allOf": [
+                        {
+                          "$ref": "#/defs/serviceDbBackupCommon"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "dbName",
+                    "user",
+                    "password",
+                    "persistence",
+                    "backup"
+                  ]
+                }
+              ]
+            },
+            "cleanupArchiveReadDays": {
+              "type": "integer",
+              "description": "Number of days after which marking read items as removed; set to -1 to disable this feature"
+            },
+            "cleanupArchiveUnreadDays": {
+              "type": "integer",
+              "description": "Number of days after which marking unread items as removed; set to -1 to disable this feature"
+            },
+            "cleanupFrequencyHours": {
+              "type": "integer",
+              "description": "Cleanup job frequency"
+            }
+          },
+          "required": [
+            "db",
+            "cleanupArchiveReadDays",
+            "cleanupArchiveUnreadDays",
+            "cleanupFrequencyHours"
+          ]
+        }
+      ]
+    },
+    "huginnService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "db": {
+              "type": "object",
+              "description": "Database configuration",
+              "allOf": [
+                {
+                  "$ref": "#/defs/serviceDbCommon"
+                },
+                {
+                  "properties": {
+                    "dbName": {
+                      "type": "string",
+                      "description": "Database name"
+                    },
+                    "user": {
+                      "type": "string",
+                      "description": "Database user"
+                    },
+                    "password": {
+                      "type": "string",
+                      "description": "Database password"
+                    },
+                    "persistence": {
+                      "type": "object",
+                      "description": "Persistence configuration",
+                      "properties": {
+                        "data": {
+                          "type": "string",
+                          "description": "Data directory"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    "backup": {
+                      "type": "object",
+                      "description": "Backup configuration",
+                      "allOf": [
+                        {
+                          "$ref": "#/defs/serviceDbBackupCommon"
+                        },
+                        {
+                          "properties": {
+                            "dir": {
+                              "type": "string",
+                              "description": "Backup directory"
+                            }
+                          },
+                          "required": [
+                            "dir"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "dbName",
+                    "user",
+                    "password",
+                    "persistence",
+                    "backup"
+                  ]
+                }
+              ]
+            },
+            "appSecretToken": {
+              "type": "string",
+              "description": "App secret token"
+            },
+            "invitationCode": {
+              "type": "string",
+              "description": "Invitation code"
+            }
+          },
+          "required": [
+            "db",
+            "appSecretToken",
+            "invitationCode"
+          ]
+        }
+      ]
+    },
+    "playwrightService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "token": {
+              "type": "string",
+              "description": "Playwright token"
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Playwright timeout"
+            },
+            "maxConcurrentSessions": {
+              "type": "integer",
+              "description": "Max concurrent sessions"
+            },
+            "maxQueueLength": {
+              "type": "integer",
+              "description": "Max queue length"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "token",
+            "timeout",
+            "maxConcurrentSessions",
+            "maxQueueLength",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "changedetectionioService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "playwrightLaunchOptions": {
+              "type": "object",
+              "description": "Playwright launch options",
+              "properties": {
+                "stealth": {
+                  "type": "boolean",
+                  "description": "Stealth mode"
+                },
+                "headless": {
+                  "type": "boolean",
+                  "description": "Headless mode"
+                },
+                "args": {
+                  "type": "array",
+                  "description": "Arguments",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "stealth",
+                "headless",
+                "args"
+              ]
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "playwrightLaunchOptions",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "archiveboxService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "adminUsername": {
+              "type": "string",
+              "description": "Admin username"
+            },
+            "adminPassword": {
+              "type": "string",
+              "description": "Admin password"
+            },
+            "mediaMaxSize": {
+              "type": "string",
+              "description": "Media max size"
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Timeout"
+            },
+            "saveTitle": {
+              "type": "boolean",
+              "description": "Save title"
+            },
+            "saveFavicon": {
+              "type": "boolean",
+              "description": "Save favicon"
+            },
+            "saveWget": {
+              "type": "boolean",
+              "description": "Save wget"
+            },
+            "saveWarc": {
+              "type": "boolean",
+              "description": "Save warc"
+            },
+            "savePdf": { "type": "boolean",
+              "description": "Save pdf"
+            },
+            "saveScreenshot": {
+              "type": "boolean",
+              "description": "Save screenshot"
+            },
+            "saveDom": {
+              "type": "boolean",
+              "description": "Save dom"
+            },
+            "saveSinglefile": {
+              "type": "boolean",
+              "description": "Save singlefile"
+            },
+            "saveReadability": {
+              "type": "boolean",
+              "description": "Save readability"
+            },
+            "saveMercury": {
+              "type": "boolean",
+              "description": "Save mercury"
+            },
+            "saveGit": {
+              "type": "boolean",
+              "description": "Save git"
+            },
+            "saveMedia": {
+              "type": "boolean",
+              "description": "Save media"
+            },
+            "saveArchiveDotOrg": {
+              "type": "boolean",
+              "description": "Save archive.org"
+            },
+            "userAgent": {
+              "type": "string",
+              "description": "User agent"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "adminUsername",
+            "adminPassword",
+            "mediaMaxSize",
+            "timeout",
+            "saveTitle",
+            "saveFavicon",
+            "saveWget",
+            "saveWarc",
+            "savePdf",
+            "saveScreenshot",
+            "saveDom",
+            "saveSinglefile",
+            "saveReadability",
+            "saveMercury",
+            "saveGit",
+            "saveMedia",
+            "saveArchiveDotOrg",
+            "userAgent",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "appriseService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "logLevel": {
+              "type": "string",
+              "description": "Log level"
+            },
+            "statefulMode": {
+              "type": "string",
+              "description": "Stateful mode"
+            },
+            "attachSizeMegabytes": {
+              "type": "integer",
+              "description": "Attach size megabytes"
+            },
+            "defaultConfigId": {
+              "type": "string",
+              "description": "Default config ID"
+            },
+            "defaultTheme": {
+              "type": "string",
+              "description": "Default theme"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "logLevel",
+            "statefulMode",
+            "attachSizeMegabytes",
+            "defaultConfigId",
+            "defaultTheme",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "gotifyService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "adminUsername": {
+              "type": "string",
+              "description": "Admin username"
+            },
+            "adminPassword": {
+              "type": "string",
+              "description": "Admin password"
+            },
+            "databaseDialect": {
+              "type": "string",
+              "description": "Database dialect"
+            },
+            "databaseConnection": {
+              "type": "string",
+              "description": "Database connection"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "adminUsername",
+            "adminPassword",
+            "databaseDialect",
+            "databaseConnection",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "rxresumeService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "kavitaService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "library": {
+                  "type": "string",
+                  "description": "Library directory"
+                }
+              },
+              "required": [
+                "config",
+                "library"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "calibreService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "ingest": {
+                  "type": "string",
+                  "description": "Ingest directory"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "config",
+                "ingest",
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "calibreBookDownloaderService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "useCfBypass": {
+              "type": "boolean",
+              "description": "Use Cloudflare bypass"
+            },
+            "bookLanguage": {
+              "type": "string",
+              "description": "Book language"
+            },
+            "supportedFormats": {
+              "type": "string",
+              "description": "Supported formats"
+            },
+            "annasArchiveDonatorKey": {
+              "type": "string",
+              "description": "Annas Archive donator key"
+            }
+          },
+          "required": [
+            "useCfBypass",
+            "bookLanguage",
+            "supportedFormats"
+          ]
+        }
+      ]
+    },
+    "openbooksService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "ircname": {
+              "type": "string",
+              "description": "IRC name"
+            },
+            "noBrowserDownloads": {
+              "type": "boolean",
+              "description": "No browser downloads"
+            }
+          },
+          "required": [
+            "ircname",
+            "noBrowserDownloads"
+          ]
+        }
+      ]
+    },
+    "convertxService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "autoDeleteEveryNHours": {
+              "type": "integer",
+              "description": "Auto delete every N hours"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "autoDeleteEveryNHours",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "pinchflatService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "config",
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "mealieService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "tokenTimeHours": {
+              "type": "integer",
+              "description": "Token time hours"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "tokenTimeHours",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "librechatService": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "secretName": {
+              "type": "string",
+              "description": "Secret name"
+            },
+            "endpoints": {
+              "type": "string",
+              "description": "Endpoints"
+            },
+            "allowEmailLogin": {
+              "type": "boolean",
+              "description": "Allow email login"
+            },
+            "allowSocialLogin": {
+              "type": "boolean",
+              "description": "Allow social login"
+            },
+            "refreshTokenExpiryMilliseconds": {
+              "type": "integer",
+              "description": "Refresh token expiry milliseconds"
+            },
+            "customFooter": {
+              "type": "string",
+              "description": "Custom footer"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "clientImages": {
+                  "type": "string",
+                  "description": "Client images directory"
+                }
+              },
+              "required": [
+                "clientImages"
+              ]
+            },
+            "db": {
+              "type": "object",
+              "description": "Database configuration",
+              "allOf": [
+                {
+                  "$ref": "#/defs/serviceDbCommon"
+                },
+                {
+                  "properties": {
+                    "dbName": {
+                      "type": "string",
+                      "description": "Database name"
+                    },
+                    "secretName": {
+                      "type": "string",
+                      "description": "Secrete name"
+                    },
+                    "persistence": {
+                      "type": "object",
+                      "description": "Persistence configuration",
+                      "properties": {
+                        "data": {
+                          "type": "string",
+                          "description": "Data directory"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    "backup": {
+                      "type": "object",
+                      "description": "Backup configuration",
+                      "allOf": [
+                        {
+                          "$ref": "#/defs/serviceDbBackupCommon"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "dbName",
+                    "secretName",
+                    "persistence"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "secretName",
+            "endpoints",
+            "allowEmailLogin",
+            "allowSocialLogin",
+            "refreshTokenExpiryMilliseconds",
+            "customFooter",
+            "persistence",
+            "db"
+          ]
+        }
+      ]
+    }
+  }
+}

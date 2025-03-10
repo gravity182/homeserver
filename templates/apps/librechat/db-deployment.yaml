@@ -4,33 +4,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "common.names.namespace" . | quote }}
-  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   revisionHistoryLimit: 3
   replicas: 1
   strategy:
     type: Recreate
   selector:
-    matchLabels: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
+    matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
   template:
     metadata:
-      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
     spec:
-      automountServiceAccountToken: {{ include "common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
-      enableServiceLinks: {{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
-      priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
-      securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-      initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-        {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list "data") "context" $ ) | nindent 8 }}
+      automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
+      enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
+      priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+      securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        {{- include "homeserver.common.initContainer.volumePermissions" ( dict "volumes" (list "data") "context" $ ) | nindent 8 }}
       containers:
         - name: mongo
           image: bitnami/mongodb:8.0
           imagePullPolicy: Always
-          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: MONGODB_DISABLE_ENFORCE_AUTH
               value: "false"
             - name: ALLOW_EMPTY_PASSWORD
@@ -67,8 +67,8 @@ spec:
             - name: mongo
               containerPort: 27017
               protocol: TCP
-          resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: empty-dir
               mountPath: /opt/bitnami/mongodb/conf
               subPath: app-conf-dir
@@ -87,29 +87,29 @@ spec:
               mountPath: /bitnami/scripts
           {{- $livenessProbe := default .Values.livenessProbe $service.db.livenessProbe }}
           {{- if $livenessProbe.enabled }}
-          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit $livenessProbe "enabled") "context" $) | nindent 12 }}
+          livenessProbe: {{- include "homeserver.common.tplvalues.render" (dict "value" (omit $livenessProbe "enabled") "context" $) | nindent 12 }}
             exec:
               command:
                 - /bitnami/scripts/ping-mongodb.sh
           {{- end }}
           {{- $readinessProbe := default .Values.readinessProbe $service.db.readinessProbe }}
           {{- if $readinessProbe.enabled }}
-          readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit $readinessProbe "enabled") "context" $) | nindent 12 }}
+          readinessProbe: {{- include "homeserver.common.tplvalues.render" (dict "value" (omit $readinessProbe "enabled") "context" $) | nindent 12 }}
             exec:
               command:
                 - /bitnami/scripts/readiness-probe.sh
           {{- end }}
           {{- $startupProbe := default .Values.startupProbe $service.db.startupProbe }}
           {{- if $startupProbe.enabled }}
-          startupProbe: {{- include "common.tplvalues.render" (dict "value" (omit $startupProbe "enabled") "context" $) | nindent 12 }}
+          startupProbe: {{- include "homeserver.common.tplvalues.render" (dict "value" (omit $startupProbe "enabled") "context" $) | nindent 12 }}
             exec:
               command:
                 - /bitnami/scripts/startup-probe.sh
           {{- end }}
-      volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         - name: common-scripts
           configMap:
-            name: {{ printf "%s-mongodb-common-scripts" ( include "common.names.name" ( dict "service" $service "kind" $kind ) ) | quote }}
+            name: {{ printf "%s-mongodb-common-scripts" ( include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) ) | quote }}
             defaultMode: 0o550
         - name: data
           hostPath:

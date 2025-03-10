@@ -2,8 +2,8 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: security-headers
-  namespace: {{ include "common.names.namespace" . | quote }}
-  labels: {{- include "common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
 spec:
   headers:
     # this Strict-Transport-Security (STS) config is valid for submission to the HSTS preload list

@@ -1,4 +1,4 @@
-{{- define "common.utils.getServiceValueFromKey" -}}
+{{- define "homeserver.common.utils.getServiceValueFromKey" -}}
 {{- $splitKey := splitList "." .key -}}
 {{- $value := "" -}}
 {{- $latestObj := dict -}}
@@ -28,10 +28,10 @@
 {{/*
 Gets extra env var secrets for the given service
 Usage:
-{{ include "common.utils.getExtraEnvSecrets" (dict "service" $service "kind" $kind) }}
+{{ include "homeserver.common.utils.getExtraEnvSecrets" (dict "service" $service "kind" $kind) }}
 */}}
-{{- define "common.utils.getExtraEnvSecrets" -}}
-{{- $value := include "common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraEnvSecrets") | fromYamlArray -}}
+{{- define "homeserver.common.utils.getExtraEnvSecrets" -}}
+{{- $value := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraEnvSecrets") | fromYamlArray -}}
 {{- if $value -}}
 {{- $requiredFields := list "name" "secretName" "secretKey" -}}
 {{- range $i, $envSecret := $value -}}
@@ -50,10 +50,10 @@ Usage:
 {{/*
 Gets extra env vars for the given service
 Usage:
-{{ include "common.utils.getExtraEnv" (dict "service" $service "kind" $kind) }}
+{{ include "homeserver.common.utils.getExtraEnv" (dict "service" $service "kind" $kind) }}
 */}}
-{{- define "common.utils.getExtraEnv" -}}
-{{- $value := include "common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraEnv") | fromYamlArray -}}
+{{- define "homeserver.common.utils.getExtraEnv" -}}
+{{- $value := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraEnv") | fromYamlArray -}}
 {{- if $value -}}
 {{- $requiredFields := list "name" "value" -}}
 {{- range $i, $env := $value -}}
@@ -72,28 +72,28 @@ Usage:
 {{/*
 Gets extra volumes for the given service
 Usage:
-{{ include "common.utils.getExtraVolumes" (dict "service" $service "kind" $kind) }}
+{{ include "homeserver.common.utils.getExtraVolumes" (dict "service" $service "kind" $kind) }}
 */}}
-{{- define "common.utils.getExtraVolumes" -}}
-{{- include "common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraVolumes") -}}
+{{- define "homeserver.common.utils.getExtraVolumes" -}}
+{{- include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraVolumes") -}}
 {{- end -}}
 
 {{/*
 Gets extra volume mounts for the given service
 Usage:
-{{ include "common.utils.getExtraVolumeMounts" (dict "service" $service "kind" $kind) }}
+{{ include "homeserver.common.utils.getExtraVolumeMounts" (dict "service" $service "kind" $kind) }}
 */}}
-{{- define "common.utils.getExtraVolumeMounts" -}}
-{{- include "common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraVolumeMounts") -}}
+{{- define "homeserver.common.utils.getExtraVolumeMounts" -}}
+{{- include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraVolumeMounts") -}}
 {{- end -}}
 
 {{/*
 Gets securityContext for the given service
 Usage:
-{{ include "common.utils.getSecurityContext" (dict "service" $service "kind" $kind) }}
+{{ include "homeserver.common.utils.getSecurityContext" (dict "service" $service "kind" $kind) }}
 */}}
-{{- define "common.utils.getSecurityContext" -}}
-{{- $value := include "common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "securityContext") | fromYaml -}}
+{{- define "homeserver.common.utils.getSecurityContext" -}}
+{{- $value := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "securityContext") | fromYaml -}}
 {{- if not $value -}}
 {{- printf "Security context is missing" | fail -}}
 {{- end -}}
@@ -109,19 +109,19 @@ Usage:
 {{/*
 Generates a service url
 Usage:
-{{ include "common.utils.serviceUrl" ( dict "service" $service "context" $ ) }}
-{{ include "common.utils.serviceUrl" ( dict "service" $service "scheme" "ws" "context" $ ) }}
+{{ include "homeserver.common.utils.serviceUrl" ( dict "service" $service "context" $ ) }}
+{{ include "homeserver.common.utils.serviceUrl" ( dict "service" $service "scheme" "ws" "context" $ ) }}
 */}}
-{{- define "common.utils.serviceUrl" -}}
-{{- printf "%s://%s:%s" (default "http" .scheme) (include "common.names.name" (dict "service" .service "kind" "app")) (required "http port required" .service.ports.http | toString) -}}
+{{- define "homeserver.common.utils.serviceUrl" -}}
+{{- printf "%s://%s:%s" (default "http" .scheme) (include "homeserver.common.names.name" (dict "service" .service "kind" "app")) (required "http port required" .service.ports.http | toString) -}}
 {{- end -}}
 
 {{/*
 Generates a list of CSRF trusted origins for the specified service
 Usage:
-{{ include "common.utils.ingressUrl" ( dict "service" $service "context" $ ) }}
+{{ include "homeserver.common.utils.ingressUrl" ( dict "service" $service "context" $ ) }}
 */}}
-{{- define "common.utils.ingressUrl" -}}
+{{- define "homeserver.common.utils.ingressUrl" -}}
 {{- if .service.ingress -}}
 {{- printf "https://%s.%s" (first .service.ingress) (required "A valid .Values.ingress.domain required!" .context.Values.ingress.domain) -}}
 {{- else -}}
@@ -132,9 +132,9 @@ Usage:
 {{/*
 Generates a list of CSRF trusted origins for the specified service
 Usage:
-{{ include "common.utils.csrfTrustedOrigins" ( dict "service" $service "delimiter" "," "context" $ ) }}
+{{ include "homeserver.common.utils.csrfTrustedOrigins" ( dict "service" $service "delimiter" "," "context" $ ) }}
 */}}
-{{- define "common.utils.csrfTrustedOrigins" -}}
+{{- define "homeserver.common.utils.csrfTrustedOrigins" -}}
 {{- $dst := list -}}
 {{- if .service.exposed -}}
 {{- range $host := .service.ingress -}}
@@ -147,10 +147,10 @@ Usage:
 {{/*
 Generates a list of allowed hosts for the specified service
 Usage:
-{{ include "common.utils.allowedHosts" ( dict "service" $service "delimiter" "," "context" $ ) }}
+{{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "delimiter" "," "context" $ ) }}
 */}}
-{{- define "common.utils.allowedHosts" -}}
-{{- $dst := list ( include "common.names.name" (dict "service" .service "kind" "app") ) -}}
+{{- define "homeserver.common.utils.allowedHosts" -}}
+{{- $dst := list ( include "homeserver.common.names.name" (dict "service" .service "kind" "app") ) -}}
 {{- if .service.exposed -}}
 {{- range $host := .service.ingress -}}
 {{- $dst = append $dst (printf "%s.%s" $host (required "A valid .Values.ingress.domain required!" $.context.Values.ingress.domain)) }}
@@ -162,9 +162,9 @@ Usage:
 {{/*
 Checksum a template at "path" containing a *single* resource (ConfigMap,Secret) for use in pod annotations, excluding the metadata.
 Usage:
-{{ include "common.utils.checksumTemplate" ( dict "path" "/configmap.yaml" "context" $ ) }}
+{{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/configmap.yaml" "context" $ ) }}
 */}}
-{{- define "common.utils.checksumTemplate" -}}
+{{- define "homeserver.common.utils.checksumTemplate" -}}
 {{- $obj := include (print .context.Template.BasePath .path) .context | fromYaml -}}
 {{ omit $obj "apiVersion" "kind" "metadata" | toYaml | sha256sum }}
 {{- end -}}

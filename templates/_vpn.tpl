@@ -1,9 +1,9 @@
 {{/*
 VPN sidecar
 Usage:
-{{ include "common.vpn.volumes" . }}
+{{ include "homeserver.common.vpn.volumes" . }}
 */}}
-{{- define "common.vpn.sidecar" }}
+{{- define "homeserver.common.vpn.sidecar" }}
 - name: wireguard
   image: lscr.io/linuxserver/wireguard:latest
   imagePullPolicy: IfNotPresent
@@ -22,7 +22,7 @@ Usage:
         {{- if .Values.vpn.sysModule }}
         - "SYS_MODULE"
         {{- end }}
-  resources: {{- include "common.resources.preset" (dict "type" "2xnano") | nindent 4 }}
+  resources: {{- include "homeserver.common.resources.preset" (dict "type" "2xnano") | nindent 4 }}
   env:
     - name: PUID
       value: {{ required "A valid UID required!" .Values.host.uid | quote }}
@@ -41,7 +41,7 @@ Usage:
     {{- end }}
 {{- end }}
 
-{{- define "common.vpn.volumes" }}
+{{- define "homeserver.common.vpn.volumes" }}
 - name: wireguard-conf
   secret:
     secretName: {{ .Values.vpn.secretRef }}
@@ -54,7 +54,7 @@ Usage:
 {{- end }}
 {{- end }}
 
-{{- define "common.vpn.securityContext.sysctls" }}
+{{- define "homeserver.common.vpn.securityContext.sysctls" }}
 - name: net.ipv4.conf.all.src_valid_mark
   value: "1"
 {{- end }}

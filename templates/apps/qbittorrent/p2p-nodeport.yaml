@@ -4,9 +4,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ include "common.names.name" ( dict "service" $service "kind" $kind ) }}-active-p2p"
-  namespace: {{ include "common.names.namespace" . | quote }}
-  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: "{{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) }}-active-p2p"
+  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   type: NodePort
   selector:

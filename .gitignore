@@ -4,9 +4,8 @@
 .idea
 .git
 .env
-values.y*
-authentik-values.y*
-certmanager-values.y*
+/values.y*
+.homeserver
 
 /files/homepage/*
 !/files/homepage/default/*

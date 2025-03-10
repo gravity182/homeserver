@@ -2,12 +2,12 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: forwardauth-authentik
-  namespace: {{ include "common.names.namespace" . | quote }}
-  labels: {{- include "common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
     app.kubernetes.io/name: authentik
 spec:
   forwardAuth:
-    address: "http://ak-outpost-authentik-embedded-outpost.{{ .Values.authentik.namespace }}.svc.cluster.local:9000/outpost.goauthentik.io/auth/traefik"
+    address: "http://ak-outpost-authentik-embedded-outpost.{{ include "homeserver.names.authentik-namespace" . }}.svc.cluster.local:9000/outpost.goauthentik.io/auth/traefik"
     trustForwardHeader: true
     authResponseHeaders:
       - X-authentik-username

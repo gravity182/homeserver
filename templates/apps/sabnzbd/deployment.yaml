@@ -4,47 +4,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "common.names.namespace" . | quote }}
-  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   revisionHistoryLimit: 3
   replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
-    matchLabels: {{- include "common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
+    matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
   template:
     metadata:
-      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
       annotations:
-        checksum/config: {{ include "common.utils.checksumTemplate" ( dict "path" "/apps/sabnzbd/configmap.yaml" "context" $ ) }}
+        checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/sabnzbd/configmap.yaml" "context" $ ) }}
     spec:
-      automountServiceAccountToken: {{ include "common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
-      enableServiceLinks: {{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
-      priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
-      securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-      initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-        {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list "config" "data") "context" $ ) | nindent 8 }}
+      automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
+      enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
+      priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+      securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        {{- include "homeserver.common.initContainer.volumePermissions" ( dict "volumes" (list "config" "data") "context" $ ) | nindent 8 }}
         - name: whitelist-ingress-hosts
-          image: {{ include "common.initContainer.utility-image" . | quote }}
+          image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
           imagePullPolicy: IfNotPresent
-          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           command:
             - /bin/sh
             - -ec
             - sed -i "s/host_whitelist\s*=.*/host_whitelist = ${HOST_WHITELIST}/" /config/sabnzbd.ini
           env:
             - name: HOST_WHITELIST
-              value: {{ include "common.utils.allowedHosts" ( dict "service" $service "delimiter" "," "context" $ ) }}
-          resources: {{- include "common.resources.preset" (dict "type" "nano") | nindent 12 }}
+              value: {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "delimiter" "," "context" $ ) }}
+          resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
             - name: config
               mountPath: /config
         - name: add-scripts
-          image: {{ include "common.initContainer.utility-image" . | quote }}
+          image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
           imagePullPolicy: IfNotPresent
-          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           command:
             - /bin/sh
             - -ec
@@ -52,7 +52,7 @@ spec:
                 mkdir -p /config/scripts \
                   && cp -rfL /tmp/scripts/* /config/scripts/ \
                   && chmod -R a=,ug+rx,u+w /config/scripts
-          resources: {{- include "common.resources.preset" (dict "type" "nano") | nindent 12 }}
+          resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
             - name: config
               mountPath: /config
@@ -62,23 +62,23 @@ spec:
         - name: sabnzbd
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
-          securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           ports:
             - name: http
               containerPort: 8080
               protocol: TCP
-          resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: config
               mountPath: /config
             - name: data
               mountPath: {{ $service.persistence.data | quote }}
-      volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         - name: scripts
           configMap:
-            name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+            name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
         - name: config
           hostPath:
             path: {{ $service.persistence.config | quote }}

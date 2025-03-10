@@ -1,9 +1,9 @@
 {{/*
 Return a resource request/limit object based on a given preset.
 Usage:
-{{ include "common.resources.preset" (dict "type" "nano") -}}
+{{ include "homeserver.common.resources.preset" (dict "type" "nano") -}}
 */}}
-{{- define "common.resources.preset" -}}
+{{- define "homeserver.common.resources.preset" -}}
 {{/* The limits are the requests increased by 50% (except 2xnano/xlarge/2xlarge/3xlarge sizes)*/}}
 {{- $presets := dict 
   "2xnano" (dict 

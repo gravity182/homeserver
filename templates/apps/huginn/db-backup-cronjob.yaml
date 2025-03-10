@@ -4,9 +4,9 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "common.names.namespace" . | quote }}
-  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   schedule: {{ $service.db.backup.scheduleCron }}
   timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
@@ -14,27 +14,27 @@ spec:
   concurrencyPolicy: Replace
   jobTemplate:
     metadata:
-      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
     spec:
       template:
         metadata:
-          labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
+          labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
         spec:
-          automountServiceAccountToken: {{ include "common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
-          enableServiceLinks: {{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
-          priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
-          securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
+          enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
+          priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+          securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           containers:
             - name: pgdump
               image: postgres:17
               imagePullPolicy: Always
-              securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               command: ["/bin/sh"]
               args:
                 - -ec
                 - find /backup/ -mtime +{{ $service.db.backup.retentionDays }} -exec rm -f {} \; ; pg_dump -Fc -C > /backup/huginn_db_backup_$(date +"%Y_%m_%d").dump
-              envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
-              env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
                 - name: PGHOST
                   value: {{ $service.db.name | quote }}
                 - name: PGUSER
@@ -43,11 +43,11 @@ spec:
                   value: {{ required "A valid $service.db.password required!" $service.db.password | quote }}
                 - name: PGDATABASE
                   value: {{ $service.db.dbName | quote }}
-              resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
-              volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
                 - name: backup
                   mountPath: /backup
-          volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: backup
               hostPath:
                 path: {{ $service.db.backup.dir | quote }}

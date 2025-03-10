@@ -1,15 +1,15 @@
 {{/*
 Create a config map with common mongodb scripts.
 Usage:
-{{ include "common.mongodb.scripts" ( dict "service" $service "context" $ ) }}
+{{ include "homeserver.common.mongodb.scripts" ( dict "service" $service "context" $ ) }}
 */}}
-{{- define "common.mongodb.scripts" -}}
+{{- define "homeserver.common.mongodb.scripts" -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-mongodb-common-scripts" ( include "common.names.name" ( dict "service" .service "kind" "database" ) ) | quote }}
-  namespace: {{ include "common.names.namespace" .context | quote }}
-  labels: {{- include "common.labels.standard" ( dict "service" .service "kind" "database" "context" .context ) | nindent 4 }}
+  name: {{ printf "%s-mongodb-common-scripts" ( include "homeserver.common.names.name" ( dict "service" .service "kind" "database" ) ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" .context | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" .service "kind" "database" "context" .context ) | nindent 4 }}
 data:
   startup-probe.sh: |
     #!/bin/bash

@@ -1,28 +1,31 @@
 apiVersion: v2
 name: Homeserver
-version: 3.0.5
+version: 4.0.0
+appVersion: 4.0.0
+kubeVersion: ">= 1.29.0"
 description: Self-hosted media server
 type: application
+home: https://github.com/blinky-z/homeserver
 keywords:
-    - homeserver
-    - homepage
-    - apprise
-    - gotify
-    - autobrr
-    - changedetection.io
-    - huginn
-    - jellyfin
-    - kavita
-    - overseerr
-    - jellyseerr
-    - flaresolverr
-    - playwright
-    - plex
-    - prowlarr
-    - qbittorrent
-    - radarr
-    - sonarr
-    - sabnzbd
-    - tautulli
-    - thelounge
-    - traefik
+  - homeserver
+  - homepage
+  - apprise
+  - gotify
+  - autobrr
+  - changedetection.io
+  - huginn
+  - jellyfin
+  - kavita
+  - overseerr
+  - jellyseerr
+  - flaresolverr
+  - playwright
+  - plex
+  - prowlarr
+  - qbittorrent
+  - radarr
+  - sonarr
+  - sabnzbd
+  - tautulli
+  - thelounge
+  - traefik

@@ -3,127 +3,127 @@
       {{- if .Values.services.radarr.enabled }}
       - Radarr:
             icon: sh-radarr
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.radarr "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.radarr "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.radarr "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.radarr "context" $ ) | quote }}
             description: Movies management
             widget:
                 type: radarr
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.radarr "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.radarr "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.radarr.apiKey }}"
       {{- end }}
       {{- if .Values.services.sonarr.enabled }}
       - Sonarr:
             icon: sh-sonarr
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.sonarr "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.sonarr "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.sonarr "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.sonarr "context" $ ) | quote }}
             description: Series management
             widget:
                 type: sonarr
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.sonarr "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.sonarr "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.sonarr.apiKey }}"
       {{- end }}
       {{- if .Values.services.lidarr.enabled }}
       - Lidarr:
             icon: sh-lidarr
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.lidarr "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.lidarr "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.lidarr "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.lidarr "context" $ ) | quote }}
             description: Music management
             widget:
                 type: lidarr
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.lidarr "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.lidarr "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.lidarr.apiKey }}"
       {{- end }}
       {{- if .Values.services.whisparr.enabled }}
       - Whisparr:
             icon: sh-whisparr
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.whisparr "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.whisparr "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.whisparr "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.whisparr "context" $ ) | quote }}
             description: Adult videos management
       {{- end }}
       {{- if .Values.services.bazarr.enabled }}
       - Bazarr:
             icon: sh-bazarr
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.bazarr "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.bazarr "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.bazarr "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.bazarr "context" $ ) | quote }}
             description: Subtitles management
             widget:
                 type: bazarr
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.bazarr "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.bazarr "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.bazarr.apiKey }}"
       {{- end }}
       {{- if .Values.services.autobrr.enabled }}
       - Autobrr:
             icon: sh-autobrr
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.autobrr "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.autobrr "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.autobrr "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.autobrr "context" $ ) | quote }}
             description: Download automation
             widget:
                 type: autobrr
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.autobrr "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.autobrr "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.autobrr.apiKey }}"
       {{- end }}
       {{- if .Values.services.prowlarr.enabled }}
       - Prowlarr:
             icon: sh-prowlarr
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.prowlarr "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.prowlarr "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.prowlarr "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.prowlarr "context" $ ) | quote }}
             description: Indexers management
             widget:
                 type: prowlarr
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.prowlarr "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.prowlarr "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.prowlarr.apiKey }}"
       {{- end }}
 - Downloaders:
       {{- if .Values.services.qbittorrent.enabled }}
       - qBittorrent:
             icon: sh-qbittorrent
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.qbittorrent "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.qbittorrent "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.qbittorrent "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.qbittorrent "context" $ ) | quote }}
             description: Torrent downloader
             widget:
                 type: qbittorrent
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.qbittorrent "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.qbittorrent "context" $ ) | quote }}
                 fields: ["download", "upload"]
       {{- end }}
       {{- if .Values.services.sabnzbd.enabled }}
       - SABnzbd:
             icon: sh-sabnzbd
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.sabnzbd "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.sabnzbd "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.sabnzbd "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.sabnzbd "context" $ ) | quote }}
             description: Usenet downloader
             widget:
                 type: sabnzbd
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.sabnzbd "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.sabnzbd "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.sabnzbd.apiKey }}"
       {{- end }}
       {{- if .Values.services.pinchflat.enabled }}
       - Pinchflat:
             icon: sh-pinchflat
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.pinchflat "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.pinchflat "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.pinchflat "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.pinchflat "context" $ ) | quote }}
             description: YouTube downloader
       {{- end }}
 - Media:
       {{- if .Values.services.jellyseerr.enabled }}
       - Jellyseerr:
             icon: sh-jellyseerr
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.jellyseerr "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.jellyseerr "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.jellyseerr "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.jellyseerr "context" $ ) | quote }}
             description: Request movies & series
             widget:
                 type: jellyseerr
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.jellyseerr "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.jellyseerr "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.jellyseerr.apiKey }}"
       {{- end }}
       {{- if .Values.services.plex.enabled }}
       - Plex:
             icon: sh-plex
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.plex "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.plex "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.plex "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.plex "context" $ ) | quote }}
             description: Media server
             widget:
                 type: tautulli
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.tautulli "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.tautulli "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.tautulli.apiKey }}"
                 enableUser: true # optional, defaults to false
                 showEpisodeNumber: true # optional, defaults to false
@@ -132,12 +132,12 @@
       {{- if .Values.services.jellyfin.enabled }}
       - Jellyfin:
             icon: sh-jellyfin
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.jellyfin "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.jellyfin "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.jellyfin "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.jellyfin "context" $ ) | quote }}
             description: Media server
             widget:
                 type: jellyfin
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.jellyfin "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.jellyfin "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.jellyfin.apiKey }}"
                 enableBlocks: true # optional, defaults to false
                 enableNowPlaying: true # optional, defaults to true
@@ -149,12 +149,12 @@
       {{- if .Values.services.calibre.enabled }}
       - Calibre:
             icon: sh-calibre
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.calibre "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.calibre "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.calibre "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.calibre "context" $ ) | quote }}
             description: Book library
             widget:
                 type: calibreweb
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.calibre "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.calibre "context" $ ) | quote }}
                 username: "{{ .Values.services.homepage.widgets.calibre.username }}"
                 password: "{{ .Values.services.homepage.widgets.calibre.password }}"
                 fields: ["books", "authors", "series"]
@@ -162,135 +162,135 @@
       {{- if .Values.services.kavita.enabled }}
       - Kavita:
             icon: sh-kavita
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.kavita "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.kavita "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.kavita "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.kavita "context" $ ) | quote }}
             description: Book reader
             widget:
                 type: kavita
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.kavita "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.kavita "context" $ ) | quote }}
                 username: "{{ .Values.services.homepage.widgets.kavita.username }}"
                 password: "{{ .Values.services.homepage.widgets.kavita.password }}"
       {{- end }}
       {{- if .Values.services.calibrebookdownloader.enabled }}
       - "Anna's Archive":
             icon: sh-calibre-web
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.calibrebookdownloader "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.calibrebookdownloader "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.calibrebookdownloader "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.calibrebookdownloader "context" $ ) | quote }}
             description: Download books from Anna's Archive
       {{- end }}
       {{- if .Values.services.openbooks.enabled }}
       - "IRCHighWay":
             icon: sh-openbooks
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.openbooks "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.openbooks "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.openbooks "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.openbooks "context" $ ) | quote }}
             description: Download books from IRCHighWay
       {{- end }}
 - Utilities:
       {{- if .Values.services.librechat.enabled }}
       - Librechat:
             icon: sh-librechat
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.librechat "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.librechat "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.librechat "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.librechat "context" $ ) | quote }}
             description: Chat with AI
       {{- end }}
       {{- if .Values.services.miniflux.enabled }}
       - RSS:
             icon: sh-miniflux-light
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.miniflux "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.miniflux "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.miniflux "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.miniflux "context" $ ) | quote }}
             description: Feed reader
             widget:
                 type: miniflux
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.miniflux "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.miniflux "context" $ ) | quote }}
                 fields: ["unread"]
                 key: "{{ .Values.services.homepage.widgets.miniflux.apiKey }}"
       {{- end }}
       {{- if .Values.services.thelounge.enabled }}
       - The Lounge:
             icon: sh-the-lounge
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.thelounge "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.thelounge "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.thelounge "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.thelounge "context" $ ) | quote }}
             description: IRC client
       {{- end }}
       {{- if .Values.services.mealie.enabled }}
       - Mealie:
             icon: sh-mealie
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.mealie "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.mealie "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.mealie "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.mealie "context" $ ) | quote }}
             description: Recipe manager
             widget:
                 type: mealie
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.mealie "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.mealie "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.mealie.apiKey }}"
                 version: 2
       {{- end }}
       {{- if .Values.services.convertx.enabled }}
       - Convertx:
             icon: sh-convertx
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.convertx "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.convertx "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.convertx "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.convertx "context" $ ) | quote }}
             description: File conversion
       {{- end }}
       {{- if .Values.services.stirlingpdf.enabled }}
       - Stirling PDF:
             icon: sh-stirling-pdf
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.stirlingpdf "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.stirlingpdf "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.stirlingpdf "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.stirlingpdf "context" $ ) | quote }}
             description: PDF Manipulation
       {{- end }}
       {{- if .Values.services.huginn.enabled }}
       - Huginn:
             icon: sh-huginn
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.huginn "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.huginn "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.huginn "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.huginn "context" $ ) | quote }}
             description: Monitors the world and acts on your behalf
       {{- end }}
       {{- if .Values.services.changedetectionio.enabled }}
       - Changedetection:
             icon: sh-changedetection
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.changedetectionio "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.changedetectionio "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.changedetectionio "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.changedetectionio "context" $ ) | quote }}
             description: Website change detection
             widget:
                 type: changedetectionio
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.changedetectionio "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.changedetectionio "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.changedetection.apiKey }}"
       {{- end }}
       {{- if .Values.services.archivebox.enabled }}
       - Archivebox:
             icon: sh-archivebox
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.archivebox "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.archivebox "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.archivebox "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.archivebox "context" $ ) | quote }}
             description: Web archiving
       {{- end }}
       {{- if .Values.services.apprise.enabled }}
       - Apprise:
             icon: sh-apprise
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.apprise "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.apprise "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.apprise "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.apprise "context" $ ) | quote }}
             description: Send notifications to any service
       {{- end }}
       {{- if .Values.services.gotify.enabled }}
       - Gotify:
             icon: sh-gotify
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.gotify "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.gotify "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.gotify "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.gotify "context" $ ) | quote }}
             description: Push notifications
             widget:
                 type: gotify
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.gotify "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.gotify "context" $ ) | quote }}
                 key: "{{ .Values.services.homepage.widgets.gotify.apiKey }}"
       {{- end }}
 - Monitoring:
       {{- if .Values.services.myspeed.enabled }}
       - MySpeed:
             icon: sh-myspeed
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.myspeed "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.myspeed "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.myspeed "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.myspeed "context" $ ) | quote }}
             description: Internet speed tracker
             widget:
                 type: myspeed
-                url: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.myspeed "context" $ ) | quote }}
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.myspeed "context" $ ) | quote }}
       {{- end }}
       - Authentik:
             icon: sh-authentik
@@ -304,7 +304,7 @@
       {{- if .Values.services.backrest.enabled }}
       - Backrest:
             icon: sh-backrest-light
-            href: {{ include "common.utils.ingressUrl" ( dict "service" .Values.services.backrest "context" $ ) | quote }}
-            siteMonitor: {{ include "common.utils.serviceUrl" ( dict "service" .Values.services.backrest "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.backrest "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.backrest "context" $ ) | quote }}
             description: Backups management
       {{- end }}

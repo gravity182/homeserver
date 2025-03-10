@@ -4,9 +4,9 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "common.names.namespace" . | quote }}
-  labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
   schedule: {{ $service.scheduleCron }}
   timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
@@ -14,31 +14,31 @@ spec:
   concurrencyPolicy: Replace
   jobTemplate:
     metadata:
-      labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
     spec:
       template:
         metadata:
-          labels: {{- include "common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
+          labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
           annotations:
-            checksum/config: {{ include "common.utils.checksumTemplate" ( dict "path" "/apps/kometa/configmap.yaml" "context" $ ) }}
+            checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/kometa/configmap.yaml" "context" $ ) }}
         spec:
           restartPolicy: OnFailure
-          automountServiceAccountToken: {{ include "common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
-          enableServiceLinks: {{ include "common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
-          priorityClassName: {{ include "common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
-          securityContext: {{- include "common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          initContainers: {{- include "common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-            {{- include "common.initContainer.volumePermissions" ( dict "volumes" (list "config") "context" $ ) | nindent 12 }}
+          automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
+          enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
+          priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
+          securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            {{- include "homeserver.common.initContainer.volumePermissions" ( dict "volumes" (list "config") "context" $ ) | nindent 12 }}
             - name: add-kometa-config
-              image: {{ include "common.initContainer.utility-image" . | quote }}
+              image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
               imagePullPolicy: IfNotPresent
-              securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               command:
                 - /bin/sh
                 - -ec
                 - |-
                   cp -rfL /tmp/config/* /config/
-              resources: {{- include "common.resources.preset" (dict "type" "nano") | nindent 16 }}
+              resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 16 }}
               volumeMounts:
                 - name: config
                   mountPath: /config
@@ -46,9 +46,9 @@ spec:
                   mountPath: /tmp/config
             {{- if $service.enableJmxdOverlays }}
             - name: init-jmxd-overlays
-              image: {{ include "common.initContainer.git-image" . | quote }}
+              image: {{ include "homeserver.common.initContainer.git-image" . | quote }}
               imagePullPolicy: IfNotPresent
-              securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               command:
                 - /bin/sh
                 - -ec
@@ -58,7 +58,7 @@ spec:
                     && cp -rfL /config/overlays/jmxd/overlays/* /config/overlays/ \
                     && rm -rf /config/overlays/jmxd \
                     && echo "Kometa jmxd overlays enabled. See https://github.com/jmxd/Kometa for details"
-              resources: {{- include "common.resources.preset" (dict "type" "nano") | nindent 16 }}
+              resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 16 }}
               volumeMounts:
                 - name: config
                   mountPath: /config
@@ -67,18 +67,18 @@ spec:
             - name: kometa
               image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
               imagePullPolicy: {{ $service.image.pullPolicy }}
-              securityContext: {{- include "common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               args: [ "--run", "--read-only-config", "--config", "config/config.yaml" ]
-              envFrom: {{- include "common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
-              env: {{- include "common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
-              resources: {{- include "common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
-              volumeMounts: {{- include "common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
                 - name: config
                   mountPath: /config
-          volumes: {{- include "common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: kometa-config
               configMap:
-                name: {{ include "common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+                name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
             - name: config
               hostPath:
                 path: {{ $service.persistence.config | quote }}

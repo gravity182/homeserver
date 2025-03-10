@@ -1,30 +1,30 @@
 {{/*
 Returns a utility image name used by init containers.
 Usage:
-{{ include "common.initContainer.utility-image" . }}
+{{ include "homeserver.common.initContainer.utility-image" . }}
 */}}
-{{- define "common.initContainer.utility-image" -}}
+{{- define "homeserver.common.initContainer.utility-image" -}}
 {{- "chainguard/bash:latest" -}}
 {{- end -}}
 
 {{/*
 Returns a git image name used by init containers.
 Usage:
-{{ include "common.initContainer.git-image" . }}
+{{ include "homeserver.common.initContainer.git-image" . }}
 */}}
-{{- define "common.initContainer.git-image" -}}
+{{- define "homeserver.common.initContainer.git-image" -}}
 {{- "alpine/git:latest" -}}
 {{- end -}}
 
 {{/*
 Changes volume permissions.
 Usage:
-{{ include "common.initContainer.volumePermissions" ( dict "volumes" (list "volume1" "volume2" ) "context" $ ) }}
+{{ include "homeserver.common.initContainer.volumePermissions" ( dict "volumes" (list "volume1" "volume2" ) "context" $ ) }}
 */}}
-{{- define "common.initContainer.volumePermissions" -}}
+{{- define "homeserver.common.initContainer.volumePermissions" -}}
 {{- if .volumes }}
 - name: volume-permissions
-  image: {{ include "common.initContainer.utility-image" . | quote }}
+  image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
   imagePullPolicy: IfNotPresent
   command:
     - /bin/bash

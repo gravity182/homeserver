@@ -2,8 +2,8 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: authentik-postgresql-backup-cronjob
-  namespace: {{ .Values.authentik.namespace }}
-  labels: {{- include "common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+  namespace: {{ include "homeserver.names.authentik-namespace" . }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
     app.kubernetes.io/name: authentik-postgresql-backup-cronjob
 spec:
   schedule: {{ .Values.authentik.postgresql.backup.scheduleCron }}
@@ -12,12 +12,12 @@ spec:
   concurrencyPolicy: Replace
   jobTemplate:
     metadata:
-      labels: {{- include "common.labels.standard" ( dict "context" $ ) | nindent 8 }}
+      labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 8 }}
         app.kubernetes.io/name: authentik-postgresql-backup-cronjob
     spec:
       template:
         metadata:
-          labels: {{- include "common.labels.standard" ( dict "context" $ ) | nindent 12 }}
+          labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 12 }}
             app.kubernetes.io/name: authentik-postgresql-backup-cronjob
         spec:
           restartPolicy: OnFailure
@@ -29,8 +29,8 @@ spec:
               args:
                 - -ec
                 - find /backup/ -mtime +{{ .Values.authentik.postgresql.backup.retentionDays }} -exec rm -f {} \; ; pg_dump -Fc -C > /backup/authentik_db_backup_$(date +"%Y_%m_%d").dump
-              envFrom: {{- include "common.container.envFrom" (dict "context" $) | nindent 16 }}
-              env: {{- include "common.container.env" (dict "context" $) | nindent 16 }}
+              envFrom: {{- include "homeserver.common.container.envFrom" (dict "context" $) | nindent 16 }}
+              env: {{- include "homeserver.common.container.env" (dict "context" $) | nindent 16 }}
                 - name: PGHOST
                   value: authentik-postgresql
                 - name: PGUSER
@@ -39,7 +39,7 @@ spec:
                   value: {{ required "A valid .Values.authentik.postgresql.auth.password required!" .Values.authentik.postgresql.auth.password | quote }}
                 - name: PGDATABASE
                   value: authentik
-              resources: {{- include "common.resources.preset" (dict "type" "micro") | nindent 16 }}
+              resources: {{- include "homeserver.common.resources.preset" (dict "type" "micro") | nindent 16 }}
               volumeMounts:
                 - name: backup
                   mountPath: /backup

@@ -2,19 +2,19 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress
-  namespace: {{ include "common.names.namespace" . | quote }}
-  labels: {{- include "common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
     app.kubernetes.io/name: ingress
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-cert-issuer
-    traefik.ingress.kubernetes.io/router.middlewares: "{{ include "common.names.namespace" . }}-forwardauth-authentik@kubernetescrd,{{ include "common.names.namespace" . }}-security-headers@kubernetescrd"
+    traefik.ingress.kubernetes.io/router.middlewares: "{{ include "homeserver.common.names.namespace" . }}-forwardauth-authentik@kubernetescrd,{{ include "homeserver.common.names.namespace" . }}-security-headers@kubernetescrd"
     {{- range $key, $value := .Values.ingress.annotations }}
       {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
   ingressClassName: traefik
   tls:
-    - secretName: {{ .Values.certmanager.tlsSecretName }}
+    - secretName: {{ .Values.tls.tlsSecretName }}
       hosts:
         - "{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
         - "*.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}"
@@ -29,7 +29,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "common.names.name" (dict "service" $service "kind" "app") | quote }}
+                name: {{ include "homeserver.common.names.name" (dict "service" $service "kind" "app") | quote }}
                 port:
                   number: {{ required (printf "HTTP port is missing for service '%s'" $service.name) $service.ports.http }}
     {{- end }}
@@ -45,7 +45,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "common.names.name" ( dict "service" $service "kind" "app" ) | quote }}
+                name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" "app" ) | quote }}
                 port:
                   number: {{ required (printf "HTTP port is missing for service '%s'" $service.name) $service.ports.http }}
     {{- end }}
