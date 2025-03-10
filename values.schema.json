@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Homeserver values.yaml schema",
+  "title": "Homeserver schema",
   "description": "Helpful JSON Schema to validate and configure your self-hosted homeserver",
   "type": "object",
   "properties": {
@@ -805,12 +805,12 @@
         },
         "automountServiceAccountToken": {
           "type": "boolean",
-          "description": "Automount service account token. Overrides the global value",
+          "description": "Automount service account token.\nOverrides the global value.",
           "default": false
         },
         "enableServiceLinks": {
           "type": "boolean",
-          "description": "Enable service links. Overrides the global value",
+          "description": "Enable service links.\nOverrides the global value.",
           "default": false
         },
         "extraEnv": {
@@ -884,11 +884,11 @@
         },
         "extraLabels": {
           "type": "object",
-          "description": "Extra labels. Merges with the global value"
+          "description": "Extra labels.\nMerges with the global value."
         },
         "extraAnnotations": {
           "type": "object",
-          "description": "Extra annotations. Merges with the global value"
+          "description": "Extra annotations.\nMerges with the global value."
         }
       },
       "required": [
@@ -976,15 +976,15 @@
               }
             },
             "livenessProbe": {
-              "description": "Service liveness probe. Overrides the global value",
+              "description": "Service liveness probe.\nOverrides the global value.",
               "$ref": "#/defs/livenessProbe"
             },
             "readinessProbe": {
-              "description": "Service readiness probe. Overrides the global value",
+              "description": "Service readiness probe.\nOverrides the global value.",
               "$ref": "#/defs/readinessProbe"
             },
             "startupProbe": {
-              "description": "Service startup probe. Overrides the global value",
+              "description": "Service startup probe.\nOverrides the global value.",
               "$ref": "#/defs/startupProbe"
             }
           },
@@ -1016,15 +1016,15 @@
               "description": "Ports configuration"
             },
             "livenessProbe": {
-              "description": "Database liveness probe. Overrides the global value",
+              "description": "Database liveness probe.\nOverrides the global value.",
               "$ref": "#/defs/livenessProbe"
             },
             "readinessProbe": {
-              "description": "Database readiness probe. Overrides the global value",
+              "description": "Database readiness probe.\nOverrides the global value.",
               "$ref": "#/defs/readinessProbe"
             },
             "startupProbe": {
-              "description": "Database startup probe. Overrides the global value",
+              "description": "Database startup probe.\nOverrides the global value.",
               "$ref": "#/defs/startupProbe"
             }
           },
