@@ -41,6 +41,7 @@ if [ $config_updated -eq 1 ]; then
   echo "NAMESPACE=\"$NAMESPACE\"" >> "$CONFIG_FILE"
 fi
 
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.1/cert-manager.crds.yaml
 helm install "$RELEASE_NAME" . \
   -f values.yaml \
   --namespace "$NAMESPACE"

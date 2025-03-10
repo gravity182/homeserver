@@ -9,23 +9,49 @@ home: https://github.com/blinky-z/homeserver
 keywords:
   - homeserver
   - homepage
+  - plex
+  - radarr
+  - sonarr
+  - lidarr
+  - whisparr
+  - prowlarr
+  - bazarr
+  - overseerr
+  - jellyseerr
+  - tautulli
+  - qbittorrent
+  - sabnzbd
+  - torrent
+  - usenet
   - apprise
   - gotify
   - autobrr
+  - archivebox
   - changedetection.io
   - huginn
   - jellyfin
   - kavita
-  - overseerr
-  - jellyseerr
   - flaresolverr
   - playwright
-  - plex
-  - prowlarr
-  - qbittorrent
-  - radarr
-  - sonarr
-  - sabnzbd
-  - tautulli
   - thelounge
+  - backrest
+  - kometa
+  - myspeed
+  - stirlingpdf
+  - miniflux
+  - calibre
+  - calibre-web-automated
+  - calibre-web-automated-book-downloader
+  - openbooks
+  - convertx
+  - pinchflat
+  - mealie
+  - librechat
+  - ai
+  - llm
   - traefik
+  - authentik
+  - sso
+  - cert-manager
+  - letsencrypt
+  - tls
