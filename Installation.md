@@ -775,11 +775,15 @@ See additional notes on each service in the respective sections.
 
 ### Setup
 
-First, you need to configure a restic repository to save backups to. Here's my setup:
+First, you need to decide where you want to save backups to. The most popular solutions are S3 (any provider should work) or Backblaze B2. I'll provide an example for AWS s3 here.
 
-![Restic repository](assets/Installation_backrest_repo.png)
+First, create secrets with a restic password, which will encrypt/decrypt data in your repository, and AWS S3 API keys:
+```sh
+kubectl create secret generic backrest-restic-password-secret --from-literal=restic-password='<random token>'
+kubectl create secret generic backrest-aws-s3-secret --from-literal=aws-access-key-id='<aws access key id>' --from-literal=aws-secret-access-key='aws secret access key'
+```
 
-The api keys are passed to the pod  using `extraEnvSecrets`:
+Pass the secrets to the pod using `extraEnvSecrets`:
 ```yaml
 services:
   backrest:
@@ -795,12 +799,18 @@ services:
         secretKey: aws-secret-access-key
 ```
 
-Next, you need to add a backup plan:
+Now go to `backrest.<domain>.<tld>` and add a AWS S3 repository:
+
+![Restic repository](assets/Installation_backrest_repo.png)
+
+Finally, add a backup plan:
 
 ![Backup plan](assets/Installation_backrest_backup_plan_1.png)
 ![Backup plan](assets/Installation_backrest_backup_plan_2.png)
 
 Tune the backup schedule and retention policy to your liking.
+
+That's it! Hope you'll never need these backups, but you'll thank yourself later if something goes wrong :D
 
 ---
 
