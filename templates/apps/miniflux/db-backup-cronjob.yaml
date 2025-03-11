@@ -25,7 +25,6 @@ spec:
           priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
           securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-            {{- include "homeserver.common.initContainer.volumePermissions" ( dict "volumes" (list) "context" $ ) | nindent 12 }}
           containers:
             - name: pgdump
               image: postgres:17

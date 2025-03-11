@@ -178,6 +178,13 @@ resources:
   ## Whether resources management should be enabled
   ## see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   enabled: false
+## Automatically fix volume permissions
+## Enable this if you're having permission issues
+## If that solves your problem, you should properly chown/chmod your persistence directory on the host
+## NOTE: it's not recommended to keep it enabled, since the init container works as a root user
+##
+volumePermissions:
+  enabled: false
 ## Services configuration
 ##
 services:

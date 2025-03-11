@@ -35,7 +35,7 @@
     "cert-manager": {
       "type": "object",
       "description": "cert-manager subchart configuration",
-      "$ref": "https://raw.githubusercontent.com/cert-manager/cert-manager/refs/tags/v1.17.1/deploy/charts/cert-manager/values.schema.json"
+      "$ref": "https://raw.githubusercontent.com/cert-manager/cert-manager/refs/heads/release-1.17/deploy/charts/cert-manager/values.schema.json"
     },
     "tls": {
       "type": "object",
@@ -456,6 +456,21 @@
         "enabled"
       ]
     },
+    "volumePermissions": {
+      "type": "object",
+      "description": "Fix volume permissions automatically",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the fix",
+          "default": false
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
     "services": {
       "type": "object",
       "description": "Services configuration",
@@ -657,6 +672,7 @@
     "readinessProbe",
     "startupProbe",
     "resources",
+    "volumePermissions",
     "services"
   ],
   "$defs": {

@@ -23,7 +23,6 @@ spec:
       priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-        {{- include "homeserver.common.initContainer.volumePermissions" ( dict "volumes" (list "ingest") "context" $ ) | nindent 8 }}
       containers:
         {{- if $service.useCfBypass }}
         - name: cloudflarebypassforscraping

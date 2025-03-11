@@ -70,6 +70,15 @@ Usage:
 {{- end -}}
 
 {{/*
+Gets persistence directories for the given service
+Usage:
+{{ include "homeserver.common.utils.getPersistence" (dict "service" $service "kind" $kind) }}
+*/}}
+{{- define "homeserver.common.utils.getPersistence" -}}
+{{- include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "persistence") -}}
+{{- end -}}
+
+{{/*
 Gets extra volumes for the given service
 Usage:
 {{ include "homeserver.common.utils.getExtraVolumes" (dict "service" $service "kind" $kind) }}

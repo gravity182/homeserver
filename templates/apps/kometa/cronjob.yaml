@@ -28,7 +28,6 @@ spec:
           priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
           securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-            {{- include "homeserver.common.initContainer.volumePermissions" ( dict "volumes" (list "config") "context" $ ) | nindent 12 }}
             - name: add-kometa-config
               image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
               imagePullPolicy: IfNotPresent

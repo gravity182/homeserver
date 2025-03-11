@@ -27,7 +27,6 @@ spec:
       dnsPolicy: ClusterFirst
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-        {{- include "homeserver.common.initContainer.volumePermissions" ( dict "volumes" (list) "context" $ ) | nindent 8 }}
         - name: init-homepage-config
           image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
           imagePullPolicy: IfNotPresent

@@ -17,7 +17,7 @@ Usage:
 {{- end -}}
 
 {{/*
-Changes volume permissions.
+Fixes volume permissions.
 Usage:
 {{ include "homeserver.common.initContainer.volumePermissions" ( dict "volumes" (list "volume1" "volume2" ) "context" $ ) }}
 */}}
@@ -35,7 +35,7 @@ Usage:
           && ls -land $PATHS \
           && echo "------------------------------" \
           && echo "Changing volume permissions..." \
-          && chown -R {{ printf "%s:%s" (required "A valid UID required!" .context.Values.host.uid | toString) (required "A valid GID required!" .context.Values.host.gid | toString) }} $PATHS \
+          && chown -R $CHOWN_UID:$CHOWN_GID $PATHS \
           && chmod -R a=,ug+rX,u+w $PATHS \
           && echo "------------------------------" \
           && echo "Updated permissions:" \
@@ -43,10 +43,14 @@ Usage:
   env:
     {{- $paths := list }}
     {{- range $volume := .volumes }}
-    {{- $paths = append $paths (printf "/tmp/%s" $volume) }}
+    {{- $paths = append $paths (printf "/mnt/%s" $volume) }}
     {{- end }}
     - name: PATHS
       value: {{ join " " $paths | quote }}
+    - name: CHOWN_UID
+      value: {{ required "A valid UID required!" .context.Values.host.uid | toString | quote }}
+    - name: CHOWN_GID
+      value: {{ required "A valid GID required!" .context.Values.host.gid | toString | quote }}
   securityContext:
     seLinuxOptions: {}
     privileged: false
@@ -56,8 +60,8 @@ Usage:
       type: "RuntimeDefault"
   volumeMounts:
   {{- range $volume := .volumes }}
-    - name: {{ $volume | quote }}
-      mountPath: {{ printf "/tmp/%s" $volume | quote }}
+    - name: {{ kebabcase $volume | quote }}
+      mountPath: {{ printf "/mnt/%s" $volume | quote }}
   {{- end }}
 {{- end }}
 {{- end -}}

@@ -34,9 +34,15 @@ Usage:
 {{ include "homeserver.common.pod.initContainers" (dict "service" $service "kind" "app" "context" $) }}
 */}}
 {{- define "homeserver.common.pod.initContainers" -}}
-{{- if and (.service.vpn.enabled) (eq .kind "app") }}
-{{ include "homeserver.common.vpn.sidecar" .context }}
+{{- if .context.Values.volumePermissions.enabled -}}
+{{- $persistence := include "homeserver.common.utils.getPersistence" (dict "service" .service "kind" .kind) | fromYaml -}}
+{{- if $persistence -}}
+{{ include "homeserver.common.initContainer.volumePermissions" (dict "volumes" (keys $persistence | uniq | sortAlpha) "context" .context) }}
 {{- end }}
+{{- end }}
+{{- if and (.service.vpn.enabled) (eq .kind "app") -}}
+{{ include "homeserver.common.vpn.sidecar" .context }}
+{{- end -}}
 {{- end -}}
 
 {{/*
