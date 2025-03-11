@@ -194,6 +194,9 @@ Next we want to allow the users you share your Plex Media Server with to log in 
     - Protocol settings:
         - Click `Load servers` and log in via the Plex account for which you claimed a Plex Media Server
         - Optional: Switch off `Allow friends to authenticate via Plex, even if you don't share any servers` in order to forbid your friends you DON'T share your Plex Media Server with to log in
+    - Flow settings:
+        - Authentication flow: `default-source-authentication`. This default flow is specifically tailored to login the user automatically based on the details provided by the source (Plex)
+        - Enrollment flow: `default-source-enrollment`
 
 Now go to Flows and Stages -> Stages, select `default-authentication-identification`, click Edit and move the newly created Plex source to the right pane (from Available to Selected).
 
