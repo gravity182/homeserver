@@ -28,7 +28,7 @@ cert-manager:
     # see the similar issue https://github.com/kedacore/charts/issues/226
     enabled: false
     keep: true
-## Automatic certificate provisioning configuration
+## Automatic TLS certificate provisioning configuration
 ## depends on cert-manager
 ##
 tls:
