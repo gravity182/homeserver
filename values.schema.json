@@ -459,7 +459,7 @@
     "services": {
       "type": "object",
       "description": "Services configuration",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "backrest": {
           "type": "object",

@@ -14,6 +14,8 @@
 - [Folder Structure](#folder-structure)
 - [Hard links \& Instant moves](#hard-links--instant-moves)
 - [Reverse Auth Proxy Header](#reverse-auth-proxy-header)
+- [Server backups / Backrest](#server-backups--backrest)
+    - [Setup](#setup-1)
 - [Homepage](#homepage)
 - [Radarr](#radarr)
     - [Profile](#profile)
@@ -32,11 +34,11 @@
     - [Indexes setup](#indexes-setup)
     - [Arr apps setup](#arr-apps-setup)
 - [Plex](#plex)
-    - [Setup](#setup-1)
+    - [Setup](#setup-2)
     - [Remote Access](#remote-access)
 - [Jellyfin](#jellyfin)
 - [Jellyseerr](#jellyseerr)
-    - [Setup](#setup-2)
+    - [Setup](#setup-3)
 - [qBittorrent](#qbittorrent)
     - [Becoming an active seed](#becoming-an-active-seed)
 - [SABnzbd](#sabnzbd)
@@ -131,10 +133,10 @@ All sections in `values.yaml` should be self-explanatory as important variables 
 
 This chart supplies with a helpful JSON Schema. If you have a supported editor like VS Code with a [RedHat's YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml), you'll see autosuggestions and field descriptions right in your editor.
 
-Finally, give a read to the [Chart customization](#chart-customization) section to learn how to customize your setup.
+Finally, give a read to the [Chart customization](#chart-customization) section to learn how to customize your setup and a [Server Backups](#server-backups--backrest) section to learn how to make schedules backups of your server.
 
 This document covers most of the services used in this chart and provides some useful notes on each of them.
-Return to this document if you're having troubles. Open an issue in this GitHub repo if your problem is not covered here.
+Return to this document if you're having problems. Open an issue in this GitHub repo if your problem is not covered here.
 
 If you're a newbie, it's especially worth to give this document a read from start to finish. It has detailed instructions for core services like [Plex](#plex), [Radarr](#radarr)/[Sonarr](#sonarr), [Jellyseerr](#jellyseerr), and [qBittorrent](#qbittorrent).
 
@@ -768,6 +770,41 @@ See additional notes on each service in the respective sections.
 
 ---
 
+## Server backups / Backrest
+
+[Backrest](https://garethgeorge.github.io/backrest/introduction/getting-started) is a backup solution built on top of [restic](https://restic.net/). Backrest provides a WebUI which wraps the restic CLI and makes it easy to create repos, browse snapshots, and restore files. Additionally, Backrest can run in the background and take an opinionated approach to scheduling snapshots and orchestrating repo health operations.
+
+### Setup
+
+First, you need to configure a restic repository to save backups to. Here's my setup:
+
+![Restic repository](assets/Installation_backrest_repo.png)
+
+The api keys are passed to the pod  using `extraEnvSecrets`:
+```yaml
+services:
+  backrest:
+    extraEnvSecrets:
+      - name: RESTIC_PASSWORD
+        secretName: backrest-restic-password-secret
+        secretKey: restic-password
+      - name: AWS_ACCESS_KEY_ID
+        secretName: backrest-aws-s3-secret
+        secretKey: aws-access-key-id
+      - name: AWS_SECRET_ACCESS_KEY
+        secretName: backrest-aws-s3-secret
+        secretKey: aws-secret-access-key
+```
+
+Next, you need to add a backup plan:
+
+![Backup plan](assets/Installation_backrest_backup_plan_1.png)
+![Backup plan](assets/Installation_backrest_backup_plan_2.png)
+
+Tune the backup schedule and retention policy to your liking.
+
+---
+
 ## Homepage
 
 Available at `homepage.<domain>.<tld>` and at the root domain `<domain>.<tld>` by default (the service to serve on the root domain can be controlled via `ingress.rootService`).
@@ -1389,3 +1426,5 @@ The user will be created automatically on the first login. The username of a cre
 [Mealie](https://github.com/mealie-recipes/mealie) is a cooking recipe manager and meal planner.
 
 See the official docs at <https://docs.mealie.io/documentation/getting-started/introduction/>.
+
+---

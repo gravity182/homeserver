@@ -207,6 +207,24 @@ services:
     vpn:
       enabled: false
     extraEnv: []
+    # you pass your Restic/S3/B2 secrets here
+    # extraEnvSecrets:
+    #   - name: RESTIC_PASSWORD
+    #     secretName: backrest-restic-password-secret
+    #     secretKey: restic-password
+    #   - name: B2_ACCOUNT_ID
+    #     secretName: backrest-b2-secret
+    #     secretKey: b2-account-id
+    #   - name: B2_ACCOUNT_KEY
+    #     secretName: backrest-b2-secret
+    #     secretKey: b2-account-key
+    #   - name: AWS_ACCESS_KEY_ID
+    #     secretName: backrest-aws-s3-secret
+    #     secretKey: aws-access-key-id
+    #   - name: AWS_SECRET_ACCESS_KEY
+    #     secretName: backrest-aws-s3-secret
+    #     secretKey: aws-secret-access-key
+    extraEnvSecrets: []
   homepage:
     enabled: false
     exposed: true
