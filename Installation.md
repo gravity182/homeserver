@@ -135,7 +135,7 @@ This chart supplies with a helpful [JSON Schema](./values.schema.json) for `valu
 If you have a supported editor like VS Code with a [RedHat's YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml), you'll see autosuggestions and field descriptions right in your editor.
 Moreover, this also allows Helm to [validate the values](https://helm.sh/docs/topics/charts/#schema-files) before deployment.
 
-Finally, give a read to the [Chart customization](#chart-customization) section to learn how to customize your setup and a [Server Backups](#server-backups--backrest) section to learn how to make schedules backups of your server.
+Finally, give a read to the [Chart customization](#chart-customization) section to learn how to customize your setup and the [Server Backups](#server-backups--backrest) section to learn how to make schedules backups of your server.
 
 This document covers most of the services used in this chart and provides some useful notes on each of them.
 Return to this document if you're having problems. Open an issue in this GitHub repo if your problem is not covered here.
@@ -205,7 +205,7 @@ Great. Now your ingress paths are protected.
 
 ### Cert-manager
 
-Usually cert-manager should start doing its job right away, given that you specified the correct email and Cloudflare API key.
+Usually cert-manager should start doing its job right away, given that you specified a correct email and a Cloudflare API key.
 
 Let's check that the certificate has been issued correctly:
 ```sh
