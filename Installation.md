@@ -197,7 +197,7 @@ Now go to Flows and Stages -> Stages, select `default-authentication-identificat
 
 Give it a couple of minutes for changes to take effect. Log out of your admin account and verify that Plex-based authentication is working by going to one of the services (e.g. `radarr.<domain>.<tld>`) and trying to log in via your Plex account.
 
-Great. Now we have a working SSO authentication.
+Great. Now your ingress paths are protected.
 
 ---
 
