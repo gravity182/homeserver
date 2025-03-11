@@ -1,0 +1,4 @@
+*.md linguist-detectable
+*.tpl linguist-language=mustache
+*.yml linguist-language=yaml
+*.yaml linguist-language=yaml
