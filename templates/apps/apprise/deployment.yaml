@@ -45,7 +45,7 @@ spec:
             - name: APPRISE_DEFAULT_CONFIG_ID
               value: {{ $service.defaultConfigId | quote }}
             - name: ALLOWED_HOSTS
-              value: {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "delimiter" " " "context" $ ) }}
+              value: {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "delimiter" " " "context" $ ) | quote }}
             - name: APPRISE_CONFIG_DIR
               value: /config
             - name: APPRISE_ATTACH_DIR
@@ -55,6 +55,9 @@ spec:
               containerPort: 8000
               protocol: TCP
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
+          readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
+          startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: config
               mountPath: /config

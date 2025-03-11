@@ -53,14 +53,9 @@ spec:
               containerPort: 8080
               protocol: TCP
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          livenessProbe: {{- include "homeserver.common.container.livenessProbe.exec" (dict "service" $service "command" (list "/usr/bin/miniflux" "-healthcheck" "auto") "context" $) | nindent 12 }}
+          readinessProbe: {{- include "homeserver.common.container.readinessProbe.exec" (dict "service" $service "command" (list "/usr/bin/miniflux" "-healthcheck" "auto") "context" $) | nindent 12 }}
+          startupProbe: {{- include "homeserver.common.container.startupProbe.exec" (dict "service" $service "command" (list "/usr/bin/miniflux" "-healthcheck" "auto") "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          livenessProbe:
-            exec:
-              command:
-                - /usr/bin/miniflux
-                - -healthcheck
-                - auto
-            initialDelaySeconds: 30
-            periodSeconds: 30
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
 {{- end }}

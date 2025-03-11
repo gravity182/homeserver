@@ -71,6 +71,10 @@ Usage:
 {{- define "homeserver.common.container.env" -}}
 - name: TZ
   value: {{ required "A valid timezone required!" .context.Values.host.tz | quote }}
+- name: KUBERNETES_POD_IP
+  valueFrom:
+    fieldRef:
+      fieldPath: status.podIP
 {{- if and (hasKey . "service") (hasKey . "kind") -}}
 {{- $extraEnv := include "homeserver.common.utils.getExtraEnv" (dict "service" .service "kind" .kind) | fromYamlArray -}}
 {{- $extraEnvSecrets := include "homeserver.common.utils.getExtraEnvSecrets" (dict "service" .service "kind" .kind) | fromYamlArray -}}
@@ -107,4 +111,97 @@ Usage:
 {{- if $extraVolumeMounts }}
 {{ include "homeserver.common.tplvalues.render" (dict "value" $extraVolumeMounts "context" .context) }}
 {{- end }}
+{{- end -}}
+
+{{/*
+Liveness probe based on the HTTP GET method.
+Usage:
+{{ include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/healthcheck" "context" $) }}
+*/}}
+{{- define "homeserver.common.container.livenessProbe.httpGet" -}}
+{{- $livenessProbe := default .context.Values.livenessProbe .service.livenessProbe }}
+{{- if $livenessProbe.enabled -}}
+{{- $livenessProbe := omit $livenessProbe "enabled" -}}
+httpGet:
+  path: {{ .path }}
+  port: http
+{{ include "homeserver.common.tplvalues.render" (dict "value" $livenessProbe "context" .context) }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Liveness probe based on the exec method.
+Usage:
+{{ include "homeserver.common.container.livenessProbe.exec" (dict "service" $service "command" (list "/usr/bin/miniflux" "-healthcheck" "auto") "context" $) }}
+*/}}
+{{- define "homeserver.common.container.livenessProbe.exec" -}}
+{{- $livenessProbe := default .context.Values.livenessProbe .service.livenessProbe }}
+{{- if $livenessProbe.enabled -}}
+{{- $livenessProbe := omit $livenessProbe "enabled" -}}
+exec:
+  command: {{- toYaml .command | nindent 4 }}
+{{ include "homeserver.common.tplvalues.render" (dict "value" $livenessProbe "context" .context) }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Readiness probe based on the HTTP GET method.
+Usage:
+{{ include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/healthcheck" "context" $) }}
+*/}}
+{{- define "homeserver.common.container.readinessProbe.httpGet" -}}
+{{- $readinessProbe := default .context.Values.readinessProbe .service.readinessProbe }}
+{{- if $readinessProbe.enabled -}}
+{{- $readinessProbe := omit $readinessProbe "enabled" -}}
+httpGet:
+  path: {{ .path }}
+  port: http
+{{ include "homeserver.common.tplvalues.render" (dict "value" $readinessProbe "context" .context) }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Readiness probe based on the exec method.
+Usage:
+{{ include "homeserver.common.container.readinessProbe.exec" (dict "service" $service "command" (list "/usr/bin/miniflux" "-healthcheck" "auto") "context" $) }}
+*/}}
+{{- define "homeserver.common.container.readinessProbe.exec" -}}
+{{- $readinessProbe := default .context.Values.readinessProbe .service.readinessProbe }}
+{{- if $readinessProbe.enabled -}}
+{{- $readinessProbe := omit $readinessProbe "enabled" -}}
+exec:
+  command: {{- toYaml .command | nindent 4 }}
+{{ include "homeserver.common.tplvalues.render" (dict "value" $readinessProbe "context" .context) }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Startup probe based on the HTTP GET method.
+Usage:
+{{ include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/healthcheck" "context" $) }}
+*/}}
+{{- define "homeserver.common.container.startupProbe.httpGet" -}}
+{{- $startupProbe := default .context.Values.startupProbe .service.startupProbe }}
+{{- if $startupProbe.enabled -}}
+{{- $startupProbe := omit $startupProbe "enabled" -}}
+httpGet:
+  path: {{ .path }}
+  port: http
+{{ include "homeserver.common.tplvalues.render" (dict "value" $startupProbe "context" .context) }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Startup probe based on the exec method.
+Usage:
+{{ include "homeserver.common.container.startupProbe.exec" (dict "service" $service "command" (list "/usr/bin/miniflux" "-healthcheck" "auto") "context" $) }}
+*/}}
+{{- define "homeserver.common.container.startupProbe.exec" -}}
+{{- $startupProbe := default .context.Values.startupProbe .service.startupProbe }}
+{{- if $startupProbe.enabled -}}
+{{- $startupProbe := omit $startupProbe "enabled" -}}
+exec:
+  command: {{- toYaml .command | nindent 4 }}
+{{ include "homeserver.common.tplvalues.render" (dict "value" $startupProbe "context" .context) }}
+{{- end -}}
 {{- end -}}

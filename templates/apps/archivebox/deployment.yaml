@@ -39,9 +39,9 @@ spec:
             - name: ADMIN_PASSWORD
               value: {{ $service.adminPassword | quote }}
             - name: CSRF_TRUSTED_ORIGINS
-              value: {{ include "homeserver.common.utils.csrfTrustedOrigins" ( dict "service" $service "delimiter" "," "context" $ ) }}
+              value: {{ include "homeserver.common.utils.csrfTrustedOrigins" ( dict "service" $service "context" $ ) | quote }}
             - name: ALLOWED_HOSTS
-              value: {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "delimiter" "," "context" $ ) }}
+              value: {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "context" $ ) | quote }}
             - name: REVERSE_PROXY_USER_HEADER
               value: "X-authentik-email"
             - name: REVERSE_PROXY_WHITELIST
@@ -95,6 +95,9 @@ spec:
               containerPort: 8000
               protocol: TCP
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/health" "context" $) | nindent 12 }}
+          readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/health" "context" $) | nindent 12 }}
+          startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/health" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: data
               mountPath: /data

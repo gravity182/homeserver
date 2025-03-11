@@ -25,7 +25,7 @@ spec:
       priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-        - name: whitelist-ingress-hosts
+        - name: set-host-whitelist
           image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
           imagePullPolicy: IfNotPresent
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
@@ -35,7 +35,7 @@ spec:
             - sed -i "s/host_whitelist\s*=.*/host_whitelist = ${HOST_WHITELIST}/" /config/sabnzbd.ini
           env:
             - name: HOST_WHITELIST
-              value: {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "delimiter" "," "context" $ ) }}
+              value: {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "context" $ ) | quote }}
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
             - name: config
@@ -69,6 +69,9 @@ spec:
               containerPort: 8080
               protocol: TCP
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
+          readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
+          startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: config
               mountPath: /config

@@ -139,33 +139,38 @@ Usage:
 {{- end -}}
 
 {{/*
-Generates a list of CSRF trusted origins for the specified service
+Generates and concatenates a list of CSRF trusted origins for the specified service. Default delimiter is a comma
+
 Usage:
 {{ include "homeserver.common.utils.csrfTrustedOrigins" ( dict "service" $service "delimiter" "," "context" $ ) }}
+{{ include "homeserver.common.utils.csrfTrustedOrigins" ( dict "service" $service "context" $ ) }}
 */}}
 {{- define "homeserver.common.utils.csrfTrustedOrigins" -}}
-{{- $dst := list -}}
+{{- $dst := list "localhost" "127.0.0.1" "$(KUBERNETES_POD_IP)" -}}
 {{- if .service.exposed -}}
 {{- range $host := .service.ingress -}}
 {{- $dst = append $dst (printf "https://%s.%s" $host (required "A valid .Values.ingress.domain required!" $.context.Values.ingress.domain)) }}
 {{- end -}}
 {{- end -}}
-{{- join .delimiter $dst -}}
+{{- join (default "," .delimiter) $dst -}}
 {{- end -}}
 
 {{/*
-Generates a list of allowed hosts for the specified service
+Generates and concatenates a list of allowed hosts for the specified service. Default delimiter is a comma
+
 Usage:
 {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "delimiter" "," "context" $ ) }}
+{{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "context" $ ) }}
 */}}
 {{- define "homeserver.common.utils.allowedHosts" -}}
-{{- $dst := list ( include "homeserver.common.names.name" (dict "service" .service "kind" "app") ) -}}
+{{- $dst := list "localhost" "127.0.0.1" "$(KUBERNETES_POD_IP)" -}}
+{{- $dst := append $dst (include "homeserver.common.names.name" (dict "service" .service "kind" "app")) -}}
 {{- if .service.exposed -}}
 {{- range $host := .service.ingress -}}
 {{- $dst = append $dst (printf "%s.%s" $host (required "A valid .Values.ingress.domain required!" $.context.Values.ingress.domain)) }}
 {{- end -}}
 {{- end -}}
-{{- join .delimiter $dst -}}
+{{- join (default "," .delimiter) $dst -}}
 {{- end -}}
 
 {{/*

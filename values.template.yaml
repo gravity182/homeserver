@@ -170,8 +170,8 @@ startupProbe:
   initialDelaySeconds: 5
   periodSeconds: 20
   timeoutSeconds: 10
-  successThreshold: 1
   failureThreshold: 30
+  successThreshold: 1
 ## Resources configuration
 ##
 resources:
