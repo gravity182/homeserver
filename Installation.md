@@ -124,7 +124,7 @@ The script will install this Helm chart with all the required subcharts (Authent
 
 If you want to customize [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager#configuration) or [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik#values) before installation, please adjust `cert-manager`/`authentik` sections respectively. All values are passed as is to the respective subcharts.
 
-Once the script finishes its job, please see the [Post-Installation](#post-installation) section - we'll verify cert-manager and configure Authentik. Do not skip this step - otherwise you'll have issues connecting to your home server.
+Once the script finishes its job, please see the [Post-Installation](#post-installation) section - we'll verify that cert-manager is working and configure Authentik. Do not skip this step - otherwise you'll have issues connecting to your home server.
 
 Having verified that cert-manager and Authentik are functioning properly, you can proceed to enabling individual services.
 All services are optional. Just enable the ones you need.
@@ -152,14 +152,9 @@ Authentik is a SSO authentication service. It acts as a forward authentication p
 
 Here's how it works: Traefik, which is a ingress/reverse proxy of this setup, delegates authentication to Authentik and requires user to be authenticated before accessing any of the ingress paths. If Authentik responds with 2XX code, access is granted and the original request is performed. Otherwise request is rejected.
 
-Authentik itself, however, may bypass auth on specific paths. This depends on your configuration.
-For instance, you might want to exclude Plex from auth. Otherwise app clients would be unable to communicate with it.
-
 ![Traefik - ForwardAuth middleware](assets/traefik_authforward.webp)
 
 #### Setup
-
-The instructions below are absolutely necessary to carry out. Otherwise you will have issues accessing your services.
 
 Go to `https://authentik.<domain>.<tld>/if/flow/initial-setup/` and carry out the initial setup, creating the admin user.
 
@@ -208,7 +203,9 @@ Great. Now we have a working SSO authentication.
 
 ### Cert-manager
 
-First let's check that the certificate has been issued correctly:
+Usually cert-manager should start doing its job right away, given that you specified the correct email and Cloudflare API key.
+
+Let's check that the certificate has been issued correctly:
 ```sh
 kubectl describe certificate
 ```
@@ -294,7 +291,9 @@ Certificate chain
 
 If you see a certificate issued for your domain, then everything works properly. No need to do anything. Otherwise check the cert-manager's logs.
 
-Great. Your root domain and sub-domains are secure now. The TLS certificate will be renewed automatically before expiration. If you want to learn more about this topic, please refer to the [cert-manager docs](https://cert-manager.io/docs/).
+Great. Your root domain and sub-domains are secure now. The TLS certificate will be renewed automatically before expiration.
+
+If you'd like to learn more about this topic, refer to the [cert-manager docs](https://cert-manager.io/docs/).
 
 ---
 
