@@ -42,7 +42,7 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
 - Security:
     - <img width="15" height="15" src="https://github.com/cert-manager/cert-manager/blob/master/logo/logo-small.png?raw=true"> [cert-manager](https://github.com/cert-manager/cert-manager) - Automatically provision, manage, and renew TLS certificates
 - Backups:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/backrest.png"> [Backrest](https://github.com/garethgeorge/backrest) - a web-accessible backup solution built on top of restic
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/backrest-light.png"> [Backrest](https://github.com/garethgeorge/backrest) - a web-accessible backup solution built on top of restic
 
 ---
 
