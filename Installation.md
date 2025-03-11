@@ -1368,12 +1368,12 @@ You must add a user in order to have persistent channels and history.
 Otherwise all of your channels will be lost once you exit the client.
 
 Here's how to do it:
-1. Open `/opt/thelounge/config/config.js` with your editor on the host and set `public: false`
+1. Open `/opt/thelounge/config/config.js` on the host with a editor and set `public: false`
 2. Restart the container: `kubectl rollout restart deployment thelounge`
-3. Add a new user: `kubectl exec -it deployment/thelounge -- s6-setuidgid abc thelounge add <username>`
+3. Add a new user: `kubectl exec -it deployment/thelounge -- thelounge add <username>`
     - You will be asked for a password that won't be echoed
     - Enable persistent logs to have a history scrollback
-    - You'll see the following output on successful user creation:
+    - You'll see the following in the process:
         ```text
         2024-10-22 03:01:20 [PROMPT] Enter password:
         2024-10-22 03:01:30 [PROMPT] Save logs to disk? (yes) yes
