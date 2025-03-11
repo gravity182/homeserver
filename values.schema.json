@@ -1,12 +1,14 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Homeserver schema",
   "description": "Helpful JSON Schema to validate and configure your self-hosted homeserver",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "host": {
       "type": "object",
       "description": "Host configuration",
+      "additionalProperties": false,
       "properties": {
         "tz": {
           "type": "string",
@@ -38,6 +40,7 @@
     "tls": {
       "type": "object",
       "description": "Automatic TLS certificate provisioning configuration\nDepends on cert-manager",
+      "additionalProperties": false,
       "properties": {
         "tlsSecretName": {
           "type": "string",
@@ -81,6 +84,7 @@
     "authentik": {
       "type": "object",
       "description": "Authentik subchart configuration",
+      "additionalProperties": true,
       "properties": {
         "namespaceOverride": {
           "type": "string",
@@ -348,6 +352,7 @@
     "ingress": {
       "type": "object",
       "description": "Ingress configuration",
+      "additionalProperties": false,
       "properties": {
         "domain": {
           "type": "string",
@@ -375,6 +380,7 @@
     "vpn": {
       "type": "object",
       "description": "VPN configuration",
+      "additionalProperties": false,
       "properties": {
         "sysModule": {
           "type": "boolean",
@@ -383,7 +389,7 @@
         },
         "secretRef": {
           "type": "string",
-          "description": "Secret's name containing the WireGuard configuration",
+          "description": "Name of the secret containing the WireGuard configuration",
           "default": "wireguard-conf-linuxserver",
           "examples": [ "wireguard-conf-linuxserver" ]
         },
@@ -402,7 +408,7 @@
     },
     "enableServiceLinks": {
       "type": "boolean",
-      "description": "Whether information about services should be injected into pod's environment variable",
+      "description": "Whether information about services should be injected into pod's environment variables",
       "default": false
     },
     "automountServiceAccountToken": {
@@ -423,21 +429,22 @@
     "livenessProbe": {
       "type": "object",
       "description": "Pods' global liveness probe",
-      "$ref": "#/defs/livenessProbe"
+      "$ref": "#/$defs/livenessProbe"
     },
     "readinessProbe": {
       "type": "object",
       "description": "Pods' global readiness probe",
-      "$ref": "#/defs/readinessProbe"
+      "$ref": "#/$defs/readinessProbe"
     },
     "startupProbe": {
       "type": "object",
       "description": "Pods' global startup probe",
-      "$ref": "#/defs/startupProbe"
+      "$ref": "#/$defs/startupProbe"
     },
     "resources": {
       "type": "object",
       "description": "Resources configuration",
+      "additionalProperties": false,
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -452,146 +459,148 @@
     "services": {
       "type": "object",
       "description": "Services configuration",
+      "additionalProperties": false,
       "properties": {
         "backrest": {
+          "type": "object",
           "description": "Backrest configuration\nhttps://github.com/garethgeorge/backrest",
-          "$ref": "#/defs/backrestService"
+          "$ref": "#/$defs/backrestService"
         },
         "homepage": {
           "description": "Homepage configuration\nhttps://github.com/gethomepage/homepage",
-          "$ref": "#/defs/homepageService"
+          "$ref": "#/$defs/homepageService"
         },
         "plex": {
           "description": "Plex configuration\nhttps://www.plex.tv/",
-          "$ref": "#/defs/plexService"
+          "$ref": "#/$defs/plexService"
         },
         "jellyfin": {
           "description": "Jellyfin configuration\nhttps://github.com/jellyfin/jellyfin",
-          "$ref": "#/defs/jellyfinService"
+          "$ref": "#/$defs/jellyfinService"
         },
         "autobrr": {
           "description": "Autobrr configuration\nhttps://github.com/autobrr/autobrr",
-          "$ref": "#/defs/autobrrService"
+          "$ref": "#/$defs/autobrrService"
         },
         "qbittorrent": {
           "description": "Qbittorrent configuration\nhttps://github.com/qbittorrent/qBittorrent",
-          "$ref": "#/defs/qbittorrentService"
+          "$ref": "#/$defs/qbittorrentService"
         },
         "sabnzbd": {
           "description": "Sabnzbd configuration\nhttps://github.com/sabnzbd/sabnzbd",
-          "$ref": "#/defs/sabnzbdService"
+          "$ref": "#/$defs/sabnzbdService"
         },
         "prowlarr": {
           "description": "Prowlarr configuration\nhttps://github.com/Prowlarr/Prowlarr",
-          "$ref": "#/defs/prowlarrService"
+          "$ref": "#/$defs/prowlarrService"
         },
         "radarr": {
           "description": "Radarr configuration\nhttps://github.com/Radarr/Radarr",
-          "$ref": "#/defs/radarrService"
+          "$ref": "#/$defs/radarrService"
         },
         "sonarr": {
           "description": "Sonarr configuration\nhttps://github.com/Sonarr/Sonarr",
-          "$ref": "#/defs/sonarrService"
+          "$ref": "#/$defs/sonarrService"
         },
         "lidarr": {
           "description": "Lidarr configuration\nhttps://github.com/Lidarr/Lidarr",
-          "$ref": "#/defs/lidarrService"
+          "$ref": "#/$defs/lidarrService"
         },
         "whisparr": {
           "description": "Whisparr configuration\nhttps://github.com/Whisparr/Whisparr",
-          "$ref": "#/defs/whisparrService"
+          "$ref": "#/$defs/whisparrService"
         },
         "bazarr": {
           "description": "Bazarr configuration\nhttps://github.com/morpheus65535/bazarr",
-          "$ref": "#/defs/bazarrService"
+          "$ref": "#/$defs/bazarrService"
         },
         "jellyseerr": {
           "description": "Jellyseerr configuration\nhttps://github.com/Fallenbagel/jellyseerr",
-          "$ref": "#/defs/jellyseerrService"
+          "$ref": "#/$defs/jellyseerrService"
         },
         "flaresolverr": {
           "description": "Flaresolverr configuration\nhttps://github.com/21hsmw/FlareSolverr",
-          "$ref": "#/defs/flaresolverrService"
+          "$ref": "#/$defs/flaresolverrService"
         },
         "tautulli": {
           "description": "Tautulli configuration\nhttps://github.com/Tautulli/Tautulli",
-          "$ref": "#/defs/tautulliService"
+          "$ref": "#/$defs/tautulliService"
         },
         "kometa": {
           "description": "Kometa configuration\nhttps://github.com/Kometa-Team/Kometa",
-          "$ref": "#/defs/kometaService"
+          "$ref": "#/$defs/kometaService"
         },
         "thelounge": {
           "description": "Thelounge configuration\nhttps://github.com/thelounge/thelounge",
-          "$ref": "#/defs/theloungeService"
+          "$ref": "#/$defs/theloungeService"
         },
         "myspeed": {
           "description": "Myspeed configuration\nhttps://github.com/gnmyt/myspeed",
-          "$ref": "#/defs/myspeedService"
+          "$ref": "#/$defs/myspeedService"
         },
         "stirlingpdf": {
           "description": "Stirlingpdf configuration\nhttps://github.com/Stirling-Tools/Stirling-PDF",
-          "$ref": "#/defs/stirlingpdfService"
+          "$ref": "#/$defs/stirlingpdfService"
         },
         "miniflux": {
           "description": "Miniflux configuration\nhttps://github.com/miniflux/v2",
-          "$ref": "#/defs/minifluxService"
+          "$ref": "#/$defs/minifluxService"
         },
         "huginn": {
           "description": "Huginn configuration\nhttps://github.com/huginn/huginn",
-          "$ref": "#/defs/huginnService"
+          "$ref": "#/$defs/huginnService"
         },
         "playwright": {
           "description": "Playwright configuration\nhttps://github.com/browserless/browserless",
-          "$ref": "#/defs/playwrightService"
+          "$ref": "#/$defs/playwrightService"
         },
         "changedetectionio": {
           "description": "Changedetectionio configuration\nhttps://github.com/dgtlmoon/changedetection.io",
-          "$ref": "#/defs/changedetectionioService"
+          "$ref": "#/$defs/changedetectionioService"
         },
         "archivebox": {
           "description": "Archivebox configuration\nhttps://github.com/ArchiveBox/ArchiveBox",
-          "$ref": "#/defs/archiveboxService"
+          "$ref": "#/$defs/archiveboxService"
         },
         "apprise": {
           "description": "Apprise configuration\nhttps://github.com/caronc/apprise-api",
-          "$ref": "#/defs/appriseService"
+          "$ref": "#/$defs/appriseService"
         },
         "gotify": {
           "description": "Gotify configuration\nhttps://github.com/gotify/server",
-          "$ref": "#/defs/gotifyService"
+          "$ref": "#/$defs/gotifyService"
         },
         "kavita": {
           "description": "Kavita configuration\nhttps://github.com/Kareadita/Kavita",
-          "$ref": "#/defs/kavitaService"
+          "$ref": "#/$defs/kavitaService"
         },
         "calibre": {
           "description": "Calibre-Web-Automated configuration\nhttps://github.com/crocodilestick/Calibre-Web-Automated",
-          "$ref": "#/defs/calibreService"
+          "$ref": "#/$defs/calibreService"
         },
         "calibrebookdownloader": {
           "description": "Calibre-book-downloader configuration\nhttps://github.com/calibrain/calibre-web-automated-book-downloader",
-          "$ref": "#/defs/calibreBookDownloaderService"
+          "$ref": "#/$defs/calibreBookDownloaderService"
         },
         "openbooks": {
           "description": "Openbooks configuration\nhttps://github.com/evan-buss/openbooks",
-          "$ref": "#/defs/openbooksService"
+          "$ref": "#/$defs/openbooksService"
         },
         "convertx": {
           "description": "Convertx configuration\nhttps://github.com/C4illin/ConvertX",
-          "$ref": "#/defs/convertxService"
+          "$ref": "#/$defs/convertxService"
         },
         "pinchflat": {
           "description": "Pinchflat configuration\nhttps://github.com/kieraneglin/pinchflat",
-          "$ref": "#/defs/pinchflatService"
+          "$ref": "#/$defs/pinchflatService"
         },
         "mealie": {
           "description": "Mealie configuration\nhttps://github.com/mealie-recipes/mealie",
-          "$ref": "#/defs/mealieService"
+          "$ref": "#/$defs/mealieService"
         },
         "librechat": {
           "description": "Librechat configuration\nhttps://github.com/danny-avila/LibreChat",
-          "$ref": "#/defs/librechatService"
+          "$ref": "#/$defs/librechatService"
         }
       },
       "required": [
@@ -650,9 +659,10 @@
     "resources",
     "services"
   ],
-  "defs": {
+  "$defs": {
     "livenessProbe": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -696,6 +706,7 @@
     },
     "readinessProbe": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -739,6 +750,7 @@
     },
     "startupProbe": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -900,7 +912,7 @@
       "type": "object",
       "allOf": [
         {
-          "$ref": "#/defs/commonProperties"
+          "$ref": "#/$defs/commonProperties"
         },
         {
           "properties": {
@@ -977,15 +989,15 @@
             },
             "livenessProbe": {
               "description": "Service liveness probe.\nOverrides the global value.",
-              "$ref": "#/defs/livenessProbe"
+              "$ref": "#/$defs/livenessProbe"
             },
             "readinessProbe": {
               "description": "Service readiness probe.\nOverrides the global value.",
-              "$ref": "#/defs/readinessProbe"
+              "$ref": "#/$defs/readinessProbe"
             },
             "startupProbe": {
               "description": "Service startup probe.\nOverrides the global value.",
-              "$ref": "#/defs/startupProbe"
+              "$ref": "#/$defs/startupProbe"
             }
           },
           "required": [
@@ -1007,7 +1019,7 @@
       "type": "object",
       "allOf": [
         {
-          "$ref": "#/defs/commonProperties"
+          "$ref": "#/$defs/commonProperties"
         },
         {
           "properties": {
@@ -1017,15 +1029,15 @@
             },
             "livenessProbe": {
               "description": "Database liveness probe.\nOverrides the global value.",
-              "$ref": "#/defs/livenessProbe"
+              "$ref": "#/$defs/livenessProbe"
             },
             "readinessProbe": {
               "description": "Database readiness probe.\nOverrides the global value.",
-              "$ref": "#/defs/readinessProbe"
+              "$ref": "#/$defs/readinessProbe"
             },
             "startupProbe": {
               "description": "Database startup probe.\nOverrides the global value.",
-              "$ref": "#/defs/startupProbe"
+              "$ref": "#/$defs/startupProbe"
             }
           },
           "required": [
@@ -1038,7 +1050,7 @@
       "type": "object",
       "allOf": [
         {
-          "$ref": "#/defs/commonProperties"
+          "$ref": "#/$defs/commonProperties"
         },
         {
           "properties": {
@@ -1068,11 +1080,13 @@
     },
     "backrestService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
+          "type": "object",
           "properties": {
             "userdata": {
               "type": "string",
@@ -1114,9 +1128,10 @@
     },
     "homepageService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1385,9 +1400,10 @@
     },
     "plexService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1423,9 +1439,10 @@
     },
     "jellyfinService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1456,9 +1473,10 @@
     },
     "autobrrService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1484,9 +1502,10 @@
     },
     "qbittorrentService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1522,9 +1541,10 @@
     },
     "sabnzbdService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1555,9 +1575,10 @@
     },
     "prowlarrService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1583,9 +1604,10 @@
     },
     "radarrService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1616,9 +1638,10 @@
     },
     "sonarrService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1649,9 +1672,10 @@
     },
     "lidarrService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1682,9 +1706,10 @@
     },
     "whisparrService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1715,9 +1740,10 @@
     },
     "bazarrService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1748,9 +1774,10 @@
     },
     "jellyseerrService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1776,9 +1803,10 @@
     },
     "flaresolverrService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1808,9 +1836,10 @@
     },
     "tautulliService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1836,9 +1865,10 @@
     },
     "kometaService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -1997,9 +2027,10 @@
     },
     "theloungeService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2025,9 +2056,10 @@
     },
     "myspeedService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2053,9 +2085,10 @@
     },
     "stirlingpdfService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2095,18 +2128,20 @@
     },
     "minifluxService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
             "db": {
               "type": "object",
               "description": "Database configuration",
+              "unevaluatedProperties": false,
               "allOf": [
                 {
-                  "$ref": "#/defs/serviceDbCommon"
+                  "$ref": "#/$defs/serviceDbCommon"
                 },
                 {
                   "properties": {
@@ -2138,9 +2173,10 @@
                     "backup": {
                       "type": "object",
                       "description": "Backup configuration",
+                      "unevaluatedProperties": false,
                       "allOf": [
                         {
-                          "$ref": "#/defs/serviceDbBackupCommon"
+                          "$ref": "#/$defs/serviceDbBackupCommon"
                         }
                       ]
                     }
@@ -2179,18 +2215,20 @@
     },
     "huginnService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
             "db": {
               "type": "object",
               "description": "Database configuration",
+              "unevaluatedProperties": false,
               "allOf": [
                 {
-                  "$ref": "#/defs/serviceDbCommon"
+                  "$ref": "#/$defs/serviceDbCommon"
                 },
                 {
                   "properties": {
@@ -2222,9 +2260,10 @@
                     "backup": {
                       "type": "object",
                       "description": "Backup configuration",
+                      "unevaluatedProperties": false,
                       "allOf": [
                         {
-                          "$ref": "#/defs/serviceDbBackupCommon"
+                          "$ref": "#/$defs/serviceDbBackupCommon"
                         },
                         {
                           "properties": {
@@ -2269,9 +2308,10 @@
     },
     "playwrightService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2317,9 +2357,10 @@
     },
     "changedetectionioService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2372,9 +2413,10 @@
     },
     "archiveboxService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2489,9 +2531,10 @@
     },
     "appriseService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2542,9 +2585,10 @@
     },
     "gotifyService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2590,9 +2634,10 @@
     },
     "rxresumeService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2618,9 +2663,10 @@
     },
     "kavitaService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2651,9 +2697,10 @@
     },
     "calibreService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2689,9 +2736,10 @@
     },
     "calibreBookDownloaderService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2722,9 +2770,10 @@
     },
     "openbooksService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2746,9 +2795,10 @@
     },
     "convertxService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2779,9 +2829,10 @@
     },
     "pinchflatService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2812,9 +2863,10 @@
     },
     "mealieService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2845,9 +2897,10 @@
     },
     "librechatService": {
       "type": "object",
+      "unevaluatedProperties": false,
       "allOf": [
         {
-          "$ref": "#/defs/serviceCommon"
+          "$ref": "#/$defs/serviceCommon"
         },
         {
           "properties": {
@@ -2891,9 +2944,10 @@
             "db": {
               "type": "object",
               "description": "Database configuration",
+              "unevaluatedProperties": false,
               "allOf": [
                 {
-                  "$ref": "#/defs/serviceDbCommon"
+                  "$ref": "#/$defs/serviceDbCommon"
                 },
                 {
                   "properties": {
@@ -2921,9 +2975,10 @@
                     "backup": {
                       "type": "object",
                       "description": "Backup configuration",
+                      "unevaluatedProperties": false,
                       "allOf": [
                         {
-                          "$ref": "#/defs/serviceDbBackupCommon"
+                          "$ref": "#/$defs/serviceDbBackupCommon"
                         }
                       ]
                     }
