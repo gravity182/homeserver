@@ -41,6 +41,8 @@ All of the services are optional (except core ones, Authentik and cert-manager) 
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/authentik.png"> [Authentik](https://github.com/goauthentik/authentik) - SSO (Single-Sign On) Authentication. Protects your homeserver from unathenticated access. Allows you to sign in only once and use any of the services without the hassle of remembering a credentials for each service
 - Security:
     - <img width="15" height="15" src="https://github.com/cert-manager/cert-manager/blob/master/logo/logo-small.png?raw=true"> [cert-manager](https://github.com/cert-manager/cert-manager) - Automatically provision, manage, and renew TLS certificates
+- Backups:
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/backrest.png"> [Backrest](https://github.com/garethgeorge/backrest) - a web-accessible backup solution built on top of restic
 
 ---
 
@@ -50,8 +52,8 @@ Chart features:
 - Great chart customization - important service settings are controlled through Helm values
 - SSO authentication powered by [Authentik](https://github.com/goauthentik/authentik)
 - Automatic TLS certificates provisioning powered by [cert-manager](https://github.com/cert-manager/cert-manager)
-- Scheduled server backups powered by [Backrest](https://github.com/garethgeorge/backrest) and backed by [restic](https://github.com/restic/restic)
-- VPN support - every service can route its traffic through a WireGuard VPN. This is especially actual for such services as qBitTorrent for smooth Linux ISO downloading
+- Scheduled server backups powered by [Backrest](https://github.com/garethgeorge/backrest)
+- VPN support - every service can route its traffic through a WireGuard VPN. This is especially important for such services as qBitTorrent for smooth Linux ISO downloading
 - Proper file permissions handling - you will never encounter permission issues
 - Follows best security practices - containers are running as a non-root user and with a read-only filesystem
 
