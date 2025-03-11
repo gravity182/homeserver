@@ -33,7 +33,7 @@ spec:
             - /bin/sh
             - -ec
             - sed -i "s/host_whitelist\s*=.*/host_whitelist = ${HOST_WHITELIST}/" /config/sabnzbd.ini
-          env:
+          env: {{- include "homeserver.common.container.env" (dict "context" $) | nindent 12 }}
             - name: HOST_WHITELIST
               value: {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "context" $ ) | quote }}
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
