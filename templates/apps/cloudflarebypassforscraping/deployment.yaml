@@ -1,5 +1,5 @@
-{{- if .Values.services.homepage.enabled }}
-{{- $service := .Values.services.homepage  }}
+{{- if .Values.services.cloudflarebypassforscraping.enabled }}
+{{- $service := .Values.services.cloudflarebypassforscraping  }}
 {{- $kind := "app" }}
 apiVersion: apps/v1
 kind: Deployment
@@ -17,34 +17,14 @@ spec:
   template:
     metadata:
       labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
-      annotations:
-        checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/homepage/configmap.yaml" "context" $ ) }}
     spec:
       automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
       enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
       priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
-      serviceAccountName: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-      dnsPolicy: ClusterFirst
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-        - name: init-homepage-config
-          image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
-          imagePullPolicy: IfNotPresent
-          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          command:
-            - /bin/sh
-            - -ec
-            - |-
-              cp -rfL /tmp/config/* /app/config/
-          resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
-          volumeMounts:
-            - name: empty-dir
-              mountPath: /app/config
-              subPath: app-config-dir
-            - name: homepage-config
-              mountPath: /tmp/config
       containers:
-        - name: homepage
+        - name: cloudflarebypassforscraping
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
@@ -52,18 +32,12 @@ spec:
           env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           ports:
             - name: http
-              containerPort: 3000
+              containerPort: 8000
               protocol: TCP
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
-          readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
-          startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
+          livenessProbe: {{- include "homeserver.common.container.livenessProbe.tcpSocket" (dict "service" $service "port" "8000" "context" $) | nindent 12 }}
+          readinessProbe: {{- include "homeserver.common.container.readinessProbe.tcpSocket" (dict "service" $service "port" "8000" "context" $) | nindent 12 }}
+          startupProbe: {{- include "homeserver.common.container.startupProbe.tcpSocket" (dict "service" $service "port" "8000" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-            - name: empty-dir
-              mountPath: /app/config
-              subPath: app-config-dir
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-        - name: homepage-config
-          configMap:
-            name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
 {{- end }}

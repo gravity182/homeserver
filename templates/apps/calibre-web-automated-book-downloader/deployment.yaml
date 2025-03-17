@@ -24,16 +24,6 @@ spec:
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       containers:
-        {{- if $service.useCfBypass }}
-        - name: cloudflarebypassforscraping
-          image: ghcr.io/sarperavci/cloudflarebypassforscraping:latest
-          imagePullPolicy: Always
-          env: {{- include "homeserver.common.container.env" (dict "context" $) | nindent 12 }}
-            - name: PUID
-              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
-            - name: PGID
-              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
-        {{- end }}
         - name: calibre-book-downloader
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
@@ -48,21 +38,30 @@ spec:
               value: "8084"
             - name: FLASK_DEBUG
               value: "false"
-            - name: USE_CF_BYPASS
-              value: {{ $service.useCfBypass | quote }}
             {{- if $service.useCfBypass }}
+            {{- $cloudflarebypassforscraping := .Values.services.cloudflarebypassforscraping }}
+            {{- if not $cloudflarebypassforscraping.enabled }}
+            {{- printf "Cloudflare bypass is not possible - CloudflareBypassForScraping is not enabled!" | fail }}
+            {{- else if not (eq $service.vpn.enabled $cloudflarebypassforscraping.vpn.enabled) }}
+            {{- printf "VPN must be enabled both for CWA-Book-Downloader and CloudflareBypassForScraping!" | fail }}
+            {{- end }}
+            - name: USE_CF_BYPASS
+              value: "true"
             - name: CLOUDFLARE_PROXY_URL
-              value: http://localhost:8000
+              value: {{ include "homeserver.common.utils.serviceUrl" (dict "service" $cloudflarebypassforscraping "scheme" "http" "context" $) | quote }}
+            {{- else }}
+            - name: USE_CF_BYPASS
+              value: "false"
             {{- end }}
             - name: INGEST_DIR
               value: /cwa-book-ingest
             - name: BOOK_LANGUAGE
-              value: {{ $service.bookLanguage }}
+              value: {{ $service.bookLanguage | quote }}
             - name: SUPPORTED_FORMATS
-              value: {{ $service.supportedFormats }}
+              value: {{ $service.supportedFormats | quote }}
             {{- if $service.annasArchiveDonatorKey }}
             - name: AA_DONATOR_KEY
-              value: {{ $service.annasArchiveDonatorKey }}
+              value: {{ $service.annasArchiveDonatorKey | quote }}
             {{- end }}
           ports:
             - name: http

@@ -26,7 +26,7 @@ spec:
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         - name: set-host-whitelist
-          image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
+          image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
           imagePullPolicy: IfNotPresent
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           command:
@@ -41,7 +41,7 @@ spec:
             - name: config
               mountPath: /config
         - name: add-scripts
-          image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
+          image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
           imagePullPolicy: IfNotPresent
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           command:

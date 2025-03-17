@@ -621,13 +621,31 @@ services:
       enabled: false
     # nodriver is a preferred method
     # it's the official successor of undetected-chromedriver
-    # do not change this value unless you know what you are doing
+    # DO NOT change this value unless you know what you are doing
     driver: nodriver
     logLevel: INFO
     lang: en_US
     # see the full list of supported env vars
     # https://github.com/21hsmw/FlareSolverr?tab=readme-ov-file#environment-variables
     #
+    extraEnv: []
+  cloudflarebypassforscraping:
+    enabled: false
+    exposed: false
+    name: cloudflarebypassforscraping
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/sarperavci/cloudflarebypassforscraping
+      tag: latest
+      pullPolicy: Always
+    securityContext:
+      strict: false
+    resourcesPreset: "medium"
+    ports:
+      http: 8000
+    ingress: []
+    vpn: {}
     extraEnv: []
   tautulli:
     enabled: false

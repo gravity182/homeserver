@@ -29,7 +29,7 @@ spec:
           securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: add-kometa-config
-              image: {{ include "homeserver.common.initContainer.utility-image" . | quote }}
+              image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
               imagePullPolicy: IfNotPresent
               securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               command:
@@ -45,7 +45,7 @@ spec:
                   mountPath: /tmp/config
             {{- if $service.enableJmxdOverlays }}
             - name: init-jmxd-overlays
-              image: {{ include "homeserver.common.initContainer.git-image" . | quote }}
+              image: {{ include "homeserver.common.initContainer.image.git" . | quote }}
               imagePullPolicy: IfNotPresent
               securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               command:

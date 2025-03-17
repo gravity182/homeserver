@@ -145,6 +145,21 @@ exec:
 {{- end -}}
 
 {{/*
+Liveness probe based on the TCP socket method.
+Usage:
+{{ include "homeserver.common.container.livenessProbe.tcpSocket" (dict "service" $service "port" "8000" "context" $) }}
+*/}}
+{{- define "homeserver.common.container.livenessProbe.tcpSocket" -}}
+{{- $livenessProbe := default .context.Values.livenessProbe .service.livenessProbe }}
+{{- if $livenessProbe.enabled -}}
+{{- $livenessProbe := omit $livenessProbe "enabled" -}}
+tcpSocket:
+  port: {{ .port }}
+{{ include "homeserver.common.tplvalues.render" (dict "value" $livenessProbe "context" .context) }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Readiness probe based on the HTTP GET method.
 Usage:
 {{ include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/healthcheck" "context" $) }}
@@ -176,6 +191,21 @@ exec:
 {{- end -}}
 
 {{/*
+Readiness probe based on the TCP socket method.
+Usage:
+{{ include "homeserver.common.container.readinessProbe.tcpSocket" (dict "service" $service "port" "8000" "context" $) }}
+*/}}
+{{- define "homeserver.common.container.readinessProbe.tcpSocket" -}}
+{{- $readinessProbe := default .context.Values.readinessProbe .service.readinessProbe }}
+{{- if $readinessProbe.enabled -}}
+{{- $readinessProbe := omit $readinessProbe "enabled" -}}
+tcpSocket:
+  port: {{ .port }}
+{{ include "homeserver.common.tplvalues.render" (dict "value" $readinessProbe "context" .context) }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Startup probe based on the HTTP GET method.
 Usage:
 {{ include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/healthcheck" "context" $) }}
@@ -202,6 +232,21 @@ Usage:
 {{- $startupProbe := omit $startupProbe "enabled" -}}
 exec:
   command: {{- toYaml .command | nindent 4 }}
+{{ include "homeserver.common.tplvalues.render" (dict "value" $startupProbe "context" .context) }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Startup probe based on the TCP socket method.
+Usage:
+{{ include "homeserver.common.container.startupProbe.tcpSocket" (dict "service" $service "port" "8000" "context" $) }}
+*/}}
+{{- define "homeserver.common.container.startupProbe.tcpSocket" -}}
+{{- $startupProbe := default .context.Values.startupProbe .service.startupProbe }}
+{{- if $startupProbe.enabled -}}
+{{- $startupProbe := omit $startupProbe "enabled" -}}
+tcpSocket:
+  port: {{ .port }}
 {{ include "homeserver.common.tplvalues.render" (dict "value" $startupProbe "context" .context) }}
 {{- end -}}
 {{- end -}}

@@ -537,6 +537,10 @@
           "description": "Flaresolverr configuration\nhttps://github.com/21hsmw/FlareSolverr",
           "$ref": "#/$defs/flaresolverrService"
         },
+        "cloudflarebypassforscraping": {
+          "description": "CloudflareBypassForScraping configuration\nhttps://github.com/sarperavci/CloudflareBypassForScraping",
+          "$ref": "#/$defs/cloudflarebypassforscrapingService"
+        },
         "tautulli": {
           "description": "Tautulli configuration\nhttps://github.com/Tautulli/Tautulli",
           "$ref": "#/$defs/tautulliService"
@@ -1847,6 +1851,19 @@
             "logLevel",
             "lang"
           ]
+        }
+      ]
+    },
+    "cloudflarebypassforscrapingService": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        {
+          "$ref": "#/$defs/serviceCommon"
+        },
+        {
+          "properties": { },
+          "required": [ ]
         }
       ]
     },
