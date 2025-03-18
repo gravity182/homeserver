@@ -240,8 +240,8 @@ services:
     critical: false
     image:
       repository: ghcr.io/gethomepage/homepage
-      tag: latest
-      pullPolicy: Always
+      tag: v1.0.4
+      pullPolicy: IfNotPresent
     securityContext:
       strict: true
     resourcesPreset: "micro"

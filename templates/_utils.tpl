@@ -149,7 +149,10 @@ Usage:
 {{- $dst := list "localhost" "127.0.0.1" "$(KUBERNETES_POD_IP)" -}}
 {{- if .service.exposed -}}
 {{- range $host := .service.ingress -}}
-{{- $dst = append $dst (printf "https://%s.%s" $host (required "A valid .Values.ingress.domain required!" $.context.Values.ingress.domain)) }}
+{{- $dst = append $dst (printf "https://%s.%s" $host (required "A valid .Values.ingress.domain required!" $.context.Values.ingress.domain)) -}}
+{{- end -}}
+{{- if (eq .context.Values.ingress.rootService .service.name) -}}
+{{- $dst = append $dst (printf "https://%s" (required "A valid .Values.ingress.domain required!" .context.Values.ingress.domain)) -}}
 {{- end -}}
 {{- end -}}
 {{- join (default "," .delimiter) $dst -}}
@@ -164,10 +167,13 @@ Usage:
 */}}
 {{- define "homeserver.common.utils.allowedHosts" -}}
 {{- $dst := list "localhost" "127.0.0.1" "$(KUBERNETES_POD_IP)" -}}
-{{- $dst := append $dst (include "homeserver.common.names.name" (dict "service" .service "kind" "app")) -}}
+{{- $dst = append $dst (include "homeserver.common.names.name" (dict "service" .service "kind" "app")) -}}
 {{- if .service.exposed -}}
 {{- range $host := .service.ingress -}}
-{{- $dst = append $dst (printf "%s.%s" $host (required "A valid .Values.ingress.domain required!" $.context.Values.ingress.domain)) }}
+{{- $dst = append $dst (printf "%s.%s" $host (required "A valid .Values.ingress.domain required!" $.context.Values.ingress.domain)) -}}
+{{- end -}}
+{{- if (eq .context.Values.ingress.rootService .service.name) -}}
+{{- $dst = append $dst (required "A valid .Values.ingress.domain required!" .context.Values.ingress.domain) -}}
 {{- end -}}
 {{- end -}}
 {{- join (default "," .delimiter) $dst -}}

@@ -50,6 +50,8 @@ spec:
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: HOMEPAGE_ALLOWED_HOSTS
+              value: {{ include "homeserver.common.utils.allowedHosts" (dict "service" $service "context" $) | quote }}
           ports:
             - name: http
               containerPort: 3000
