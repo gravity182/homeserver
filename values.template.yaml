@@ -1207,7 +1207,7 @@ services:
       pullPolicy: Always
     securityContext:
       strict: true
-    resourcesPreset: "micro"
+    resourcesPreset: "medium"
     ports:
       http: 8945
     ingress:

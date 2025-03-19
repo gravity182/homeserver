@@ -1,7 +1,7 @@
 apiVersion: v2
 name: Homeserver
-version: 4.3.1
-appVersion: 4.3.1
+version: 4.3.2
+appVersion: 4.3.2
 kubeVersion: ">= 1.29.0"
 description: Self-hosted media server
 type: application

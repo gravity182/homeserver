@@ -37,10 +37,16 @@ spec:
               containerPort: 8945
               protocol: TCP
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
-          readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
-          startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
+          livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/healthcheck" "context" $) | nindent 12 }}
+          readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/healthcheck" "context" $) | nindent 12 }}
+          startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/healthcheck" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: empty-dir
+              mountPath: /etc/yt-dlp
+              subPath: etc-yt-dlp
+            - name: empty-dir
+              mountPath: /etc/elixir_tzdata_data
+              subPath: etc-elixir-tzdata
             - name: config
               mountPath: /config
             - name: data
