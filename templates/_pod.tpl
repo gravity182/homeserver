@@ -7,7 +7,7 @@ Usage:
 fsGroup: {{ required "A valid GID required!" .context.Values.host.gid }}
 fsGroupChangePolicy: Always
 supplementalGroups: []
-{{- if and (.service.vpn.enabled) (eq .kind "app") }}
+{{- if and ((default dict .service.vpn).enabled) (eq .kind "app") }}
 sysctls:
 {{ include "homeserver.common.vpn.securityContext.sysctls" .context }}
 {{- else }}
@@ -40,7 +40,7 @@ Usage:
 {{ include "homeserver.common.initContainer.volumePermissions" (dict "volumes" (keys $persistence | uniq | sortAlpha) "context" .context) }}
 {{- end }}
 {{- end }}
-{{- if and (.service.vpn.enabled) (eq .kind "app") -}}
+{{- if and ((default dict .service.vpn).enabled) (eq .kind "app") -}}
 {{ include "homeserver.common.vpn.sidecar" .context }}
 {{- end -}}
 {{- end -}}
@@ -53,7 +53,7 @@ Usage:
 {{- define "homeserver.common.pod.volumes" -}}
 - name: empty-dir
   emptyDir: {}
-{{- if and (.service.vpn.enabled) (eq .kind "app") }}
+{{- if and ((default dict .service.vpn).enabled) (eq .kind "app") }}
 {{ include "homeserver.common.vpn.volumes" .context }}
 {{- end }}
 {{- $extraVolumes := include "homeserver.common.utils.getExtraVolumes" (dict "service" .service "kind" .kind) -}}

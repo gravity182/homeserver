@@ -25,7 +25,6 @@ spec:
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         {{- if $service.useVuetorrent }}
         - name: init-vuetorrent
-        #   image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
           image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
           imagePullPolicy: IfNotPresent
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}

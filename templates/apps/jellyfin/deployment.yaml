@@ -30,11 +30,7 @@ spec:
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-            - name: PUID
-              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
-            - name: PGID
-              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
-            - name: "JELLYFIN_PublishedServerUrl"
+            - name: JELLYFIN_PublishedServerUrl
               value: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" $service "context" $ ) | quote }}
           ports:
             - name: http
@@ -50,12 +46,18 @@ spec:
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: config
               mountPath: /config
+            - name: cache
+              mountPath: /cache
             - name: library
               mountPath: {{ $service.persistence.library | quote }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
         - name: config
           hostPath:
             path: {{ $service.persistence.config | quote }}
+            type: Directory
+        - name: cache
+          hostPath:
+            path: {{ $service.persistence.cache | quote }}
             type: Directory
         - name: library
           hostPath:

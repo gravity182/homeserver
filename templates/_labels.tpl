@@ -15,7 +15,7 @@ Kind must be one of 'app', 'database', 'database-backup'.
 {{- if and (hasKey . "service") (hasKey . "kind") -}}
 {{- $_ := set $default "app.kubernetes.io/name" (include "homeserver.common.names.name" (dict "service" .service "kind" .kind)) -}}
 {{- if eq .kind "app" -}}
-{{- $_ := set $default "homeserver/vpn" ( .service.vpn.enabled | default false | ternary "true" "false" ) -}}
+{{- $_ := set $default "homeserver/vpn" ((default dict .service.vpn).enabled | default false | ternary "true" "false") -}}
 {{- end -}}
 {{- $extraLabels = include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraLabels") | fromYaml -}}
 {{- end -}}

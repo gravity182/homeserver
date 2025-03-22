@@ -1474,6 +1474,10 @@
                   "type": "string",
                   "description": "Config directory"
                 },
+                "cache": {
+                  "type": "string",
+                  "description": "Cache directory"
+                },
                 "library": {
                   "type": "string",
                   "description": "Library directory"
@@ -1481,6 +1485,7 @@
               },
               "required": [
                 "config",
+                "cache",
                 "library"
               ]
             }

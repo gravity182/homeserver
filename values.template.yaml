@@ -326,14 +326,12 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: lscr.io/linuxserver/jellyfin
-      tag: latest
+      repository: ghcr.io/jellyfin/jellyfin
+      tag: "10"
       pullPolicy: Always
     securityContext:
-      # the Linuxserver image uses s6-overlay,
-      # which has its own mechanism for switching to a non-root user via PUID/GUID
-      strict: false
-    resourcesPreset: "micro"
+      strict: true
+    resourcesPreset: "large"
     ports:
       http: 8096
       udp: 7359
@@ -343,6 +341,7 @@ services:
       enabled: false
     persistence:
       config: /opt/jellyfin/config
+      cache: /opt/jellyfin/cache
       library: /data/library
     extraEnv: []
   autobrr:
