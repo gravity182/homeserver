@@ -1,7 +1,7 @@
 {{/*
 VPN sidecar
 Usage:
-{{ include "homeserver.common.vpn.volumes" . }}
+{{ include "homeserver.common.vpn.sidecar" . }}
 */}}
 {{- define "homeserver.common.vpn.sidecar" }}
 - name: wireguard
@@ -41,9 +41,15 @@ Usage:
     {{- end }}
 {{- end }}
 
+{{/*
+VPN volumes
+Usage:
+{{ include "homeserver.common.vpn.volumes" . }}
+*/}}
 {{- define "homeserver.common.vpn.volumes" }}
 - name: wireguard-conf
   secret:
+    defaultMode: 0600
     secretName: {{ .Values.vpn.secretRef }}
     optional: false
 {{- if .Values.vpn.sysModule }}
@@ -54,6 +60,11 @@ Usage:
 {{- end }}
 {{- end }}
 
+{{/*
+VPN sysctls
+Usage:
+{{ include "homeserver.common.vpn.securityContext.sysctls" . }}
+*/}}
 {{- define "homeserver.common.vpn.securityContext.sysctls" }}
 - name: net.ipv4.conf.all.src_valid_mark
   value: "1"

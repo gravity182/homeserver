@@ -108,9 +108,9 @@ ingress:
 ##
 vpn:
   ## Enables SYS_MODULE capability
-  ## Set to true if you're having issues with WireGuard
+  ## Disable only if you know what you're doing
   ##
-  sysModule: false
+  sysModule: true
   ## Name of the secret containing the WireGuard configuration
   ##
   secretRef: wireguard-conf
