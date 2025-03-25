@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[4.5.0] - 2025-03-25
+
+- Migrate to the [home-operations](https://github.com/home-operations/containers) images instead of the onedr0p ones, which have been deprecated
+
 ## \[4.4.1] - 2025-03-22
 
 - Wireguard VPN: set `0600` (non world-accessible) file permissions for the secret volume containing the Wireguard config

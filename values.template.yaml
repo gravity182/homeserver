@@ -297,7 +297,7 @@ services:
     replicaCount: 1
     critical: true
     image:
-      repository: ghcr.io/onedr0p/plex
+      repository: ghcr.io/home-operations/plex
       tag: rolling
       pullPolicy: Always
     securityContext:
@@ -377,7 +377,7 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: ghcr.io/onedr0p/qbittorrent
+      repository: ghcr.io/home-operations/qbittorrent
       tag: "5"
       pullPolicy: Always
     securityContext:
@@ -409,7 +409,7 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: ghcr.io/onedr0p/sabnzbd
+      repository: ghcr.io/home-operations/sabnzbd
       tag: "4"
       pullPolicy: Always
     securityContext:
@@ -433,7 +433,7 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: ghcr.io/onedr0p/prowlarr
+      repository: ghcr.io/home-operations/prowlarr
       tag: "1"
       pullPolicy: Always
     securityContext:
@@ -455,7 +455,7 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: ghcr.io/onedr0p/radarr
+      repository: ghcr.io/home-operations/radarr
       tag: "5"
       pullPolicy: Always
     securityContext:
@@ -480,7 +480,7 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: ghcr.io/onedr0p/sonarr
+      repository: ghcr.io/home-operations/sonarr
       tag: "4"
       pullPolicy: Always
     securityContext:
@@ -557,7 +557,7 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: ghcr.io/onedr0p/bazarr
+      repository: ghcr.io/home-operations/bazarr
       tag: "1"
       pullPolicy: Always
     securityContext:
@@ -653,7 +653,7 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: ghcr.io/onedr0p/tautulli
+      repository: ghcr.io/home-operations/tautulli
       tag: "2"
       pullPolicy: Always
     securityContext:
