@@ -4,7 +4,7 @@
 
 This repo will get you your own home server with a lot of useful self-hosted software. This stack is well-built and will serve you reliably.
 
-All of the services are optional (except core ones, Authentik and cert-manager) and can be enabled/disabled anytime. Detailed list:
+All of the services are optional and can be enabled/disabled anytime. Detailed list:
 - Media:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/radarr-light.png"> [Radarr](https://github.com/Radarr/Radarr) - Movies management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sonarr.png"> [Sonarr](https://github.com/Sonarr/Sonarr) - TV Series management
