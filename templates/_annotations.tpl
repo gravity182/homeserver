@@ -12,5 +12,8 @@ Kind must be one of 'app', 'database', 'database-backup'.
 {{- if and (hasKey . "service") (hasKey . "kind") -}}
 {{- $extraAnnotations = include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraAnnotations") | fromYaml -}}
 {{- end -}}
-{{ template "homeserver.common.tplvalues.merge" (dict "values" (list $extraAnnotations .context.Values.commonAnnotations $default) "context" .context) }}
+{{- $values := (list $extraAnnotations .context.Values.commonAnnotations $default) -}}
+{{- if (compact $values) -}}
+{{ template "homeserver.common.tplvalues.merge" (dict "values" $values "context" .context) }}
+{{- end -}}
 {{- end -}}

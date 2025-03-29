@@ -8,7 +8,6 @@ metadata:
   namespace: {{ include "homeserver.common.names.namespace" . | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-    app.kubernetes.io/name: autobrr
 spec:
   type: ClusterIP
   ports:
@@ -17,5 +16,4 @@ spec:
       targetPort: http
       protocol: TCP
   selector: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-    app.kubernetes.io/name: autobrr
 {{- end}}

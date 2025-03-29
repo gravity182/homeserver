@@ -8,7 +8,6 @@ metadata:
   namespace: {{ include "homeserver.common.names.namespace" . | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-    app.kubernetes.io/name: mealie
 spec:
   revisionHistoryLimit: 3
   replicas: {{ $service.replicaCount }}
@@ -16,12 +15,10 @@ spec:
     type: Recreate
   selector:
     matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
-      app.kubernetes.io/name: mealie
   template:
     metadata:
       labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
       annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
-        app.kubernetes.io/name: mealie
     spec:
       automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
       enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}

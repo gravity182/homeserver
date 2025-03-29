@@ -19,7 +19,10 @@ Kind must be one of 'app', 'database', 'database-backup'.
 {{- end -}}
 {{- $extraLabels = include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraLabels") | fromYaml -}}
 {{- end -}}
-{{ template "homeserver.common.tplvalues.merge" (dict "values" (list $extraLabels .context.Values.commonLabels $default) "context" .context) }}
+{{- $values := (list $extraLabels .context.Values.commonLabels $default) -}}
+{{- if (compact $values) -}}
+{{ template "homeserver.common.tplvalues.merge" (dict "values" $values "context" .context) }}
+{{- end -}}
 {{- end -}}
 
 {{/*

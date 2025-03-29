@@ -21,7 +21,7 @@ spec:
       template:
         metadata:
           labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
-          annotations:
+          annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
             checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/kometa/configmap.yaml" "context" $ ) }}
         spec:
           restartPolicy: OnFailure

@@ -19,7 +19,6 @@ spec:
     metadata:
       labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
       annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
-      annotations:
         checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/sabnzbd/configmap.yaml" "context" $ ) }}
     spec:
       automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
