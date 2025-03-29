@@ -5,6 +5,7 @@ metadata:
   namespace: {{ include "homeserver.common.names.namespace" . | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
     app.kubernetes.io/name: authentik
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
 spec:
   forwardAuth:
     address: "http://ak-outpost-authentik-embedded-outpost.{{ include "homeserver.names.authentik-namespace" . }}.svc.cluster.local:9000/outpost.goauthentik.io/auth/traefik"

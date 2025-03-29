@@ -3,6 +3,7 @@ kind: PriorityClass
 metadata:
   name: {{ printf "%s-normal-priority" (include "homeserver.common.names.namespace" .) | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
 value: 0
 globalDefault: false
 description: "This priority class should be used for regular homeserver services only"

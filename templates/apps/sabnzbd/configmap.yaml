@@ -7,6 +7,7 @@ metadata:
   name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
   namespace: {{ include "homeserver.common.names.namespace" . | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 data:
   {{- range $path, $_ := .Files.Glob "files/sabnzbd/scripts/**.py" }}
   {{ base $path }}: |-

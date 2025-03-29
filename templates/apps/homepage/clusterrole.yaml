@@ -6,6 +6,7 @@ kind: ClusterRole
 metadata:
   name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 rules:
   - apiGroups:
       - ""
@@ -52,6 +53,7 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

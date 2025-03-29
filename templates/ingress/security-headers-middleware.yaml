@@ -4,6 +4,7 @@ metadata:
   name: security-headers
   namespace: {{ include "homeserver.common.names.namespace" . | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
 spec:
   headers:
     # this Strict-Transport-Security (STS) config is valid for submission to the HSTS preload list

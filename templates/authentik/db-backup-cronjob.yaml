@@ -5,6 +5,7 @@ metadata:
   namespace: {{ include "homeserver.names.authentik-namespace" . }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
     app.kubernetes.io/name: authentik-postgresql-backup-cronjob
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
 spec:
   schedule: {{ .Values.authentik.postgresql.backup.scheduleCron }}
   timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 8 }}
         app.kubernetes.io/name: authentik-postgresql-backup-cronjob
+      annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 8 }}
     spec:
       template:
         metadata:

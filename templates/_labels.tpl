@@ -7,8 +7,8 @@ Usage:
 Kind must be one of 'app', 'database', 'database-backup'.
 */}}
 {{- define "homeserver.common.labels.standard" -}}
-{{- $extraLabels := dict -}}
 {{- $default := dict "helm.sh/chart" (include "homeserver.common.names.chart" .context) "app.kubernetes.io/part-of" "homeserver" "app.kubernetes.io/instance" .context.Release.Name "app.kubernetes.io/managed-by" .context.Release.Service -}}
+{{- $extraLabels := dict -}}
 {{- with .context.Chart.AppVersion -}}
 {{- $_ := set $default "app.kubernetes.io/version" . -}}
 {{- end -}}

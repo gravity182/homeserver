@@ -141,7 +141,7 @@ commonLabels: {}
 ##
 commonAnnotations: {}
 ## Pods' global liveness probe. Evaluated as a template.
-## Can be overriden by service-specific settings.
+## Can be overriden per service.
 ## See https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
 ##
 livenessProbe:
@@ -152,6 +152,7 @@ livenessProbe:
   failureThreshold: 6
   successThreshold: 1
 ## Pods' global readiness probe. Evaluated as a template.
+## Can be overriden per service.
 ## see https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
 ##
 readinessProbe:
@@ -162,8 +163,9 @@ readinessProbe:
   failureThreshold: 6
   successThreshold: 1
 ## Pods' global startup probe. Evaluated as a template.
-## Slow starting containers can be protected through startup probes
-## see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+## Can be overriden per service.
+## Slow starting containers can be protected through startup probes.
+## See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
 ##
 startupProbe:
   enabled: false
