@@ -1,0 +1,8 @@
+# settings in this file apply to ALL downloads
+#
+# you can provide source-specific settings
+# see docs at https://github.com/kieraneglin/pinchflat/wiki/%5BAdvanced%5D-Custom-yt%E2%80%90dlp-options#scoped-configs
+#
+
+# use current date as a mtime (allows sorting videos by "Date added" in Jellyfin)
+--no-mtime

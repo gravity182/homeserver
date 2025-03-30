@@ -3,7 +3,7 @@
   "title": "Homeserver schema",
   "description": "Helpful JSON Schema to validate and configure your self-hosted homeserver",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "host": {
       "type": "object",

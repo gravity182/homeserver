@@ -8,11 +8,13 @@
 .homeserver
 
 /files/homepage/*
-!/files/homepage/default/*
+!/files/homepage/default/
 /files/kometa/*
-!/files/kometa/default/*
+!/files/kometa/default/
 /files/librechat/*
-!/files/librechat/default/*
+!/files/librechat/default/
+/files/pinchflat/yt-dlp-configs/*
+!/files/pinchflat/yt-dlp-configs/default/
 
 .DS_Store
 *.gz

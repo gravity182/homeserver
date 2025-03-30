@@ -19,12 +19,33 @@ spec:
     metadata:
       labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
       annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+        checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/pinchflat/yt-dlp-configmap.yaml" "context" $ ) }}
     spec:
       automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
       enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
       priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        - name: init-yt-dlp-configs
+          image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
+          imagePullPolicy: IfNotPresent
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          command:
+            - /bin/sh
+            - -ec
+            - |-
+              find /tmp/yt-dlp-configs -type f -print0 | while IFS= read -r -d $'\0' file; do
+                cp -fL "$file" /config/extras/yt-dlp-configs/
+                echo "Copied $(basename "$file") to /config/extras/yt-dlp-configs/"
+              done \
+                && echo "yt-dlp configs initialized!"
+          resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: yt-dlp-configs
+              mountPath: /tmp/yt-dlp-configs
+              readOnly: true
       containers:
         - name: pinchflat
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
@@ -54,6 +75,9 @@ spec:
             - name: data
               mountPath: /downloads
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+        - name: yt-dlp-configs
+          configMap:
+            name: {{ printf "%s-%s" (include "homeserver.common.names.name" ( dict "service" $service "kind" $kind )) "yt-dlp-configs" | quote }}
         - name: config
           hostPath:
             path: {{ $service.persistence.config | quote }}
