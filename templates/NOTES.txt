@@ -1,0 +1,90 @@
+VERSION: {{ .Chart.AppVersion }}
+REPO: https://github.com/blinky-z/homeserver
+DOCUMENTATION: https://github.com/blinky-z/homeserver/blob/master/Installation.md
+{{- if .Release.IsInstall }}
+
+---
+
+## Access Information
+
+### Authentik (SSO)
+- **URL**: `https://{{ first .Values.authentik.server.ingress.hosts }}`
+- **Admin Credentials**: 
+  - Username: `akadmin`
+  - Password: Set during the initial setup
+
+### Services
+{{- range $k, $v := .Values.services }}
+{{- if $v.enabled }}
+- **{{ $k }}**:
+  - Exposed: {{ $v.exposed }}
+  {{- if $v.exposed }}
+  - **URL**: `{{ include "homeserver.common.utils.ingressUrl" ( dict "service" $v "context" $ ) }}`
+  {{- end }}
+{{- end }}
+{{- end }}
+
+---
+
+## Post-Deployment Steps
+
+1. **Verify Pods**:
+   Ensure all pods are running correctly:
+   ```bash
+   kubectl get pods -n {{ .Release.Namespace }}
+   ```
+
+2. **Set up Authentik**:
+   - Complete the initial setup by creating an admin user at <https://authentik.{{ .Values.ingress.domain }}/if/flow/initial-setup>
+   - Protect your ingress paths using the instruction at https://github.com/blinky-z/homeserver/blob/master/Installation.md#setup
+
+3. **TLS Certificate Provisioning**:
+   - Check the status of a certificate:
+     ```bash
+     kubectl describe certificate
+     ```
+   - The status should be "Certificate is up to date and has not expired"
+
+4. **Configure Services**:
+   - Go to each service using the provided URLs
+   - Configure it to your liking
+
+5. **VPN Configuration (Optional)**:
+   - If VPN is enabled, ensure the WireGuard configuration secret exists and is valid:
+     ```bash
+     kubectl get secret -n {{ .Release.Namespace }} {{ default "wireguard-conf" .Values.vpn.secretKey }} -o yaml
+     ```
+
+---
+
+## Troubleshooting
+
+- **Check Logs**:
+  ```bash
+  kubectl -n {{ .Release.Namespace }} logs <pod-name>
+  ```
+
+- **Check Authentik's logs**:
+  ```bash
+  kubectl -n {{ .Values.authentik.namespaceOverride }} logs -l app.kubernetes.io/name=authentik
+  ```
+
+- **Check cert-manager's logs**:
+  ```bash
+  kubectl -n {{ (index .Values "cert-manager").namespace }} logs -l app=cert-manager
+  ```
+
+- **Restart Pods**:
+  ```bash
+  kubectl -n {{ .Release.Namespace }} rollout restart deployment
+  ```
+
+- **Check Ingress configuration**:
+  ```bash
+  kubectl -n {{ .Release.Namespace }} describe ingress
+  ```
+{{- end }}
+
+---
+
+Thank you for using the {{ .Chart.Name }} Helm chart!
