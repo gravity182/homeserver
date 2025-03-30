@@ -188,3 +188,12 @@ Usage:
 {{- $obj := include (print .context.Template.BasePath .path) .context | fromYaml -}}
 {{ omit $obj "apiVersion" "kind" "metadata" | toYaml | sha256sum }}
 {{- end -}}
+
+{{/*
+Checks if namespaces should be installed.
+Usage:
+{{ include "homeserver.common.utils.ns-install-check" $ }}
+*/}}
+{{- define "homeserver.common.utils.ns-install-check" -}}
+{{- eq (default false (index .Values "ns-install-check")) true | ternary "1" "" -}}
+{{- end -}}

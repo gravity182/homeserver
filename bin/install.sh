@@ -41,21 +41,22 @@ if [ $config_updated -eq 1 ]; then
   echo "NAMESPACE=\"$NAMESPACE\"" >> "$CONFIG_FILE"
 fi
 
-# Creating the namespaces
+# Create the namespaces for Authentik and cert-manager
 helm template "$RELEASE_NAME" . \
   -f values.yaml \
+  --set "ns-install-check=true" \
   --show-only templates/authentik/namespace.yaml \
   --show-only templates/cert-manager/namespace.yaml \
   | kubectl apply -f -
 
-# Installing the cert-manager's CRDs
+# Install the cert-manager's CRDs
 helm template "$RELEASE_NAME" . \
   -f values.yaml \
   --set "cert-manager.crds.enabled=true" \
   --show-only charts/cert-manager/templates/crds.yaml \
   | kubectl apply -f -
 
-# Installing the chart
+# Install the chart
 helm install "$RELEASE_NAME" . \
   -f values.yaml \
   --create-namespace \
