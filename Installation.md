@@ -132,10 +132,10 @@ All services are optional. Just enable the ones you need.
 All sections in `values.yaml` should be self-explanatory as important variables are documented. The required parameters are marked with a `# REQUIRED` comment, the rest can be left default or adjusted to your liking. Make sure the directories used by a service (usually specified in the `persistence` subsection) do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
 
 This chart supplies with a helpful [JSON Schema](./values.schema.json) for `values.yaml`.
-If you have a supported editor like VS Code with a [RedHat's YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml), you'll see autosuggestions and field descriptions right in your editor.
+If you have a supported editor like VS Code with the [RedHat's YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml), you'll see autosuggestions and field descriptions right in your editor.
 Moreover, this also allows Helm to [validate the values](https://helm.sh/docs/topics/charts/#schema-files) before deployment.
 
-Finally, give a read to the [Chart customization](#chart-customization) section to learn how to customize your setup and the [Server Backups](#server-backups--backrest) section to learn how to make schedules backups of your server.
+Finally, give a read to the [Chart customization](#chart-customization) section to learn how to customize your setup and the [Server Backups](#server-backups--backrest) section to learn how to make scheduled backups of your server.
 
 This document covers most of the services used in this chart and provides some useful notes on each of them.
 Return to this document if you're having problems. Open an issue in this GitHub repo if your problem is not covered here.
