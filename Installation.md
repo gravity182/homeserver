@@ -1398,15 +1398,15 @@ You need to enable it in the Settings -> Edit Basic Configuration -> Feature Con
 
 ## Calibre Web Automated Book Downloader
 
-[Calibre-Web-Automated-Book-Downloader](https://github.com/calibrain/calibre-web-automated-book-downloader) allows you to download books from Anna's Archive directly to the CWA instance.
+[Calibre-Web-Automated-Book-Downloader](https://github.com/calibrain/calibre-web-automated-book-downloader) allows you to download books from Anna's Archive directly to your CWA instance.
 
-If you're a [AA donator member](https://annas-archive.org/donate), you can provide an API token for faster downloads. Set it in `services.calibrebookdownloader.annasArchiveDonatorKey`. This will make downloads much, much faster.
+If you're an [AA donator member](https://annas-archive.org/donate), you can provide an API token for faster downloads. Set it in `services.calibrebookdownloader.annasArchiveDonatorKey`. This will make downloads much, much faster.
 
 ---
 
 ## Openbooks
 
-[Openbooks](https://github.com/evan-buss/openbooks) allows you to download books from [IRCHighWay](https://irchighway.net/). It's configured to download books directly to the CWA instance.
+[Openbooks](https://github.com/evan-buss/openbooks) allows you to download books from [IRCHighWay](https://irchighway.net/). It's configured to download books directly to your CWA instance.
 
 ---
 
