@@ -1406,7 +1406,7 @@ If you're an [AA donator member](https://annas-archive.org/donate), you can prov
 
 ## Openbooks
 
-[Openbooks](https://github.com/evan-buss/openbooks) allows you to download books from [IRCHighWay](https://irchighway.net/). It's configured to download books directly to your CWA instance.
+[Openbooks](https://github.com/evan-buss/openbooks) allows you to download books from [IRCHighWay](https://irchighway.net/) directly to your CWA instance.
 
 ---
 
