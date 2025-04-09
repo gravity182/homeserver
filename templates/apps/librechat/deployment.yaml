@@ -47,8 +47,27 @@ spec:
               value: {{ $service.customFooter | quote }}
             - name: ENDPOINTS
               value: {{ $service.endpoints | quote }}
+            {{- if $service.search }}
+            {{- $meilisearch := .Values.services.meilisearch }}
+            {{- if not $meilisearch.enabled }}
+            {{- fail "Meilisearch is required for Librechat's search, but it is not enabled" }}
+            {{- end }}
+            - name: SEARCH
+              value: "true"
+            - name: MEILI_NO_ANALYTICS
+              value: "true"
+            - name: MEILI_HOST
+              value: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" $meilisearch "kind" "app" "context" $ ) | quote }}
+            - name: MEILI_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $meilisearch.masterKeySecret | quote }}
+                  key: master-key
+                  optional: false
+            {{- else }}
             - name: SEARCH
               value: "false"
+            {{- end }}
             - name: REFRESH_TOKEN_EXPIRY
               value: {{ $service.refreshTokenExpiryMilliseconds | quote }}
             - name: CREDS_KEY

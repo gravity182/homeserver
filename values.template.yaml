@@ -1297,6 +1297,11 @@ services:
     # custom footer
     # keep it empty to remove that unnecessary footer mentioning Librechat details
     customFooter: ""
+    # enable search backed by MeiliSearch
+    # see https://www.librechat.ai/docs/features/search
+    #
+    # make sure the MeiliSearch service is enabled and master key secret set
+    search: false
     persistence:
       # directory where to keep user-uploaded images
       clientImages: /opt/librechat/client/images
@@ -1356,3 +1361,27 @@ services:
     #   secretName: librechat-endpoints-secret
     #   secretKey: librechat-openrouter-api-key
     extraEnvSecrets: []
+  meilisearch:
+    enabled: true
+    exposed: false
+    name: meilisearch
+    replicaCount: 1
+    critical: true
+    image:
+      repository: getmeili/meilisearch
+      tag: v1.13
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "medium"
+    ports:
+      http: 7700
+    ingress: []
+    persistence:
+      data: /opt/meilisearch/data
+    # secret containing the master key under the key 'master-key'
+    # the master key must be at least 16 bytes long
+    masterKeySecret: meilisearch-secret
+    vpn:
+      enabled: false
+    extraEnv: []

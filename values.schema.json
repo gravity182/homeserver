@@ -620,6 +620,10 @@
         "librechat": {
           "description": "Librechat configuration\nhttps://github.com/danny-avila/LibreChat",
           "$ref": "#/$defs/librechatService"
+        },
+        "meilisearch": {
+          "description": "MeiliSearch configuration\nhttps://github.com/meilisearch/meilisearch",
+          "$ref": "#/$defs/meilisearchService"
         }
       },
       "required": [
@@ -657,7 +661,8 @@
         "convertx",
         "pinchflat",
         "mealie",
-        "librechat"
+        "librechat",
+        "meilisearch"
       ]
     }
   },
@@ -2966,6 +2971,10 @@
               "type": "string",
               "description": "Custom footer"
             },
+            "search": {
+              "type": "boolean",
+              "description": "Enable search. Ensure MeiliSearch is running"
+            },
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
@@ -3037,8 +3046,43 @@
             "allowSocialLogin",
             "refreshTokenExpiryMilliseconds",
             "customFooter",
+            "search",
             "persistence",
             "db"
+          ]
+        }
+      ]
+    },
+    "meilisearchService": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        {
+          "$ref": "#/$defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "masterKeySecret": {
+              "type": "string",
+              "description": "Name of the secret containing the master key\n\nMust have the 'master-key' key"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "required": [
+            "masterKeySecret",
+            "persistence"
           ]
         }
       ]
