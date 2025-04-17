@@ -13,6 +13,8 @@
 !/files/kometa/default/
 /files/librechat/*
 !/files/librechat/default/
+/files/qbit_manage/*
+!/files/qbit_manage/default/
 /files/pinchflat/yt-dlp-configs/*
 !/files/pinchflat/yt-dlp-configs/default/
 

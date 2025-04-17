@@ -18,6 +18,7 @@ All services are optional and can be enabled/disabled anytime. Detailed list:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/autobrr.png"> [Autobrr](https://github.com/autobrr/autobrr) - Download automation for torrents and Usenet. Monitors indexers' IRC channels and grabs a release as soon as it's announced
 - Downloaders:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/qbittorrent.png"> [qBittorrent](https://github.com/qbittorrent/qBittorrent) - Torrent downloader
+    - <img width="15" height="15" src="https://github.com/StuffAnThings/qbit_manage/blob/master/qbm_logo.png"> [qBit_manage](https://github.com/StuffAnThings/qbit_manage) - Manage qBittorrent automatically: tag, categorize, remove orphaned data, remove unregistered torrents, and much much more
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sabnzbd.png"> [SABnzbd](https://github.com/sabnzbd/sabnzbd) - Usenet downloader
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/pinchflat.png"> [Pinchflat](https://github.com/kieraneglin/pinchflat) - YouTube downloader based on yt-dlp
 - Books:

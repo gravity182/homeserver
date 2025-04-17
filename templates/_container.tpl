@@ -4,25 +4,11 @@ Usage:
 {{ include "homeserver.common.container.securityContext" (dict "service" $service "kind" "app" "context" $) }}
 */}}
 {{- define "homeserver.common.container.securityContext" -}}
-seLinuxOptions: {}
-privileged: false
-allowPrivilegeEscalation: false
 {{- if (include "homeserver.common.utils.getSecurityContext" (dict "service" .service "kind" .kind) | fromYaml).strict }}
-runAsUser: {{ required "A valid UID required!" .context.Values.host.uid }}
-runAsGroup: {{ required "A valid GID required!" .context.Values.host.gid }}
-runAsNonRoot: true
-readOnlyRootFilesystem: true
-capabilities:
-  drop: ["ALL"]
-{{/* Unfortunately some images have very limited support for running containers as non-root or read-only */}}
+{{ include "homeserver.common.securityContext.strict" .context }}
 {{- else }}
-runAsNonRoot: false
-readOnlyRootFilesystem: false
-capabilities:
-  add: ["CHOWN", "SETUID", "SETGID", "FSETID"]
+{{ include "homeserver.common.securityContext.lenient" .context }}
 {{- end }}
-seccompProfile:
-  type: "RuntimeDefault"
 {{- end -}}
 
 {{/* Resources for containers.

@@ -1,6 +1,6 @@
-{{- if .Values.services.librechat.enabled }}
-{{- $service := .Values.services.librechat  }}
-{{- $kind := "database-backup" }}
+{{- if .Values.services.qbit_manage.enabled }}
+{{- $service := .Values.services.qbit_manage }}
+{{- $kind := "app" }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -9,7 +9,7 @@ metadata:
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
-  schedule: {{ $service.db.backup.scheduleCron | quote }}
+  schedule: {{ $service.scheduleCron | quote }}
   timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
   successfulJobsHistoryLimit: 3
   concurrencyPolicy: Replace
@@ -22,46 +22,54 @@ spec:
         metadata:
           labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
           annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 12 }}
+            checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/qbit-manage/configmap.yaml" "context" $ ) }}
         spec:
+          restartPolicy: OnFailure
           automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
           enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
           priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
           securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          containers:
-            - name: mongodump
-              image: bitnami/mongodb:8.0
-              imagePullPolicy: Always
+          initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+            - name: init-config
+              image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
+              imagePullPolicy: IfNotPresent
               securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               command:
                 - /bin/sh
                 - -ec
-                - "mongodump --username=${MONGODB_ROOT_USER} --password=${MONGODB_ROOT_PASSWORD} --authenticationDatabase=admin --host=${MONGODB_SERVICE_NAME} --port=${MONGODB_PORT_NUMBER} --gzip --archive=/backup/mongodump-$(date '+%Y-%m-%d-%H-%M').gz"
+                - |-
+                  cp -fL /tmp/config/config.yml /config/config.yml
+              resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 16 }}
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                - name: qbit-manage-config
+                  mountPath: /tmp/config/config.yml
+                  subPath: config.yml
+          containers:
+            - name: qbit-manage
+              image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
+              imagePullPolicy: {{ $service.image.pullPolicy }}
+              securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
+              args: [ "--run", "--config-file", "/config/config.yml" ]
               envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
-                - name: MONGODB_SERVICE_NAME
-                  value: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" "database" ) | quote }}
-                - name: MONGODB_PORT_NUMBER
-                  value: {{ $service.db.ports.mongo | quote }}
-                - name: MONGODB_ROOT_USER
-                  valueFrom:
-                    secretKeyRef:
-                      name: {{ $service.db.secretName | quote }}
-                      key: mongodb-root-username
-                      optional: false
-                - name: MONGODB_ROOT_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: {{ $service.db.secretName | quote }}
-                      key: mongodb-root-password
-                      optional: false
               resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
-                - name: backup
-                  mountPath: /backup
+                - name: config
+                  mountPath: /config
+                - name: torrents
+                  mountPath: {{ .Values.services.qbittorrent.persistence.data | quote }}
           volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-            - name: backup
+            - name: qbit-manage-config
+              configMap:
+                name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+            - name: config
               hostPath:
-                path: {{ $service.db.backup.dir | quote }}
+                path: {{ $service.persistence.config | quote }}
                 type: Directory
-          restartPolicy: OnFailure
+            - name: torrents
+              hostPath:
+                path: {{ .Values.services.qbittorrent.persistence.data | quote }}
+                type: Directory
 {{- end }}

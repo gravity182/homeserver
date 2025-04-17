@@ -498,8 +498,12 @@
           "$ref": "#/$defs/autobrrService"
         },
         "qbittorrent": {
-          "description": "Qbittorrent configuration\nhttps://github.com/qbittorrent/qBittorrent",
+          "description": "qBittorrent configuration\nhttps://github.com/qbittorrent/qBittorrent",
           "$ref": "#/$defs/qbittorrentService"
+        },
+        "qbit_manage": {
+          "description": "qBit_manage configuration\nhttps://github.com/StuffAnThings/qbit_manage",
+          "$ref": "#/$defs/qbitManageService"
         },
         "sabnzbd": {
           "description": "Sabnzbd configuration\nhttps://github.com/sabnzbd/sabnzbd",
@@ -633,6 +637,7 @@
         "jellyfin",
         "autobrr",
         "qbittorrent",
+        "qbit_manage",
         "sabnzbd",
         "prowlarr",
         "radarr",
@@ -1564,6 +1569,41 @@
           },
           "required": [
             "useVuetorrent",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "qbitManageService": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        {
+          "$ref": "#/$defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "scheduleCron": {
+              "type": "string",
+              "description": "Script schedule cron",
+              "examples": [ "0 */1 * * *" ]
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "scheduleCron",
             "persistence"
           ]
         }

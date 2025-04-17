@@ -404,6 +404,34 @@ services:
     vpn:
       enabled: false
     extraEnv: []
+  qbit_manage:
+    enabled: false
+    exposed: false
+    name: qbit-manage
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/stuffanthings/qbit_manage
+      tag: v4.2.1
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports: {}
+    ingress: []
+    persistence:
+      config: /opt/qbit_manage/config
+    # script schedule cron
+    # use https://crontab.guru/ to create a valid cron expression
+    # run the script every hour by default
+    scheduleCron: "0 */1 * * *"
+    vpn: {}
+    extraEnv:
+      # see the full list of supported env vars
+      # https://github.com/StuffAnThings/qbit_manage/wiki/Commands
+      #
+      - name: QBT_LOG_LEVEL
+        value: INFO
   sabnzbd:
     enabled: false
     exposed: true
@@ -1362,7 +1390,7 @@ services:
     #   secretKey: librechat-openrouter-api-key
     extraEnvSecrets: []
   meilisearch:
-    enabled: true
+    enabled: false
     exposed: false
     name: meilisearch
     replicaCount: 1

@@ -1,0 +1,198 @@
+# This is an example configuration file that documents all the options.
+# It will need to be modified for your specific use case.
+# These are not default values. You MUST review the config settings and properly configure this EXAMPLE file.
+# Please refer to the link below for more details on how to set up the configuration file
+# https://github.com/StuffAnThings/qbit_manage/wiki/Config-Setup
+
+commands:
+  # The commands defined below will IGNORE any commands used in command line and docker env variables.
+  dry_run: False
+  recheck: False
+  cat_update: False
+  tag_update: True
+  rem_unregistered: False
+  tag_tracker_error: True
+  rem_orphaned: True
+  tag_nohardlinks: True
+  share_limits: True
+  skip_qb_version_check: False
+  skip_cleanup: False
+
+qbt:
+  # qBittorrent parameters
+  host: '{{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.qbittorrent "context" $ ) }}'
+
+settings:
+  force_auto_tmm: True # Will force qBittorrent to enable Automatic Torrent Management for each torrent.
+  force_auto_tmm_ignore_tags: #Torrents with these tags will be ignored when force_auto_tmm is enabled.
+    - cross-seed
+    - Upload
+  tracker_error_tag: issue # Will set the tag of any torrents that do not have a working tracker.
+  nohardlinks_tag: noHL # Will set the tag of any torrents with no hardlinks.
+  share_limits_tag: ~share_limit # Will add this tag when applying share limits to provide an easy way to filter torrents by share limit group/priority for each torrent
+  share_limits_filter_completed: True # Filters for completed torrents only when running share_limits command
+  share_limits_min_seeding_time_tag: MinSeedTimeNotReached # Tag to be added to torrents that have not yet reached the minimum seeding time
+  share_limits_min_num_seeds_tag: MinSeedsNotMet # Tag to be added to torrents that have not yet reached the minimum number of seeds
+  share_limits_last_active_tag: LastActiveLimitNotReached # Tag to be added to torrents that have not yet reached the last active limit
+  cat_update_all: True # Checks and updates all torrent categories if set to True when running cat_update command, otherwise only update torrents that are uncategorized
+  cat_filter_completed: True # Filters for completed torrents only when running cat_update command
+  tag_nohardlinks_filter_completed: True # Filters for completed torrents only when running tag_nohardlinks command
+  rem_unregistered_filter_completed: False # Filters for completed torrents only when running rem_unregistered command
+  disable_qbt_default_share_limits: True # Allows QBM to handle share limits by disabling qBittorrents default Share limits. Only active when the share_limits command is set to True
+  tag_stalled_torrents: True # Tags any downloading torrents that are stalled with the `stalledDL` tag when running the tag_update command
+  rem_unregistered_ignore_list: [] # Ignores a list of words found in the status of the tracker when running rem_unregistered command and will not remove the torrent if matched
+
+directory:
+  # root_dir var: </your/path/here/>  # Root downloads directory used to check for orphaned files, noHL, and RecycleBin.
+  # <OPTIONAL> remote_dir var: </your/path/here/>  # Path of docker host mapping of root_dir.
+  # remote_dir must be set if you're running qbit_manage locally and qBittorrent/cross_seed is in a docker
+  # remote_dir should not be set if qbit_manage is running in a container
+  # <OPTIONAL> recycle_bin var: </your/path/here/>   # Path of the RecycleBin folder. Default location is set to remote_dir/.RecycleBin
+  # <OPTIONAL> torrents_dir var: </your/path/here/>  # Path of the your qbittorrent torrents directory. Required for `save_torrents` attribute in recyclebin
+  # <OPTIONAL> orphaned_dir var: </your/path/here/>  # Path of the the Orphaned Data folder. This is similar to RecycleBin, but only for orphaned data.
+  root_dir: "{{ .Values.services.qbittorrent.persistence.data }}"
+
+cat:
+  # Category & Path Parameters
+  # All save paths in qbittorent must be populated below.
+  # If you want to leave a save_path as uncategorized you can use the key 'Uncategorized' as the name of the category.
+  # You can use Unix filename pattern matching as well when specifying the save_path
+  # <Category Name> : <save_path>  # Path of your save directory.
+  movies: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "movies" }}'
+  tv: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "tv" }}'
+  music: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "music" }}'
+  books: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "books" }}'
+  xxx: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "xxx" }}'
+
+tracker:
+  # Mandatory
+  # Tag Parameters
+  # <Tracker URL Keyword>:    # <MANDATORY> This is the keyword in the tracker url. You can define multiple tracker urls by splitting with `|` delimiter
+  # <MANDATORY> Set tag name. Can be a list of tags or a single tag
+  #   tag: <Tag Name>
+  # <OPTIONAL> Set the category based on tracker URL. This category option takes priority over the category defined by save directory
+  #   cat: <Category Name>
+  # <OPTIONAL> Set this to the notifiarr react name. This is used to add indexer reactions to the notifications sent by Notifiarr
+  #   notifiarr: <notifiarr indexer>
+  t-ru.org:
+    tag: ~tracker_RuTracker.org
+    notifiarr: rutracker
+  milkie:
+    tag: ~tracker_Milkie.cc
+    notifiarr: milkie
+  animebytes.tv:
+    tag: ~tracker_AnimeBytes
+    notifiarr: animebytes
+  avistaz:
+    tag: ~tracker_Avistaz
+    notifiarr: avistaz
+  beyond-hd:
+    tag: ~tracker_Beyond-HD
+    notifiarr: beyondhd
+  blutopia:
+    tag: ~tracker_Blutopia
+    notifiarr: blutopia
+  cartoonchaos:
+    tag: ~tracker_CartoonChaos
+    notifiarr: cartoonchaos
+  digitalcore:
+    tag: ~tracker_DigitalCore
+    notifiarr: digitalcore
+  gazellegames:
+    tag: ~tracker_GGn
+    notifiarr: gazellegames
+  hdts:
+    tag: ~tracker_HDTorrents
+    notifiarr: hdts
+  landof.tv:
+    tag: ~tracker_BroadcasTheNet
+    notifiarr: broadcasthenet
+  myanonamouse:
+    tag: ~tracker_Myanonamouse
+    notifiarr: myanonamouse
+  passthepopcorn:
+    tag: ~tracker_PassThePopcorn
+    notifiarr: passthepopcorn
+  privatehd:
+    tag: ~tracker_PrivateHD
+    notifiarr: privatehd
+  torrentdb:
+    tag: ~tracker_TorrentDB
+    notifiarr: torrentdb
+  torrentleech|tleechreload:
+    tag: ~tracker_TorrentLeech
+    notifiarr: torrentleech
+  tv-vault:
+    tag: ~tracker_TV-Vault
+    notifiarr: tv-vault
+
+nohardlinks:
+  # Tag Movies/Series that are not hard linked outside the root directory
+  # Mandatory to fill out directory parameter above to use this function (root_dir/remote_dir)
+  # This variable should be set to your category name of your completed movies/completed series in qbit. Acceptable variable can be any category you would like to tag if there are no hardlinks found
+  movies:
+  tv:
+  music:
+  books:
+  xxx:
+
+share_limits:
+  # Control how torrent share limits are set depending on the priority of your grouping
+  # Each torrent will be matched with the share limit group with the highest priority that meets the group filter criteria.
+  # Each torrent can only be matched with one share limit group
+  # This variable is mandatory and is a text defining the name of your grouping. This can be any string you want
+  noHL:
+    # <MANDATORY> priority: <int/float> # This is the priority of your grouping. The lower the number the higher the priority
+    priority: 1
+    # <OPTIONAL> include_any_tags: <list> # Filter the group based on one or more tags. Multiple include_any_tags are checked with an OR condition
+    # Any tags defined here must be present in the torrent for it to be included in this group
+    include_any_tags:
+      - noHL
+    # <OPTIONAL> max_ratio <float>: Will set the torrent Maximum share ratio until torrent is stopped from seeding/uploading and may be cleaned up / removed if the minimums have been met.
+    # Ratio of 0 will delete the movie immediately
+    max_ratio: 0.0
+    # <OPTIONAL> cleanup <bool>: WARNING!! Setting this as true Will remove and delete contents of any torrents that satisfies the share limits (max time OR max ratio)
+    cleanup: true
+    # <OPTIONAL> add_group_to_tag <bool>: This adds your grouping as a tag with a prefix defined in settings . Default is true
+    # Example: A grouping defined as noHL will have a tag set to ~share_limit.noHL (if using the default prefix)
+    add_group_to_tag: false
+
+orphaned:
+  # Orphaned files are those in the root_dir download directory that are not referenced by any active torrents.
+  # Will automatically remove all files and folders in orphaned data after x days. (Checks every script run)
+  # If this variable is not defined it, the orphaned data will never be emptied.
+  # WARNING: Setting this variable to 0 will delete all files immediately upon script run!
+  empty_after_x_days: 1
+  # File patterns that will not be considered orphaned files. Handy for generated files that aren't part of the torrent but belong with the torrent's files
+  exclude_patterns:
+    - "**/.DS_Store"
+    - "**/Thumbs.db"
+    - "**/@eaDir"
+    - "/data/torrents/temp/**"
+    - "**/*.!qB"
+    - "**/*_unpackerred"
+  # Set your desired threshold for the maximum number of orphaned files qbm will delete in a single run. (-1 to disable safeguards)
+  # This will help reduce the number of accidental large amount orphaned deletions in a single run
+  # WARNING: Setting this variable to -1 will not safeguard against any deletions
+  max_orphaned_files_to_delete: 100
+
+recyclebin:
+  # Recycle Bin method of deletion will move files into the recycle bin (Located in /root_dir/.RecycleBin) instead of directly deleting them in qbit
+  # By default the Recycle Bin will be emptied on every run of the qbit_manage script if empty_after_x_days is defined.
+  enabled: false
+
+apprise:
+#   # Apprise integration with webhooks
+#   # Leave Empty/Blank to disable
+#   # Mandatory to fill out the url of your apprise API endpoint
+#   api_url: http://apprise-api:8000
+#   # Mandatory to fill out the notification url/urls based on the notification services provided by apprise. https://github.com/caronc/apprise/wiki
+#   notify_url:
+
+notifiarr:
+#   # Notifiarr integration with webhooks
+#   # Leave Empty/Blank to disable
+#   # Mandatory to fill out API Key
+#   apikey: !ENV NOTIFIARR_API
+#   # <OPTIONAL> Set to a unique value (could be your username on notifiarr for example)
+#   instance:

@@ -21,6 +21,9 @@ spec:
   rules:
     {{- range $service := .Values.services }}
     {{- if and $service.enabled $service.exposed }}
+    {{- if not $service.ingress }}
+    {{- printf "Service %s is exposed but has no ingress paths" $service.name | fail }}
+    {{- end }}
     {{- range $host := $service.ingress }}
     - host: {{ printf "%s.%s" $host $.Values.ingress.domain | quote }}
       http:

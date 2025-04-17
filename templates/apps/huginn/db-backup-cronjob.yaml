@@ -9,7 +9,7 @@ metadata:
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 spec:
-  schedule: {{ $service.db.backup.scheduleCron }}
+  schedule: {{ $service.db.backup.scheduleCron | quote }}
   timeZone: {{ required "A valid timezone required!" .Values.host.tz }}
   successfulJobsHistoryLimit: 3
   concurrencyPolicy: Replace
