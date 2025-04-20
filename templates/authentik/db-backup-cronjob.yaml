@@ -34,7 +34,7 @@ spec:
               envFrom: {{- include "homeserver.common.container.envFrom" (dict "context" $) | nindent 16 }}
               env: {{- include "homeserver.common.container.env" (dict "context" $) | nindent 16 }}
                 - name: PGHOST
-                  value: authentik-postgresql
+                  value: {{ printf "%s-postgresql" .Release.Name | quote }}
                 - name: PGUSER
                   value: authentik
                 - name: PGPASSWORD

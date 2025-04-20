@@ -39,7 +39,9 @@ spec:
               envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
               env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 16 }}
                 - name: PGHOST
-                  value: {{ $service.db.name | quote }}
+                  value: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" "database" ) | quote }}
+                - name: PGPORT
+                  value: {{ $service.db.ports.postgres | quote }}
                 - name: PGUSER
                   value: {{ $service.db.user | quote }}
                 - name: PGPASSWORD
