@@ -17,6 +17,8 @@
 !/files/qbit_manage/default/
 /files/pinchflat/yt-dlp-configs/*
 !/files/pinchflat/yt-dlp-configs/default/
+/files/pinchflat/user-scripts/*
+!/files/pinchflat/user-scripts/default/
 
 .DS_Store
 *.gz

@@ -9,7 +9,7 @@ metadata:
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 data:
-  {{- range $path, $_ := .Files.Glob "files/homepage/**.yaml" }}
+  {{- range $path, $_ := .Files.Glob "files/homepage/**" }}
   {{- if not (contains "/default/" $path) }}
   {{ base $path }}: |-
 {{ tpl ($.Files.Get $path) $ | indent 4 }}

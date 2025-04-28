@@ -9,7 +9,7 @@ metadata:
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
 data:
-  {{- range $path, $_ := .Files.Glob "files/sabnzbd/scripts/**.py" }}
+  {{- range $path, $_ := .Files.Glob "files/sabnzbd/scripts/**" }}
   {{ base $path }}: |-
 {{ $.Files.Get $path | indent 4 }}
   {{- end }}

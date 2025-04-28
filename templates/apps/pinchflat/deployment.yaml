@@ -19,7 +19,8 @@ spec:
     metadata:
       labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
       annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
-        checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/pinchflat/yt-dlp-configmap.yaml" "context" $ ) }}
+        checksum/yt-dlp-configs-config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/pinchflat/yt-dlp-configs-configmap.yaml" "context" $ ) }}
+        checksum/user-scripts-config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/pinchflat/user-scripts-configmap.yaml" "context" $ ) }}
     spec:
       automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
       enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
@@ -38,13 +39,34 @@ spec:
                 cp -fL "$file" /config/extras/yt-dlp-configs/
                 echo "Copied $(basename "$file") to /config/extras/yt-dlp-configs/"
               done \
-                && echo "yt-dlp configs initialized!"
+                && echo "yt-dlp-configs initialized!"
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
             - name: config
               mountPath: /config
             - name: yt-dlp-configs
               mountPath: /tmp/yt-dlp-configs
+              readOnly: true
+        - name: init-user-scripts
+          image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
+          imagePullPolicy: IfNotPresent
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          command:
+            - /bin/sh
+            - -ec
+            - |-
+              find /tmp/user-scripts -type f -print0 | while IFS= read -r -d $'\0' file; do
+                cp -fL "$file" /config/extras/user-scripts/
+                chmod u+x /config/extras/user-scripts/"$(basename "$file")"
+                echo "Copied $(basename "$file") to /config/extras/user-scripts/"
+              done \
+                && echo "user-scripts initialized!"
+          resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: user-scripts
+              mountPath: /tmp/user-scripts
               readOnly: true
       containers:
         - name: pinchflat
@@ -53,8 +75,6 @@ spec:
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-            - name: LOG_LEVEL
-              value: info
           ports:
             - name: http
               containerPort: 8945
@@ -78,6 +98,10 @@ spec:
         - name: yt-dlp-configs
           configMap:
             name: {{ printf "%s-%s" (include "homeserver.common.names.name" ( dict "service" $service "kind" $kind )) "yt-dlp-configs" | quote }}
+        - name: user-scripts
+          configMap:
+            name: {{ printf "%s-%s" (include "homeserver.common.names.name" ( dict "service" $service "kind" $kind )) "user-scripts" | quote }}
+            defaultMode: 0755
         - name: config
           hostPath:
             path: {{ $service.persistence.config | quote }}
