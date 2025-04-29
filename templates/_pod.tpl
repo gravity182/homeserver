@@ -49,16 +49,19 @@ Usage:
 Volumes for pods.
 Usage:
 {{ include "homeserver.common.pod.volumes" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "homeserver.common.pod.volumes" (dict "context" $) }}
 */}}
 {{- define "homeserver.common.pod.volumes" -}}
 - name: empty-dir
   emptyDir: {}
+{{- if and (hasKey . "service") (hasKey . "kind") -}}
 {{- if and ((default dict .service.vpn).enabled) (eq .kind "app") }}
 {{ include "homeserver.common.vpn.volumes" .context }}
 {{- end }}
 {{- $extraVolumes := include "homeserver.common.utils.getExtraVolumes" (dict "service" .service "kind" .kind) -}}
 {{- if $extraVolumes }}
 {{ include "homeserver.common.tplvalues.render" (dict "value" $extraVolumes "context" .context) }}
+{{- end }}
 {{- end }}
 {{- end -}}
 

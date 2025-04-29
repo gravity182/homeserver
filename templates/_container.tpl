@@ -83,19 +83,20 @@ Usage:
 Volume mounts for containers.
 Usage:
 {{ include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "homeserver.common.container.volumeMounts" (dict "context" $) }}
 */}}
 {{- define "homeserver.common.container.volumeMounts" -}}
-{{- if (include "homeserver.common.utils.getSecurityContext" (dict "service" .service "kind" .kind) | fromYaml).strict }}
 - name: empty-dir
   mountPath: /tmp
   subPath: tmp-dir
 - name: empty-dir
   mountPath: /log
   subPath: log-dir
-{{- end }}
+{{- if and (hasKey . "service") (hasKey . "kind") -}}
 {{- $extraVolumeMounts := include "homeserver.common.utils.getExtraVolumeMounts" (dict "service" .service "kind" .kind) -}}
 {{- if $extraVolumeMounts }}
 {{ include "homeserver.common.tplvalues.render" (dict "value" $extraVolumeMounts "context" .context) }}
+{{- end }}
 {{- end }}
 {{- end -}}
 

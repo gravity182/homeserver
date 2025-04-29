@@ -406,6 +406,74 @@
         "secretKey"
       ]
     },
+    "housekeeping": {
+      "type": "object",
+      "description": "Housekeeping configuration",
+      "additionalProperties": false,
+      "properties": {
+        "mediaCleanup": {
+          "type": "object",
+          "description": "Media cleanup job configuration\nThis job will remove empty directories that possibly only contain metadata files",
+          "required": [ "enabled", "scheduleCron", "dryRun", "paths", "metadataFileGlobs" ],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable the media cleanup cronjob",
+              "default": false
+            },
+            "scheduleCron": {
+              "type": "string",
+              "description": "How often to run the cleanup job (cron)",
+              "default": "0 */1 * * *"
+            },
+            "dryRun": {
+              "type": "boolean",
+              "description": "Whether to run in dry-run mode (only report which folders would be deleted)",
+              "default": false
+            },
+            "paths": {
+              "type": "array",
+              "description": "List of media directories to watch",
+              "items": {
+                "type": "object",
+                "required": [ "path" ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Path to the media directory"
+                  },
+                  "maxDepth": {
+                    "type": "integer",
+                    "description": "Maximum directory depth level to scan",
+                    "default": 1
+                  }
+                }
+              }
+            },
+            "metadataFileGlobs": {
+              "type": "array",
+              "description": "List of file globs considered as metadata files",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "*.nfo",
+                "*.jpg",
+                "*.jpeg",
+                "*.png",
+                "*.srt",
+                "*.sub",
+                "*.idx",
+                "theme.mp3",
+                ".DS_Store",
+                "Thumbs.db"
+              ]
+            }
+          }
+        }
+      },
+      "required": [ "mediaCleanup" ]
+    },
     "enableServiceLinks": {
       "type": "boolean",
       "description": "Whether information about services should be injected into pod's environment variables",
@@ -687,6 +755,7 @@
     "startupProbe",
     "resources",
     "volumePermissions",
+    "housekeeping",
     "services"
   ],
   "$defs": {

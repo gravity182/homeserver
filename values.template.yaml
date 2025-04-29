@@ -187,6 +187,55 @@ resources:
 ##
 volumePermissions:
   enabled: false
+## Housekeeping configuration
+##
+housekeeping:
+  ## Media cleanup job configuration
+  ## This job will remove empty directories that possibly only contain metadata files
+  ##
+  mediaCleanup:
+    enabled: false
+    # How often to run the cleanup job (cron)
+    # Every hour by default
+    scheduleCron: "0 */1 * * *"
+    # Whether to run in dry-run mode (only report which folders would be deleted)
+    dryRun: false
+    # List of media directories to watch
+    paths:
+      # Example:
+      # - path: /data/library/movies    # Required: path to the media directory
+      #   maxDepth: 2                   # Optional: maximum directory depth level to scan (default: 1)
+      #
+      # Explanation of maxDepth:
+      # - maxDepth = 0: Scans only the root directory itself.
+      #                 Good for uncategorized media: root dir (0) -> media files without subdirs.
+      #                 For instance, /data/library/videos/*.mp4
+      # - maxDepth = 1: Scans immediate subdirectories.
+      #                 Good for Movies and TV shows: root dir (0) -> movie dir (1).
+      #                 For instance, /data/library/movies/Avatar/*.mkv
+      # - maxDepth = 2: Scans one level deeper.
+      #                 Good for Music: root dir (0) -> author dir (1) -> album dir (2).
+      #                 For instance, /data/library/music/Eminem/Relapse/*.m4a
+      #
+      - path: /data/library/movies
+        maxDepth: 1
+      - path: /data/library/tv
+        maxDepth: 1
+      - path: /data/library/music
+        maxDepth: 2
+    # List of file globs considered as metadata files
+    # See https://docs.python.org/3/library/fnmatch.html for more information about the glob patterns
+    metadataFileGlobs:
+      - "*.nfo"
+      - "*.jpg"
+      - "*.jpeg"
+      - "*.png"
+      - "*.srt"
+      - "*.sub"
+      - "*.idx"
+      - "theme.mp3"
+      - ".DS_Store"
+      - "Thumbs.db"
 ## Services configuration
 ##
 services:
