@@ -125,8 +125,8 @@ Return the path to the CA cert file.
 {{- define "redis.tlsCACert" -}}
 {{- if (include "redis.createTlsSecret" . ) -}}
     {{- printf "/opt/bitnami/redis/certs/%s" "ca.crt" -}}
-{{- else -}}
-    {{- required "Certificate CA filename is required when TLS in enabled" .Values.tls.certCAFilename | printf "/opt/bitnami/redis/certs/%s" -}}
+{{- else }}
+    {{- ternary "" (printf "/opt/bitnami/redis/certs/%s" .Values.tls.certCAFilename) (empty .Values.tls.certCAFilename) }}
 {{- end -}}
 {{- end -}}
 
@@ -227,7 +227,7 @@ Return Redis&reg; password
 */}}
 {{- define "redis.password" -}}
 {{- if or .Values.auth.enabled .Values.global.redis.password -}}
-    {{- include "common.secrets.passwords.manage" (dict "secret" (include "redis.secretName" .) "key" (include "redis.secretPasswordKey" .) "providedValues" (list "global.redis.password" "auth.password") "length" 10 "skipB64enc" true "skipQuote" true "context" $) -}}
+    {{- include "common.secrets.passwords.manage" (dict "secret" (include "redis.secretName" .) "key" (include "redis.secretPasswordKey" .) "providedValues" (list "global.redis.password" "auth.password") "length" 10 "skipB64enc" true "skipQuote" true "honorProvidedValues" true "context" $) -}}
 {{- end }}
 {{- end }}
 

@@ -44,18 +44,22 @@ spec:
         {{- include "common.tplvalues.render" ( dict "value" .Values.metrics.podLabels "context" $ ) | nindent 8 }}
         {{- end }}
       annotations:
+      {{- if .Values.configmapChecksumAnnotations }}
         {{- if (include "redis.createConfigmap" .) }}
         checksum/configmap: {{ pick ( include (print $.Template.BasePath "/configmap.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
         {{- end }}
         checksum/health: {{ pick ( include (print $.Template.BasePath "/health-configmap.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
         checksum/scripts: {{ pick ( include (print $.Template.BasePath "/scripts-configmap.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
+      {{- end }}
+      {{- if .Values.secretChecksumAnnotations }}
         checksum/secret: {{ pick ( include (print $.Template.BasePath "/secret.yaml") . | fromYaml ) "data" | toYaml | sha256sum }}
-        {{- if .Values.replica.podAnnotations }}
+      {{- end }}
+      {{- if .Values.replica.podAnnotations }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.replica.podAnnotations "context" $ ) | nindent 8 }}
-        {{- end }}
-        {{- if and .Values.metrics.enabled .Values.metrics.podAnnotations }}
+      {{- end }}
+      {{- if and .Values.metrics.enabled .Values.metrics.podAnnotations }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.metrics.podAnnotations "context" $ ) | nindent 8 }}
-        {{- end }}
+      {{- end }}
     spec:
       {{- if .Values.sentinel.extraPodSpec }}
       {{- include "common.tplvalues.render" (dict "value" .Values.sentinel.extraPodSpec "context" $) | nindent 6 }}
@@ -128,19 +132,30 @@ spec:
           {{- else if .Values.replica.command }}
           command: {{- include "common.tplvalues.render" (dict "value" .Values.replica.command "context" $) | nindent 12 }}
           {{- else }}
-          command:
-            - /bin/bash
+          command: ['/bin/bash', '-c']
           {{- end }}
           {{- if .Values.diagnosticMode.enabled }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.args "context" $) | nindent 12 }}
           {{- else if .Values.replica.args }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.replica.args "context" $) | nindent 12 }}
+          {{- else if .Values.sentinel.externalAccess.enabled }}
+          args:
+            - |
+              pod_index=($(echo "$POD_NAME" | tr "-" "\n"))
+              pod_index="${pod_index[-1]}"
+              ips=($(echo "{{ .Values.sentinel.externalAccess.service.loadBalancerIP }}" | cut -d [ -f2 | cut -d ] -f 1))
+              export REDIS_CLUSTER_ANNOUNCE_IP="${ips[$pod_index]}"
+              export REDIS_NODES="${ips[@]}"
+              /opt/bitnami/scripts/start-scripts/start-node.sh
           {{- else }}
           args:
-            - -c
             - /opt/bitnami/scripts/start-scripts/start-node.sh
           {{- end }}
           env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: BITNAMI_DEBUG
               value: {{ ternary "true" "false" (or .Values.image.debug .Values.diagnosticMode.enabled) | quote }}
             - name: REDIS_MASTER_PORT_NUMBER
@@ -177,8 +192,10 @@ spec:
               value: {{ template "redis.tlsCert" . }}
             - name:  REDIS_TLS_KEY_FILE
               value: {{ template "redis.tlsCertKey" . }}
+            {{- if not (empty (include "redis.tlsCACert" .)) }}
             - name:  REDIS_TLS_CA_FILE
               value: {{ template "redis.tlsCACert" . }}
+            {{- end }}
             {{- if .Values.tls.dhParamsFilename }}
             - name:  REDIS_TLS_DH_PARAMS_FILE
               value: {{ template "redis.tlsDHParams" . }}
@@ -198,8 +215,10 @@ spec:
               value: {{ template "redis.tlsCert" . }}
             - name:  REDIS_SENTINEL_TLS_KEY_FILE
               value: {{ template "redis.tlsCertKey" . }}
+            {{- if not (empty (include "redis.tlsCACert" .)) }}
             - name:  REDIS_SENTINEL_TLS_CA_FILE
               value: {{ template "redis.tlsCACert" . }}
+            {{- end }}
             {{- if .Values.tls.dhParamsFilename }}
             - name:  REDIS_SENTINEL_TLS_DH_PARAMS_FILE
               value: {{ template "redis.tlsDHParams" . }}
@@ -287,7 +306,7 @@ spec:
               mountPath: /health
             - name: sentinel-data
               mountPath: /opt/bitnami/redis-sentinel/etc
-            {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
             - name: redis-password
               mountPath: /opt/bitnami/redis/secrets/
             {{- end }}
@@ -338,19 +357,30 @@ spec:
           {{- else if .Values.sentinel.command }}
           command: {{- include "common.tplvalues.render" (dict "value" .Values.sentinel.command "context" $) | nindent 12 }}
           {{- else }}
-          command:
-            - /bin/bash
+          command: ['/bin/bash', '-c']
           {{- end }}
           {{- if .Values.diagnosticMode.enabled }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.args "context" $) | nindent 12 }}
           {{- else if .Values.sentinel.args }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.sentinel.args "context" $) | nindent 12 }}
+          {{- else if .Values.sentinel.externalAccess.enabled }}
+          args:
+            - |
+              pod_index=($(echo "$POD_NAME" | tr "-" "\n"))
+              pod_index="${pod_index[-1]}"
+              ips=($(echo "{{ .Values.sentinel.externalAccess.service.loadBalancerIP }}" | cut -d [ -f2 | cut -d ] -f 1))
+              export REDIS_CLUSTER_ANNOUNCE_IP="${ips[$pod_index]}"
+              export REDIS_NODES="${ips[@]}"
+              /opt/bitnami/scripts/start-scripts/start-sentinel.sh
           {{- else }}
           args:
-            - -c
             - /opt/bitnami/scripts/start-scripts/start-sentinel.sh
           {{- end }}
           env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: BITNAMI_DEBUG
               value: {{ ternary "true" "false" (or .Values.sentinel.image.debug .Values.diagnosticMode.enabled) | quote }}
             {{- if .Values.auth.enabled }}
@@ -379,8 +409,10 @@ spec:
               value: {{ template "redis.tlsCert" . }}
             - name:  REDIS_SENTINEL_TLS_KEY_FILE
               value: {{ template "redis.tlsCertKey" . }}
+            {{- if not (empty (include "redis.tlsCACert" .)) }}
             - name:  REDIS_SENTINEL_TLS_CA_FILE
               value: {{ template "redis.tlsCACert" . }}
+            {{- end }}
             {{- if .Values.tls.dhParamsFilename }}
             - name:  REDIS_SENTINEL_TLS_DH_PARAMS_FILE
               value: {{ template "redis.tlsDHParams" . }}
@@ -475,7 +507,7 @@ spec:
             {{- end }}
             - name: sentinel-data
               mountPath: /opt/bitnami/redis-sentinel/etc
-            {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
             - name: redis-password
               mountPath: /opt/bitnami/redis/secrets/
             {{- end }}
@@ -510,9 +542,9 @@ spec:
             - /bin/bash
             - -c
             - |
-              if [[ -f '/secrets/redis-password' ]]; then
-                  export REDIS_PASSWORD=$(cat /secrets/redis-password)
-              fi
+              {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
+              export REDIS_PASSWORD="$(< $REDIS_PASSWORD_FILE)"
+              {{- end }}
               redis_exporter{{- range $key, $value := .Values.metrics.extraArgs }} --{{ $key }}={{ $value }}{{- end }}
           {{- end }}
           {{- if .Values.diagnosticMode.enabled }}
@@ -526,7 +558,10 @@ spec:
             {{- if .Values.auth.enabled }}
             - name: REDIS_USER
               value: default
-            {{- if (not .Values.auth.usePasswordFiles) }}
+            {{- if .Values.auth.usePasswordFiles }}
+            - name: REDIS_PASSWORD_FILE
+              value: "/secrets/redis-password"
+            {{- else }}
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -543,8 +578,10 @@ spec:
             - name: REDIS_EXPORTER_TLS_CLIENT_CERT_FILE
               value: {{ template "redis.tlsCert" . }}
             {{- end }}
+            {{- if not (empty (include "redis.tlsCACert" .)) }}
             - name: REDIS_EXPORTER_TLS_CA_CERT_FILE
               value: {{ template "redis.tlsCACert" . }}
+            {{- end }}
             {{- end }}
             {{- if .Values.metrics.extraEnvVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.metrics.extraEnvVars "context" $) | nindent 12 }}
@@ -585,7 +622,7 @@ spec:
             - name: empty-dir
               mountPath: /tmp
               subPath: tmp-dir
-            {{- if .Values.auth.usePasswordFiles }}
+            {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
             - name: redis-password
               mountPath: /secrets/
             {{- end }}
@@ -603,6 +640,12 @@ spec:
           image: {{ template "redis.kubectl.image" . }}
           imagePullPolicy: {{ .Values.kubectl.image.pullPolicy | quote }}
           command: {{- toYaml .Values.kubectl.command | nindent 12 }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - touch
+                  - /etc/shared/terminate
           {{- if .Values.kubectl.containerSecurityContext.enabled }}
           securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.kubectl.containerSecurityContext "context" $) | nindent 12 }}
           {{- end }}
@@ -705,7 +748,7 @@ spec:
             name: {{ printf "%s-kubectl-scripts" (include "common.names.fullname" .) }}
             defaultMode: 0755
         {{- end }}
-        {{- if .Values.auth.usePasswordFiles }}
+        {{- if and .Values.auth.enabled .Values.auth.usePasswordFiles }}
         - name: redis-password
           {{ if .Values.auth.usePasswordFileFromSecret }}
           secret:

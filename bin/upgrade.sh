@@ -41,6 +41,14 @@ if [ $config_updated -eq 1 ]; then
   echo "NAMESPACE=\"$NAMESPACE\"" >> "$CONFIG_FILE"
 fi
 
+# Upgrade the cert-manager's CRDs
+# https://cert-manager.io/docs/installation/upgrade/#crds-managed-separately
+helm template "$RELEASE_NAME" . \
+  -f values.yaml \
+  --set "cert-manager.crds.enabled=true" \
+  --show-only charts/cert-manager/templates/crds.yaml \
+  | kubectl apply -f -
+
 helm upgrade "$RELEASE_NAME" . \
   -f values.yaml \
   --namespace "$NAMESPACE"

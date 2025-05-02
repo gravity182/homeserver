@@ -227,7 +227,7 @@
       "type": "string"
     },
     "helm-values.affinity": {
-      "default": { },
+      "default": {},
       "description": "A Kubernetes Affinity, if required. For more information, see [Affinity v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#affinity-v1-core).\n\nFor example:\naffinity:\n  nodeAffinity:\n   requiredDuringSchedulingIgnoredDuringExecution:\n     nodeSelectorTerms:\n     - matchExpressions:\n       - key: foo.bar.com/role\n         operator: In\n         values:\n         - master",
       "type": "object"
     },
@@ -237,7 +237,7 @@
         "clusterissuers.cert-manager.io/*"
       ],
       "description": "List of signer names that cert-manager will approve by default. CertificateRequests referencing these signer names will be auto-approved by cert-manager. Defaults to just approving the cert-manager.io Issuer and ClusterIssuer issuers. When set to an empty array, ALL issuers will be auto-approved by cert-manager. To disable the auto-approval, because eg. you are using approver-policy, you can enable 'disableAutoApproval'.\nref: https://cert-manager.io/docs/concepts/certificaterequest/#approval",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.automountServiceAccountToken": {
@@ -329,7 +329,7 @@
       "type": "object"
     },
     "helm-values.cainjector.affinity": {
-      "default": { },
+      "default": {},
       "description": "A Kubernetes Affinity, if required. For more information, see [Affinity v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#affinity-v1-core).\n\nFor example:\naffinity:\n  nodeAffinity:\n   requiredDuringSchedulingIgnoredDuringExecution:\n     nodeSelectorTerms:\n     - matchExpressions:\n       - key: foo.bar.com/role\n         operator: In\n         values:\n         - master",
       "type": "object"
     },
@@ -338,7 +338,7 @@
       "type": "boolean"
     },
     "helm-values.cainjector.config": {
-      "default": { },
+      "default": {},
       "description": "This is used to configure options for the cainjector pod. It allows setting options that are usually provided via flags.\n\nIf `apiVersion` and `kind` are unspecified they default to the current latest version (currently `cainjector.config.cert-manager.io/v1alpha1`). You can pin the version by specifying the `apiVersion` yourself.\n\nFor example:\napiVersion: cainjector.config.cert-manager.io/v1alpha1\nkind: CAInjectorConfiguration\nlogging:\n verbosity: 2\n format: text\nleaderElectionConfig:\n namespace: kube-system\n# Configure the metrics server for TLS\n# See https://cert-manager.io/docs/devops-tips/prometheus-metrics/#tls\nmetricsTLSConfig:\n  dynamic:\n    secretNamespace: \"cert-manager\"\n    secretName: \"cert-manager-metrics-ca\"\n    dnsNames:\n    - cert-manager-metrics",
       "type": "object"
     },
@@ -370,15 +370,15 @@
       "type": "boolean"
     },
     "helm-values.cainjector.extraArgs": {
-      "default": [ ],
+      "default": [],
       "description": "Additional command line flags to pass to cert-manager cainjector binary. To see all available flags run `docker run quay.io/jetstack/cert-manager-cainjector:<version> --help`.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.cainjector.extraEnv": {
-      "default": [ ],
+      "default": [],
       "description": "Additional environment variables to pass to cert-manager cainjector binary.\nFor example:\nextraEnv:\n- name: SOME_VAR\n  value: 'some value'",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.cainjector.featureGates": {
@@ -467,7 +467,7 @@
       "description": "`minAvailable` configures the minimum available pods for disruptions. It can either be set to\nan integer (e.g. 1) or a percentage value (e.g. 25%).\nCannot be used if `maxUnavailable` is set."
     },
     "helm-values.cainjector.podLabels": {
-      "default": { },
+      "default": {},
       "description": "Optional additional labels to add to the CA Injector Pods.",
       "type": "object"
     },
@@ -477,7 +477,7 @@
       "type": "number"
     },
     "helm-values.cainjector.resources": {
-      "default": { },
+      "default": {},
       "description": "Resources to provide to the cert-manager cainjector pod.\n\nFor example:\nrequests:\n  cpu: 10m\n  memory: 32Mi\nFor more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).",
       "type": "object"
     },
@@ -539,37 +539,37 @@
       "type": "object"
     },
     "helm-values.cainjector.serviceLabels": {
-      "default": { },
+      "default": {},
       "description": "Optional additional labels to add to the CA Injector metrics Service.",
       "type": "object"
     },
     "helm-values.cainjector.strategy": {
-      "default": { },
+      "default": {},
       "description": "Deployment update strategy for the cert-manager cainjector deployment. For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).\n\nFor example:\nstrategy:\n  type: RollingUpdate\n  rollingUpdate:\n    maxSurge: 0\n    maxUnavailable: 1",
       "type": "object"
     },
     "helm-values.cainjector.tolerations": {
-      "default": [ ],
+      "default": [],
       "description": "A list of Kubernetes Tolerations, if required. For more information, see [Toleration v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core).\n\nFor example:\ntolerations:\n- key: foo.bar.com/role\n  operator: Equal\n  value: master\n  effect: NoSchedule",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.cainjector.topologySpreadConstraints": {
-      "default": [ ],
+      "default": [],
       "description": "A list of Kubernetes TopologySpreadConstraints, if required. For more information, see [Topology spread constraint v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#topologyspreadconstraint-v1-core).\n\nFor example:\ntopologySpreadConstraints:\n- maxSkew: 2\n  topologyKey: topology.kubernetes.io/zone\n  whenUnsatisfiable: ScheduleAnyway\n  labelSelector:\n    matchLabels:\n      app.kubernetes.io/instance: cert-manager\n      app.kubernetes.io/component: controller",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.cainjector.volumeMounts": {
-      "default": [ ],
+      "default": [],
       "description": "Additional volume mounts to add to the cert-manager controller container.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.cainjector.volumes": {
-      "default": [ ],
+      "default": [],
       "description": "Additional volumes to add to the cert-manager controller pod.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.clusterResourceNamespace": {
@@ -578,7 +578,7 @@
       "type": "string"
     },
     "helm-values.config": {
-      "default": { },
+      "default": {},
       "description": "This property is used to configure options for the controller pod. This allows setting options that would usually be provided using flags.\n\nIf `apiVersion` and `kind` are unspecified they default to the current latest version (currently `controller.config.cert-manager.io/v1alpha1`). You can pin the version by specifying the `apiVersion` yourself.\n\nFor example:\nconfig:\n  apiVersion: controller.config.cert-manager.io/v1alpha1\n  kind: ControllerConfiguration\n  logging:\n    verbosity: 2\n    format: text\n  leaderElectionConfig:\n    namespace: kube-system\n  kubernetesAPIQPS: 9000\n  kubernetesAPIBurst: 9000\n  numberOfConcurrentWorkers: 200\n  enableGatewayAPI: true\n  # Feature gates as of v1.17.0. Listed with their default values.\n  # See https://cert-manager.io/docs/cli/controller/\n  featureGates:\n    AdditionalCertificateOutputFormats: true # BETA - default=true\n    AllAlpha: false # ALPHA - default=false\n    AllBeta: false # BETA - default=false\n    ExperimentalCertificateSigningRequestControllers: false # ALPHA - default=false\n    ExperimentalGatewayAPISupport: true # BETA - default=true\n    LiteralCertificateSubject: true # BETA - default=true\n    NameConstraints: true # BETA - default=true\n    OtherNames: false # ALPHA - default=false\n    SecretsFilteredCaching: true # BETA - default=true\n    ServerSideApply: false # ALPHA - default=false\n    StableCertificateRequestName: true # BETA - default=true\n    UseCertificateRequestBasicConstraints: false # ALPHA - default=false\n    UseDomainQualifiedFinalizer: true # BETA - default=false\n    ValidateCAA: false # ALPHA - default=false\n  # Configure the metrics server for TLS\n  # See https://cert-manager.io/docs/devops-tips/prometheus-metrics/#tls\n  metricsTLSConfig:\n    dynamic:\n      secretNamespace: \"cert-manager\"\n      secretName: \"cert-manager-metrics-ca\"\n      dnsNames:\n      - cert-manager-metrics",
       "type": "object"
     },
@@ -657,21 +657,21 @@
       "type": "boolean"
     },
     "helm-values.extraArgs": {
-      "default": [ ],
+      "default": [],
       "description": "Additional command line flags to pass to cert-manager controller binary. To see all available flags run `docker run quay.io/jetstack/cert-manager-controller:<version> --help`.\n\nUse this flag to enable or disable arbitrary controllers. For example, to disable the CertificateRequests approver.\n\nFor example:\nextraArgs:\n  - --controllers=*,-certificaterequests-approver",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.extraEnv": {
-      "default": [ ],
+      "default": [],
       "description": "Additional environment variables to pass to cert-manager controller binary.\nFor example:\nextraEnv:\n- name: SOME_VAR\n  value: 'some value'",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.extraObjects": {
-      "default": [ ],
+      "default": [],
       "description": "Create dynamic manifests via values.\n\nFor example:\nextraObjects:\n  - |\n    apiVersion: v1\n    kind: ConfigMap\n    metadata:\n      name: '{{ template \"cert-manager.fullname\" . }}-extra-configmap'",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.featureGates": {
@@ -714,14 +714,14 @@
       "type": "object"
     },
     "helm-values.global.commonLabels": {
-      "default": { },
+      "default": {},
       "description": "Labels to apply to all resources.\nPlease note that this does not add labels to the resources created dynamically by the controllers. For these resources, you have to add the labels in the template in the cert-manager custom resource: For example, podTemplate/ ingressTemplate in ACMEChallengeSolverHTTP01Ingress. For more information, see the [cert-manager documentation](https://cert-manager.io/docs/reference/api-docs/#acme.cert-manager.io/v1.ACMEChallengeSolverHTTP01Ingress).\nFor example, secretTemplate in CertificateSpec\nFor more information, see the [cert-manager documentation](https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec).",
       "type": "object"
     },
     "helm-values.global.imagePullSecrets": {
-      "default": [ ],
+      "default": [],
       "description": "Reference to one or more secrets to be used when pulling images. For more information, see [Pull an Image from a Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).\n\nFor example:\nimagePullSecrets:\n  - name: \"image-pull-secret\"",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.global.leaderElection": {
@@ -815,9 +815,9 @@
       "type": "number"
     },
     "helm-values.hostAliases": {
-      "default": [ ],
+      "default": [],
       "description": "Optional hostAliases for cert-manager-controller pods. May be useful when performing ACME DNS-01 self checks.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.http_proxy": {
@@ -979,7 +979,7 @@
       "type": "string"
     },
     "helm-values.podLabels": {
-      "default": { },
+      "default": {},
       "description": "Optional additional labels to add to the controller Pods.",
       "type": "object"
     },
@@ -1040,7 +1040,7 @@
       "type": "object"
     },
     "helm-values.prometheus.podmonitor.annotations": {
-      "default": { },
+      "default": {},
       "description": "Additional annotations to add to the PodMonitor.",
       "type": "object"
     },
@@ -1050,7 +1050,7 @@
       "type": "boolean"
     },
     "helm-values.prometheus.podmonitor.endpointAdditionalProperties": {
-      "default": { },
+      "default": {},
       "description": "EndpointAdditionalProperties allows setting additional properties on the endpoint such as relabelings, metricRelabelings etc.\n\nFor example:\nendpointAdditionalProperties:\n relabelings:\n - action: replace\n   sourceLabels:\n   - __meta_kubernetes_pod_node_name\n   targetLabel: instance\n # Configure the PodMonitor for TLS connections\n # See https://cert-manager.io/docs/devops-tips/prometheus-metrics/#tls\n scheme: https\n tlsConfig:\n   serverName: cert-manager-metrics\n   ca:\n     secret:\n       name: cert-manager-metrics-ca\n       key: \"tls.crt\"",
       "type": "object"
     },
@@ -1065,7 +1065,7 @@
       "type": "string"
     },
     "helm-values.prometheus.podmonitor.labels": {
-      "default": { },
+      "default": {},
       "description": "Additional labels to add to the PodMonitor.",
       "type": "object"
     },
@@ -1128,7 +1128,7 @@
       "type": "object"
     },
     "helm-values.prometheus.servicemonitor.annotations": {
-      "default": { },
+      "default": {},
       "description": "Additional annotations to add to the ServiceMonitor.",
       "type": "object"
     },
@@ -1138,7 +1138,7 @@
       "type": "boolean"
     },
     "helm-values.prometheus.servicemonitor.endpointAdditionalProperties": {
-      "default": { },
+      "default": {},
       "description": "EndpointAdditionalProperties allows setting additional properties on the endpoint such as relabelings, metricRelabelings etc.\n\nFor example:\nendpointAdditionalProperties:\n relabelings:\n - action: replace\n   sourceLabels:\n   - __meta_kubernetes_pod_node_name\n   targetLabel: instance",
       "type": "object"
     },
@@ -1153,7 +1153,7 @@
       "type": "string"
     },
     "helm-values.prometheus.servicemonitor.labels": {
-      "default": { },
+      "default": {},
       "description": "Additional labels to add to the ServiceMonitor.",
       "type": "object"
     },
@@ -1187,7 +1187,7 @@
       "type": "number"
     },
     "helm-values.resources": {
-      "default": { },
+      "default": {},
       "description": "Resources to provide to the cert-manager controller pod.\n\nFor example:\nrequests:\n  cpu: 10m\n  memory: 32Mi\nFor more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).",
       "type": "object"
     },
@@ -1250,7 +1250,7 @@
     },
     "helm-values.serviceIPFamilies": {
       "description": "Optionally set the IP families for the controller Service that should be supported, in the order in which they should be applied to ClusterIP. Can be IPv4 and/or IPv6.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.serviceIPFamilyPolicy": {
@@ -1331,7 +1331,7 @@
       "type": "object"
     },
     "helm-values.startupapicheck.affinity": {
-      "default": { },
+      "default": {},
       "description": "A Kubernetes Affinity, if required. For more information, see [Affinity v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#affinity-v1-core).\nFor example:\naffinity:\n  nodeAffinity:\n   requiredDuringSchedulingIgnoredDuringExecution:\n     nodeSelectorTerms:\n     - matchExpressions:\n       - key: foo.bar.com/role\n         operator: In\n         values:\n         - master",
       "type": "object"
     },
@@ -1372,13 +1372,13 @@
         "-v"
       ],
       "description": "Additional command line flags to pass to startupapicheck binary. To see all available flags run `docker run quay.io/jetstack/cert-manager-startupapicheck:<version> --help`.\n\nVerbose logging is enabled by default so that if startupapicheck fails, you can know what exactly caused the failure. Verbose logs include details of the webhook URL, IP address and TCP connect errors for example.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.startupapicheck.extraEnv": {
-      "default": [ ],
+      "default": [],
       "description": "Additional environment variables to pass to cert-manager startupapicheck binary.\nFor example:\nextraEnv:\n- name: SOME_VAR\n  value: 'some value'",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.startupapicheck.image": {
@@ -1445,7 +1445,7 @@
       "type": "object"
     },
     "helm-values.startupapicheck.podLabels": {
-      "default": { },
+      "default": {},
       "description": "Optional additional labels to add to the startupapicheck Pods.",
       "type": "object"
     },
@@ -1468,7 +1468,7 @@
       "type": "object"
     },
     "helm-values.startupapicheck.resources": {
-      "default": { },
+      "default": {},
       "description": "Resources to provide to the cert-manager controller pod.\n\nFor example:\nrequests:\n  cpu: 10m\n  memory: 32Mi\nFor more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).",
       "type": "object"
     },
@@ -1536,50 +1536,50 @@
       "type": "string"
     },
     "helm-values.startupapicheck.tolerations": {
-      "default": [ ],
+      "default": [],
       "description": "A list of Kubernetes Tolerations, if required. For more information, see [Toleration v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core).\n\nFor example:\ntolerations:\n- key: foo.bar.com/role\n  operator: Equal\n  value: master\n  effect: NoSchedule",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.startupapicheck.volumeMounts": {
-      "default": [ ],
+      "default": [],
       "description": "Additional volume mounts to add to the cert-manager controller container.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.startupapicheck.volumes": {
-      "default": [ ],
+      "default": [],
       "description": "Additional volumes to add to the cert-manager controller pod.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.strategy": {
-      "default": { },
+      "default": {},
       "description": "Deployment update strategy for the cert-manager controller deployment. For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).\n\nFor example:\nstrategy:\n  type: RollingUpdate\n  rollingUpdate:\n    maxSurge: 0\n    maxUnavailable: 1",
       "type": "object"
     },
     "helm-values.tolerations": {
-      "default": [ ],
+      "default": [],
       "description": "A list of Kubernetes Tolerations, if required. For more information, see [Toleration v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core).\n\nFor example:\ntolerations:\n- key: foo.bar.com/role\n  operator: Equal\n  value: master\n  effect: NoSchedule",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.topologySpreadConstraints": {
-      "default": [ ],
+      "default": [],
       "description": "A list of Kubernetes TopologySpreadConstraints, if required. For more information, see [Topology spread constraint v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#topologyspreadconstraint-v1-core\n\nFor example:\ntopologySpreadConstraints:\n- maxSkew: 2\n  topologyKey: topology.kubernetes.io/zone\n  whenUnsatisfiable: ScheduleAnyway\n  labelSelector:\n    matchLabels:\n      app.kubernetes.io/instance: cert-manager\n      app.kubernetes.io/component: controller",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.volumeMounts": {
-      "default": [ ],
+      "default": [],
       "description": "Additional volume mounts to add to the cert-manager controller container.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.volumes": {
-      "default": [ ],
+      "default": [],
       "description": "Additional volumes to add to the cert-manager controller pod.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.webhook": {
@@ -1709,7 +1709,7 @@
       "type": "object"
     },
     "helm-values.webhook.affinity": {
-      "default": { },
+      "default": {},
       "description": "A Kubernetes Affinity, if required. For more information, see [Affinity v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#affinity-v1-core).\n\nFor example:\naffinity:\n  nodeAffinity:\n   requiredDuringSchedulingIgnoredDuringExecution:\n     nodeSelectorTerms:\n     - matchExpressions:\n       - key: foo.bar.com/role\n         operator: In\n         values:\n         - master",
       "type": "object"
     },
@@ -1718,7 +1718,7 @@
       "type": "boolean"
     },
     "helm-values.webhook.config": {
-      "default": { },
+      "default": {},
       "description": "This is used to configure options for the webhook pod. This allows setting options that would usually be provided using flags.\n\nIf `apiVersion` and `kind` are unspecified they default to the current latest version (currently `webhook.config.cert-manager.io/v1alpha1`). You can pin the version by specifying the `apiVersion` yourself.\n\nFor example:\napiVersion: webhook.config.cert-manager.io/v1alpha1\nkind: WebhookConfiguration\n# The port that the webhook listens on for requests.\n# In GKE private clusters, by default Kubernetes apiservers are allowed to\n# talk to the cluster nodes only on 443 and 10250. Configuring\n# securePort: 10250 therefore will work out-of-the-box without needing to add firewall\n# rules or requiring NET_BIND_SERVICE capabilities to bind port numbers < 1000.\n# This should be uncommented and set as a default by the chart once\n# the apiVersion of WebhookConfiguration graduates beyond v1alpha1.\nsecurePort: 10250\n# Configure the metrics server for TLS\n# See https://cert-manager.io/docs/devops-tips/prometheus-metrics/#tls\nmetricsTLSConfig:\n  dynamic:\n    secretNamespace: \"cert-manager\"\n    secretName: \"cert-manager-metrics-ca\"\n    dnsNames:\n    - cert-manager-metrics",
       "type": "object"
     },
@@ -1745,15 +1745,15 @@
       "type": "boolean"
     },
     "helm-values.webhook.extraArgs": {
-      "default": [ ],
+      "default": [],
       "description": "Additional command line flags to pass to cert-manager webhook binary. To see all available flags run `docker run quay.io/jetstack/cert-manager-webhook:<version> --help`.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.webhook.extraEnv": {
-      "default": [ ],
+      "default": [],
       "description": "Additional environment variables to pass to cert-manager webhook binary.\nFor example:\nextraEnv:\n- name: SOME_VAR\n  value: 'some value'",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.webhook.featureGates": {
@@ -1834,7 +1834,7 @@
       "type": "object"
     },
     "helm-values.webhook.mutatingWebhookConfiguration.namespaceSelector": {
-      "default": { },
+      "default": {},
       "description": "Configure spec.namespaceSelector for mutating webhooks.",
       "type": "object"
     },
@@ -1892,7 +1892,7 @@
         }
       ],
       "description": "Egress rule for the webhook network policy. By default, it allows all outbound traffic to ports 80 and 443, as well as DNS ports.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.webhook.networkPolicy.enabled": {
@@ -1913,7 +1913,7 @@
         }
       ],
       "description": "Ingress rule for the webhook network policy. By default, it allows all inbound traffic.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.webhook.nodeSelector": {
@@ -1954,7 +1954,7 @@
       "description": "This property configures the minimum available pods for disruptions. Can either be set to an integer (e.g. 1) or a percentage value (e.g. 25%).\nIt cannot be used if `maxUnavailable` is set."
     },
     "helm-values.webhook.podLabels": {
-      "default": { },
+      "default": {},
       "description": "Optional additional labels to add to the Webhook Pods.",
       "type": "object"
     },
@@ -1975,7 +1975,7 @@
       "type": "number"
     },
     "helm-values.webhook.resources": {
-      "default": { },
+      "default": {},
       "description": "Resources to provide to the cert-manager webhook pod.\n\nFor example:\nrequests:\n  cpu: 10m\n  memory: 32Mi\nFor more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).",
       "type": "object"
     },
@@ -2042,9 +2042,9 @@
       "type": "object"
     },
     "helm-values.webhook.serviceIPFamilies": {
-      "default": [ ],
+      "default": [],
       "description": "Optionally set the IP families for the controller Service that should be supported, in the order in which they should be applied to ClusterIP. Can be IPv4 and/or IPv6.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.webhook.serviceIPFamilyPolicy": {
@@ -2053,7 +2053,7 @@
       "type": "string"
     },
     "helm-values.webhook.serviceLabels": {
-      "default": { },
+      "default": {},
       "description": "Optional additional labels to add to the Webhook Service.",
       "type": "object"
     },
@@ -2063,7 +2063,7 @@
       "type": "string"
     },
     "helm-values.webhook.strategy": {
-      "default": { },
+      "default": {},
       "description": "The update strategy for the cert-manager webhook deployment. For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)\n\nFor example:\nstrategy:\n  type: RollingUpdate\n  rollingUpdate:\n    maxSurge: 0\n    maxUnavailable: 1",
       "type": "object"
     },
@@ -2073,19 +2073,19 @@
       "type": "number"
     },
     "helm-values.webhook.tolerations": {
-      "default": [ ],
+      "default": [],
       "description": "A list of Kubernetes Tolerations, if required. For more information, see [Toleration v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core).\n\nFor example:\ntolerations:\n- key: foo.bar.com/role\n  operator: Equal\n  value: master\n  effect: NoSchedule",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.webhook.topologySpreadConstraints": {
-      "default": [ ],
+      "default": [],
       "description": "A list of Kubernetes TopologySpreadConstraints, if required. For more information, see [Topology spread constraint v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#topologyspreadconstraint-v1-core).\n\nFor example:\ntopologySpreadConstraints:\n- maxSkew: 2\n  topologyKey: topology.kubernetes.io/zone\n  whenUnsatisfiable: ScheduleAnyway\n  labelSelector:\n    matchLabels:\n      app.kubernetes.io/instance: cert-manager\n      app.kubernetes.io/component: controller",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.webhook.url": {
-      "default": { },
+      "default": {},
       "description": "Overrides the mutating webhook and validating webhook so they reach the webhook service using the `url` field instead of a service.",
       "type": "object"
     },
@@ -2118,15 +2118,15 @@
       "type": "object"
     },
     "helm-values.webhook.volumeMounts": {
-      "default": [ ],
+      "default": [],
       "description": "Additional volume mounts to add to the cert-manager controller container.",
-      "items": { },
+      "items": {},
       "type": "array"
     },
     "helm-values.webhook.volumes": {
-      "default": [ ],
+      "default": [],
       "description": "Additional volumes to add to the cert-manager controller pod.",
-      "items": { },
+      "items": {},
       "type": "array"
     }
   },

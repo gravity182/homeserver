@@ -5,6 +5,7 @@
 - [Post-installation](#post-installation)
     - [Authentik](#authentik)
         - [Setup](#setup)
+        - [Managing PostgreSQL](#managing-postgresql)
     - [Cert-manager](#cert-manager)
 - [Chart customization](#chart-customization)
     - [VPN](#vpn)
@@ -203,6 +204,23 @@ Now go to Flows and Stages -> Stages, select `default-authentication-identificat
 Give it a couple of minutes for changes to take effect. Log out of your admin account and verify that Plex-based authentication is working by going to one of the services (e.g. `radarr.<domain>.<tld>`) and trying to log in via your Plex account.
 
 Great. Now your ingress paths are protected.
+
+#### Managing PostgreSQL
+
+Sometimes you'll might want to perform manual actions with the Authentik's PostgreSQL database.
+
+Before doing that, stop the server and worker first:
+```sh
+kubectl -n authentik scale deploy --replicas 0 authentik-server
+kubectl -n authentik scale deploy --replicas 0 authentik-worker
+```
+
+Now you connect to the running pod. For instance, this is how you would jump into `psql`:
+```sh
+kubectl -n authentik exec -it pods/jellywatch-postgresql-0 -- bash
+export PGPASSWORD="$(cat $POSTGRES_PASSWORD_FILE)"
+psql -U $POSTGRES_USER -d $POSTGRES_DATABASE
+```
 
 ---
 
