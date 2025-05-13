@@ -33,7 +33,7 @@ spec:
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
             - name: PLEX_CLAIM_TOKEN
-              value: {{ required "A valid $service.claim required!" $service.claim }}
+              value: {{ required "A valid Plex claim required!" $service.claim | quote }}
           ports:
             - name: http
               containerPort: 32400

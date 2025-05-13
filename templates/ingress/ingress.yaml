@@ -5,9 +5,10 @@ metadata:
   namespace: {{ include "homeserver.common.names.namespace" . | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
     app.kubernetes.io/name: ingress
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-cert-issuer
-    traefik.ingress.kubernetes.io/router.middlewares: "{{ include "homeserver.common.names.namespace" . }}-forwardauth-authentik@kubernetescrd,{{ include "homeserver.common.names.namespace" . }}-security-headers@kubernetescrd"
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
+    {{- include "homeserver.cert-manager.ingress.annotations" . | nindent 4 }}
+    traefik.ingress.kubernetes.io/router.entrypoints: "web, websecure"
+    traefik.ingress.kubernetes.io/router.middlewares: {{ printf "%s-%s@kubernetescrd" (include "homeserver.common.names.namespace" .) "security-chain" | quote }}
     {{- range $key, $value := .Values.ingress.annotations }}
       {{ $key }}: {{ $value | quote }}
     {{- end }}

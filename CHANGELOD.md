@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[5.0.0] - 2025-05-13
+
+Changes:
+- Added monitoring: Grafana, Loki, Alloy
+- Added more security-tailored middlewares to Ingress
+- Added a new housekeeping cronjob to clean leftover dirs
+
+Breaking changes:
+- This update uses Gateway API, which might be not available in the old versions of Traefik. Please upgrade your k3s cluster to the latest version (`v1.32.4`)
+
 ## \[4.11.0] - 2025-04-29
 
 Changes:

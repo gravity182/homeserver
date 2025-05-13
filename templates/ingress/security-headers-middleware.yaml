@@ -1,4 +1,4 @@
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: security-headers
@@ -12,14 +12,48 @@ spec:
     stsSeconds: 31536000
     stsIncludeSubdomains: true
     stsPreload: true
-    frameDeny: false  # deprecated; use CSP frame-ancestors instead
-    browserXssFilter: true
-    contentTypeNosniff: true
-    permissionsPolicy: "ambient-light-sensor=(), bluetooth=(), camera=(), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), accelerometer=(), midi=(), hid=(), payment=(), usb=(), interest-cohort=()"
-    referrerPolicy: "strict-origin-when-cross-origin"
-    contentSecurityPolicy: "frame-ancestors 'self' https://{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }} https://*.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }};"
-    # customResponseHeaders:
-    #   # TODO corp same-site breaks Plex images?
-    #   Cross-Origin-Resource-Policy: same-site
-    #   Cross-Origin-Opener-Policy: same-origin-allow-popups
-    #   Cross-Origin-Embedder-Policy: require-corp
+    customResponseHeaders:
+      X-Content-Type-Options: "nosniff"
+      X-Frame-Options: "SAMEORIGIN"
+      X-XSS-Protection: "1; mode=block"
+      Cross-Origin-Resource-Policy: "cross-origin"
+      Cross-Origin-Opener-Policy: "same-origin"
+      Cross-Origin-Embedder-Policy: "unsafe-none"
+      Referrer-Policy: "strict-origin-when-cross-origin"
+    contentSecurityPolicy: >-
+      default-src 'self' data: blob: https:;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https:;
+      style-src 'self' 'unsafe-inline' data: https:;
+      img-src 'self' data: blob: http: https:;
+      font-src 'self' data: https:;
+      frame-ancestors 'self' https://{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }} https://*.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }};
+      form-action 'self' https:;
+      base-uri 'self';
+      connect-src 'self' data: blob: ws: wss: https:;
+      media-src 'self' data: blob: http: https:;
+      worker-src 'self' data: blob:;
+      frame-src 'self' data: blob: https:;
+      object-src 'none';
+    permissionsPolicy: >-
+      accelerometer=(),
+      ambient-light-sensor=(),
+      battery=(),
+      cross-origin-isolated=(),
+      display-capture=(),
+      document-domain=(),
+      encrypted-media=(),
+      execution-while-not-rendered=(),
+      execution-while-out-of-viewport=(),
+      gyroscope=(),
+      keyboard-map=(),
+      magnetometer=(),
+      midi=(),
+      navigation-override=(),
+      payment=(),
+      publickey-credentials-get=(),
+      screen-wake-lock=(),
+      sync-xhr=(),
+      usb=(),
+      web-share=(),
+      xr-spatial-tracking=(),
+      interest-cohort=()

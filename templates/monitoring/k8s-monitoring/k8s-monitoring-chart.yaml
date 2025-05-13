@@ -1,0 +1,15 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: k8s-monitoring
+  namespace: {{ include "homeserver.common.names.namespace" . }}
+spec:
+  repo: https://grafana.github.io/helm-charts
+  chart: k8s-monitoring
+  version: 2.0.28
+  targetNamespace: {{ include "homeserver.monitoring.names.namespace" . }}
+  createNamespace: true
+  valuesContent: |
+{{- include "homeserver.common.tplvalues.render" (dict "value" (index .Values.monitoring "k8s-monitoring") "context" .) | nindent 4 }}
+{{- end }}

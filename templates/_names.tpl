@@ -1,5 +1,5 @@
 {{/*
-Expand the name of the chart.
+Expand the name of the service.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 
 Usage:

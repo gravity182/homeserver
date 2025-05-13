@@ -28,6 +28,10 @@ cert-manager:
     # see the similar issue https://github.com/kedacore/charts/issues/226
     enabled: false
     keep: true
+  config:
+    apiVersion: controller.config.cert-manager.io/v1alpha1
+    kind: ControllerConfiguration
+    enableGatewayAPI: true
 ## Automatic TLS certificate provisioning configuration
 ## depends on cert-manager
 ##

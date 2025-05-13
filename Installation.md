@@ -7,6 +7,7 @@
         - [Setup](#setup)
         - [Managing PostgreSQL](#managing-postgresql)
     - [Cert-manager](#cert-manager)
+    - [Traefik](#traefik)
 - [Chart customization](#chart-customization)
     - [VPN](#vpn)
 - [File permissions](#file-permissions)
@@ -317,6 +318,21 @@ If you see a certificate issued for your domain, then everything works properly.
 Great. Your root domain and sub-domains are secure now. The TLS certificate will be renewed automatically before expiration.
 
 If you'd like to learn more about this topic, refer to the [cert-manager docs](https://cert-manager.io/docs/).
+
+---
+
+### Traefik
+
+If you put your homeserver behind another Reverse Proxy such as Cloudflare, we'll need to configure Traefik to trust this proxy, otherwise the `X-Forwarded-*` headers will be discarded.
+
+This affects Authentik, limiting its possibility to apply geo-policies and trace real client IPs.
+Moreover, this also affects the possibility of Traefik to apply ip-based middlewares such as rate-limiting.
+
+By default Traefik does not trust any IPs that pass these headers.
+
+Fortunately, this chart already fixes that for you. Just make sure to set
+
+You can verify that `X-Forwarded` headers are passed by logging in into Authentik and looking at your sessions in the Dashboard - you should see you real IP.
 
 ---
 

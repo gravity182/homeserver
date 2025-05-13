@@ -58,7 +58,7 @@
             },
             "dns01": {
               "type": "object",
-              "description": "DNS01 configuration",
+              "description": "DNS01 challenge configuration\nRead more: https://letsencrypt.org/docs/challenge-types/#dns-01-challenge",
               "properties": {
                 "cfApiToken": {
                   "type": "string",

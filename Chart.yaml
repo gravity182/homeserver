@@ -1,7 +1,7 @@
 apiVersion: v2
 name: Homeserver
-version: 4.11.0
-appVersion: 4.11.0
+version: 5.0.0
+appVersion: 5.0.0
 kubeVersion: ">= 1.29.0"
 description: Self-hosted media server
 type: application
@@ -55,3 +55,5 @@ keywords:
   - cert-manager
   - letsencrypt
   - tls
+  - grafana
+  - loki

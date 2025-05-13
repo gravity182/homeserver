@@ -1,0 +1,46 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: monitoring-gateway
+  namespace: {{ include "homeserver.monitoring.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: monitoring-gateway
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
+    {{- include "homeserver.cert-manager.ingress.annotations" . | nindent 4 }}
+spec:
+  gatewayClassName: traefik
+  listeners:
+  - name: https
+    protocol: HTTPS
+    port: 443
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - name: monitoring-gateway-tls-cert
+    hostname: {{ printf "*.%s" .Values.ingress.domain | quote }}
+    allowedRoutes:
+      namespaces:
+        from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: grafana-route
+  namespace: {{ include "homeserver.monitoring.names.namespace" . | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: grafana-route
+spec:
+  parentRefs:
+  - name: monitoring-gateway
+    sectionName: https
+  hostnames:
+  - {{ printf "grafana.%s" .Values.ingress.domain | quote }}
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: "/"
+    backendRefs:
+    - name: grafana
+      kind: Service
+      port: 3000

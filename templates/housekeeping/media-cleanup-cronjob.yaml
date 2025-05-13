@@ -27,104 +27,8 @@ spec:
               image: python:3.12-alpine
               imagePullPolicy: IfNotPresent
               command:
-                - /bin/sh
-                - -ec
-                - |
-                  cat > /tmp/cleanup.py << 'EOF'
-                  import os
-                  import fnmatch
-                  import json
-                  import shutil
-
-                  # Load configuration from env vars
-                  media_dirs = json.loads(os.environ['MEDIA_ROOT_DIRS'])
-                  metadata_patterns = json.loads(os.environ['METADATA_PATTERNS'])
-                  dry_run = os.environ.get('DRY_RUN', 'false').lower() == 'true'
-
-                  def is_metadata_file(filename):
-                      """Check if a file matches any of the metadata patterns"""
-                      return any(fnmatch.fnmatch(filename.lower(), pattern.lower())
-                               for pattern in metadata_patterns)
-
-                  def get_all_files(path):
-                      """Get all files recursively from a directory"""
-                      all_files = []
-                      for root, _, files in os.walk(path):
-                          for file in files:
-                              all_files.append(os.path.join(root, file))
-                      return all_files
-
-                  def check_dir(path):
-                      """Check all files in the directory tree and remove it if all are metadata"""
-                      print(f"Checking directory: {path}")
-
-                      # Get all files recursively
-                      all_files = get_all_files(path)
-                      if not all_files:
-                          print(f"Removing directory: {path}")
-                          if not dry_run:
-                              shutil.rmtree(path)
-                          return
-
-                      if all(is_metadata_file(os.path.basename(f)) for f in all_files):
-                          print(f"Removing directory: {path}")
-                          if not dry_run:
-                              shutil.rmtree(path)
-
-                  def get_subdirs_at_depth(root_path, target_depth):
-                      """Get all directories up to the target depth level in reverse order (deepest first)"""
-                      if target_depth == 0:
-                          return [root_path]
-
-                      # Store directories by their depth
-                      dirs_by_depth = {}
-
-                      for dirpath, dirnames, _ in os.walk(root_path):
-                          current_depth = dirpath[len(root_path):].count(os.sep)
-                          if current_depth <= target_depth - 1:  # -1 because we start counting from 0
-                              # Add the current directory's subdirectories to the appropriate depth level
-                              full_paths = [os.path.join(dirpath, dirname) for dirname in dirnames]
-                              if current_depth + 1 not in dirs_by_depth:
-                                  dirs_by_depth[current_depth + 1] = []
-                              dirs_by_depth[current_depth + 1].extend(full_paths)
-
-                      # Combine all directories in reverse depth order
-                      result = []
-                      for depth in range(target_depth, 0, -1):
-                          if depth in dirs_by_depth:
-                              result.extend(dirs_by_depth[depth])
-
-                      return result
-
-                  def scan_root_dirs(media_dirs_config):
-                      """Check directories at their specified depth levels"""
-                      for dir_config in media_dirs_config:
-                          print("\n" + "="*50 + "\n")  # Add separator between root directories
-
-                          root_path = dir_config['path']
-                          max_depth = dir_config.get('maxDepth', 1)  # Default to 1 if not specified
-
-                          if not os.path.exists(root_path):
-                              print(f"Root directory does not exist: {root_path}")
-                              continue
-
-                          print(f"Scanning {root_path} with max depth level {max_depth}")
-                          dirs_to_check = get_subdirs_at_depth(root_path, max_depth)
-                          for dir_path in dirs_to_check:
-                              if os.path.exists(dir_path):  # Check if path still exists (might have been removed)
-                                  check_dir(dir_path)
-
-                  if __name__ == '__main__':
-                      print("Starting media directory cleanup...")
-                      if dry_run:
-                          print("DRY RUN MODE ENABLED - No files will be deleted")
-                      print(f"Media directories to scan: {media_dirs}")
-                      print(f"Metadata file globs: {metadata_patterns}")
-                      scan_root_dirs(media_dirs)
-                      print("\n" + "="*50 + "\n")  # Add separator between root directories
-                      print("Cleanup complete!")
-                  EOF
-                  python /tmp/cleanup.py
+                - python
+                - /scripts/cleanup.py
               env:
                 - name: MEDIA_ROOT_DIRS
                   value: {{ .Values.housekeeping.mediaCleanup.paths | toJson | quote }}
@@ -135,11 +39,16 @@ spec:
               securityContext: {{- include "homeserver.common.securityContext.strict" . | nindent 16 }}
               resources: {{- include "common.resources.preset" (dict "type" "micro") | nindent 16 }}
               volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "context" $) | nindent 16 }}
+                - name: cleanup-script
+                  mountPath: /scripts
                 {{- range $index, $path := .Values.housekeeping.mediaCleanup.paths }}
                 - name: media-path-{{ $index }}
                   mountPath: {{ $path.path | quote }}
                 {{- end }}
           volumes: {{- include "homeserver.common.pod.volumes" (dict "context" $) | nindent 12 }}
+            - name: cleanup-script
+              configMap:
+                name: media-cleanup-script
             {{- range $index, $path := .Values.housekeeping.mediaCleanup.paths }}
             - name: media-path-{{ $index }}
               hostPath:

@@ -1,0 +1,15 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: grafana
+  namespace: {{ include "homeserver.common.names.namespace" . }}
+spec:
+  repo: https://grafana.github.io/helm-charts
+  chart: grafana
+  version: 9.0.0
+  targetNamespace: {{ include "homeserver.monitoring.names.namespace" . }}
+  createNamespace: true
+  valuesContent: |
+{{- include "homeserver.common.tplvalues.render" (dict "value" .Values.monitoring.grafana "context" .) | nindent 4 }}
+{{- end }}

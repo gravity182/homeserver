@@ -299,7 +299,7 @@
             description: SSO authentication
             widget:
                 type: authentik
-                url: http://authentik-server.{{ .Values.authentik.namespace }}.svc.cluster.local:80
+                url: http://{{ .Release.Name }}-authentik-server.{{ .Values.authentik.namespace }}.svc.cluster.local:80
                 key: "{{ .Values.services.homepage.widgets.authentik.apiKey }}"
       {{- if .Values.services.backrest.enabled }}
       - Backrest:
