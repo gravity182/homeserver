@@ -2,9 +2,10 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: media-cleanup-cronjob
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  name: media-cleanup
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: media-cleanup
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
 spec:
   schedule: {{ .Values.housekeeping.mediaCleanup.scheduleCron | quote }}
@@ -14,14 +15,21 @@ spec:
   jobTemplate:
     metadata:
       labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 8 }}
+        app.kubernetes.io/name: media-cleanup
       annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 8 }}
     spec:
       template:
         metadata:
           labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 12 }}
+            app.kubernetes.io/name: media-cleanup
           annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 12 }}
         spec:
           restartPolicy: OnFailure
+          automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "context" $) }}
+          enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "context" $) }}
+          priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "context" $) | quote }}
+          affinity: {{- include "homeserver.common.pod.affinity" (dict "context" $) | nindent 12 }}
+          tolerations: {{- include "homeserver.common.pod.tolerations" (dict "context" $) | nindent 12 }}
           containers:
             - name: cleanup
               image: python:3.12-alpine
@@ -30,6 +38,8 @@ spec:
                 - python
                 - /scripts/cleanup.py
               env:
+                - name: LOG_LEVEL
+                  value: {{ .Values.housekeeping.mediaCleanup.logLevel | default "info" | quote }}
                 - name: MEDIA_ROOT_DIRS
                   value: {{ .Values.housekeeping.mediaCleanup.paths | toJson | quote }}
                 - name: METADATA_PATTERNS
@@ -37,7 +47,7 @@ spec:
                 - name: DRY_RUN
                   value: {{ .Values.housekeeping.mediaCleanup.dryRun | default false | quote }}
               securityContext: {{- include "homeserver.common.securityContext.strict" . | nindent 16 }}
-              resources: {{- include "common.resources.preset" (dict "type" "micro") | nindent 16 }}
+              resources: {{- include "homeserver.common.resources.preset" (dict "type" "micro") | nindent 16 }}
               volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "context" $) | nindent 16 }}
                 - name: cleanup-script
                   mountPath: /scripts

@@ -1,0 +1,78 @@
+{{- range $services := .Values.services }}
+{{- if not (kindIs "slice" $services) }}
+  {{- $services = list $services }}
+{{- end }}
+{{- range $service := $services }}
+{{- if and $service.enabled $service.exposed }}
+{{- if not $service.ingress }}
+{{- printf "Service %s is exposed but has no ingress paths" $service.name | fail }}
+{{- end }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ printf "%s-route" $service.name | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: {{ printf "%s-route" $service.name | quote }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
+spec:
+  parentRefs:
+    - name: gateway
+      sectionName: https
+      namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  hostnames:
+  {{- range $host := $service.ingress }}
+    - {{ printf "%s.%s" $host $.Values.ingress.domain | quote }}
+  {{- end }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "homeserver.common.names.name" (dict "service" $service) | quote }}
+          port: {{ required (printf "HTTP port is missing for service '%s'" $service.name) $service.ports.http }}
+          kind: Service
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: security-chain
+{{- if eq $service.name $.Values.ingress.rootService }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: root-route
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: root-route
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
+spec:
+  parentRefs:
+    - name: gateway
+      sectionName: https-root
+      namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  hostnames:
+    - {{ $.Values.ingress.domain | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+          port: {{ required (printf "HTTP port is missing for service '%s'" $service.name) $service.ports.http }}
+          kind: Service
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: security-chain
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -3,14 +3,17 @@
 .idea
 .git
 .gitignore
+.gitattributes
 .env
 .editorconfig
+.yamllint.yaml
 /assets
 /bin
 README.md
 CHANGELOG.md
 Installation.md
 LICENSE
+.homeserver
 
 .DS_Store
 *.gz

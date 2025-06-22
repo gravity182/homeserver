@@ -1,0 +1,27 @@
+{{- $clusterIssuer := (index (index .Values "x-cert-manager") "cluster-issuer") -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clusterissuer
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
+data:
+  clusterissuer.yaml: |
+    apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: homeserver-cert-issuer
+      labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 8 }}
+        app.kubernetes.io/name: homeserver-cert-issuer
+      annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 8 }}
+    spec:
+      acme:
+        # ACME server URL
+        server: {{ required "A valid server URL required!" $clusterIssuer.server | quote }}
+        # email address used for ACME account registration
+        email: {{ required "A valid email required!" $clusterIssuer.email | quote }}
+        # name of a secret used to store the ACME account's private key
+        privateKeySecretRef:
+          name: acme-account-key
+        solvers: {{- include "homeserver.common.tplvalues.render" (dict "value" $clusterIssuer.solvers "context" .) | nindent 10 }}

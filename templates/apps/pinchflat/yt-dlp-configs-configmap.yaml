@@ -1,13 +1,12 @@
-{{- if .Values.services.pinchflat.enabled }}
 {{- $service := .Values.services.pinchflat }}
-{{- $kind := "app" }}
+{{- if $service.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-%s" (include "homeserver.common.names.name" ( dict "service" $service "kind" $kind )) "yt-dlp-configs" | quote }}
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ printf "%s-%s" (include "homeserver.common.names.name" ( dict "service" $service )) "yt-dlp-configs" | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 data:
   {{- range $path, $_ := .Files.Glob "files/pinchflat/yt-dlp-configs/**" }}
   {{- if not (contains "/default/" $path) }}

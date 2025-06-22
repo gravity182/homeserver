@@ -1,5 +1,0 @@
-{{- if .Values.services.librechat.enabled }}
-{{- $service := .Values.services.librechat  }}
-{{- $kind := "database" }}
-{{ include "homeserver.common.mongodb.scripts" ( dict "service" $service "context" $ ) }}
-{{- end }}

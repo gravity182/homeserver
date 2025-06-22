@@ -1,13 +1,12 @@
-{{- if .Values.services.myspeed.enabled }}
-{{- $service := .Values.services.myspeed  }}
-{{- $kind := "app" }}
+{{- $service := .Values.services.myspeed }}
+{{- if $service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
@@ -15,5 +14,5 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
-  selector: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  selector: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "context" $ ) | nindent 4 }}
 {{- end }}

@@ -6,10 +6,10 @@ This repo will get you your own home server with a lot of useful self-hosted sof
 
 All services are optional and can be enabled/disabled anytime. Detailed list:
 - Media:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/radarr-light.png"> [Radarr](https://github.com/Radarr/Radarr) - Movies management
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/radarr.png"> [Radarr](https://github.com/Radarr/Radarr) - Movies management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sonarr.png"> [Sonarr](https://github.com/Sonarr/Sonarr) - TV Series management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/lidarr.png"> [Lidarr](https://github.com/Lidarr/Lidarr) - Music management
-    - <img width="15" height="15" src="https://github.com/Whisparr/Whisparr/blob/develop/Logo/128.png?raw=true"> [Whisparr](https://github.com/Whisparr/Whisparr) - Adult videos management
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/whisparr.png"> [Whisparr](https://github.com/Whisparr/Whisparr) - Adult videos management
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/prowlarr.png"> [Prowlarr](https://github.com/Prowlarr/Prowlarr) - Indexers management. Allows you to sync your torrent/usenet indexers across all of the *arr stack
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/bazarr.png"> [Bazarr](https://github.com/morpheus65535/bazarr) - Companion application to Radarr and Sonarr. It manages and downloads subtitles based on your requirements
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/plex.png"> [Plex](https://www.plex.tv/) - Media server for watching downloaded movies and series from any of your devices (PC, Android, iOS, iPad, TV)
@@ -64,13 +64,6 @@ Chart features:
 ## Quickstart / Documentation
 
 Please see [Installation](Installation.md).
-
----
-
-## TODO
-
-1. Move sensitive values to Kubernetes secrets
-2. Add hardware decoding support to Plex & Jellyfin
 
 ---
 

@@ -1,6 +1,0 @@
-{{- if (include "homeserver.common.utils.ns-install-check" .) }}
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ include "homeserver.names.authentik-namespace" . }}
-{{- end }}

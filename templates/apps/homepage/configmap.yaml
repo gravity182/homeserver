@@ -1,13 +1,12 @@
-{{- if .Values.services.homepage.enabled }}
-{{- $service := .Values.services.homepage  }}
-{{- $kind := "app" }}
+{{- $service := .Values.services.homepage }}
+{{- if $service.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 data:
   {{- range $path, $_ := .Files.Glob "files/homepage/**" }}
   {{- if not (contains "/default/" $path) }}

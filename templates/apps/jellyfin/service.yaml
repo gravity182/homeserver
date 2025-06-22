@@ -1,13 +1,20 @@
-{{- if .Values.services.jellyfin.enabled }}
-{{- $service := .Values.services.jellyfin  }}
+{{- $jellyfinServices := list }}
+{{- if kindIs "slice" .Values.services.jellyfin }}
+  {{- $jellyfinServices = .Values.services.jellyfin }}
+{{- else }}
+  {{- $jellyfinServices = list .Values.services.jellyfin }}
+{{- end }}
+{{- range $service := $jellyfinServices }}
+{{- if $service.enabled }}
 {{- $kind := "app" }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
@@ -15,5 +22,6 @@ spec:
       port: {{ $service.ports.http }}
       targetPort: http
       protocol: TCP
-  selector: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  selector: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "context" $ ) | nindent 4 }}
+{{- end }}
 {{- end }}

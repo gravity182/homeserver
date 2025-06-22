@@ -1,0 +1,49 @@
+{{- if .Values.monitoring.enabled }}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: homeserver-reference-grant
+  namespace: {{ include "homeserver.monitoring.names.namespace" . | quote }}
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  to:
+    - group: ""
+      kind: Service
+      name: grafana
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana-route
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: grafana-route
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
+spec:
+  parentRefs:
+    - name: gateway
+      sectionName: https
+      namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  hostnames:
+    - {{ printf "grafana.%s" $.Values.ingress.domain | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: grafana
+          port: 80
+          kind: Service
+          namespace: {{ include "homeserver.monitoring.names.namespace" . | quote }}
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: security-chain
+{{- end }}

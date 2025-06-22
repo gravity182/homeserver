@@ -1,0 +1,120 @@
+{{- $service := .Values.services.stash }}
+{{- if $service.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ $service.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "context" $ ) | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+      annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+    spec:
+      automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "context" $) }}
+      enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "context" $) }}
+      priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "context" $) | quote }}
+      affinity: {{- include "homeserver.common.pod.affinity" (dict "service" $service "context" $) | nindent 8 }}
+      tolerations: {{- include "homeserver.common.pod.tolerations" (dict "service" $service "context" $) | nindent 8 }}
+      securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "context" $) | nindent 8 }}
+      initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "context" $) | nindent 8 }}
+        - name: allow-public-access
+          image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              sed -i \
+                -e 's/dangerous_allow_public_without_auth.*/dangerous_allow_public_without_auth: "true"/' \
+                -e '/security_tripwire_accessed_from_public_internet/d' \
+                /config/config.yml
+          securityContext: {{- include "homeserver.common.securityContext.strict" . | nindent 12 }}
+          resources: {{- include "homeserver.common.resources.preset" (dict "type" "micro") | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      containers:
+        - name: stash
+          image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
+          imagePullPolicy: {{ $service.image.pullPolicy }}
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
+          envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
+          env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
+            {{- if (include "homeserver.common.utils.getSecurityContext" (dict "service" $service) | fromYaml).strict }}
+            - name: USER
+              value: "stash"
+            {{- end }}
+            - name: PUID
+              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+            - name: PGID
+              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: STASH_CONFIG_FILE
+              value: "/config/config.yml"
+            - name: STASH_STASH
+              value: "/data/"
+            - name: STASH_METADATA
+              value: "/metadata/"
+            - name: STASH_CACHE
+              value: "/cache/"
+            - name: STASH_BLOBS
+              value: "/blobs/"
+            - name: STASH_GENERATED
+              value: "/generated/"
+            - name: STASH_PORT
+              value: "9999"
+          ports:
+            - name: http
+              containerPort: 9999
+              protocol: TCP
+          resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 12 }}
+          livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/healthz" "context" $) | nindent 12 }}
+          readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/healthz" "context" $) | nindent 12 }}
+          startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/healthz" "context" $) | nindent 12 }}
+          volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+            - name: metadata
+              mountPath: /metadata
+            - name: cache
+              mountPath: /cache
+            - name: blobs
+              mountPath: /blobs
+            - name: generated
+              mountPath: /generated
+      volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
+        - name: config
+          hostPath:
+            path: {{ $service.persistence.config | quote }}
+            type: Directory
+        - name: data
+          hostPath:
+            path: {{ $service.persistence.data | quote }}
+            type: Directory
+        - name: metadata
+          hostPath:
+            path: {{ $service.persistence.metadata | quote }}
+            type: Directory
+        - name: cache
+          hostPath:
+            path: {{ $service.persistence.cache | quote }}
+            type: Directory
+        - name: blobs
+          hostPath:
+            path: {{ $service.persistence.blobs | quote }}
+            type: Directory
+        - name: generated
+          hostPath:
+            path: {{ $service.persistence.generated | quote }}
+            type: Directory
+{{- end }}

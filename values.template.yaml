@@ -15,8 +15,7 @@ host:
   ## Can be obtained via `id -g`
   ##
   gid: 1000 # REQUIRED
-## cert-manager configuration
-## All values under `cert-manager` passed as is to the authentik subchart
+## cert-manager chart configuration
 ## see available values at https://artifacthub.io/packages/helm/cert-manager/cert-manager#configuration
 ##
 cert-manager:
@@ -31,16 +30,47 @@ cert-manager:
   config:
     apiVersion: controller.config.cert-manager.io/v1alpha1
     kind: ControllerConfiguration
+    logging:
+      verbosity: 2
+      format: text
+    # DO NOT disable this option, otherwise cert-manager won't be able to create a cert for Gateway API
     enableGatewayAPI: true
-## Automatic TLS certificate provisioning configuration
-## depends on cert-manager
+## Additional configuration for cert-manager tailored to this chart
 ##
-tls:
-  tlsSecretName: certs.letsencrypt.key.tls
-  acme:
-    email: dm.blink19@gmail.com # REQUIRED; e.g. 'example@gmail.com'
-    dns01:
-      cfApiToken: "" # REQUIRED
+x-cert-manager:
+  ## ClusterIssuer configuration
+  ## This issuer will be used to automatically issue TLS certificates for Ingress/Gateway API
+  ##
+  cluster-issuer:
+    # ACME server URL
+    # By default points to the Let's Encrypt's prod environment
+    # DO NOT change this option unless you know what you're doing
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Your email to register an account with Let's Encrypt
+    email: example@gmail.com
+    ## Solvers configuration
+    ##
+    ## Cloudflare is used by default with implication that you've transferred your domain to Cloudflare.
+    ##
+    ## The only thing you must do is to create a Cloudflare API token:
+    ## 1. Go to the Cloudflare Dashboard: User Profile > API Tokens > API Tokens.
+    ## 2. Specify the permissions for the token as follows:
+    ##    Permissions:
+    ##      Zone - DNS - Edit
+    ##      Zone - Zone - Read
+    ##    Zone Resources:
+    ##      Include - All Zones
+    ## 3. Create a secret in the `cert-manager` namespace with the name `cloudflare-api-key-secret`
+    ##
+    ## If you want to use a different provider, please read docs on DNS01 validation and supported providers:
+    ## https://cert-manager.io/docs/configuration/acme/dns01/
+    ## NOTE: The only valid solver is a DNS01 solver, since only it can issue wildcard certs
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-key-secret
+              key: api-key
 ## Authentik configuration
 ## All values under `authentik` passed as is to the authentik subchart
 ## See available values at https://artifacthub.io/packages/helm/goauthentik/authentik#values
@@ -104,14 +134,14 @@ ingress:
   ## Set it to `services.<service>.name`. Leave empty to disable.
   ##
   rootService: homepage
-  ## Custom annotations to add to the Ingress resource
+  ## Extra annotations to add to the Ingress resource
   ##
-  annotations: {}
+  extraAnnotations: {}
 ## VPN configuration
 ## To enable VPN for a service, set `services.<service_name>.vpn.enabled=true`
 ##
 vpn:
-  ## Enables SYS_MODULE capability
+  ## Enable SYS_MODULE capability
   ## Disable only if you know what you're doing
   ##
   sysModule: true
@@ -933,7 +963,7 @@ services:
       tag: latest
       pullPolicy: Always
     securityContext:
-      strict: true
+      strict: false
     resourcesPreset: "micro"
     ports:
       http: 3000

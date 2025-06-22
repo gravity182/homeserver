@@ -1,12 +1,11 @@
-{{- if .Values.services.homepage.enabled }}
-{{- $service := .Values.services.homepage  }}
-{{- $kind := "app" }}
+{{- $service := .Values.services.homepage }}
+{{- if $service.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 rules:
   - apiGroups:
       - ""
@@ -50,15 +49,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-    namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+    name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+    namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
 {{- end }}

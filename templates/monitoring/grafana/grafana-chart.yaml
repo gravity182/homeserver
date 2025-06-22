@@ -3,7 +3,7 @@ apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
   name: grafana
-  namespace: {{ include "homeserver.common.names.namespace" . }}
+  namespace: {{ include "homeserver.common.names.namespace" $ }}
 spec:
   repo: https://grafana.github.io/helm-charts
   chart: grafana

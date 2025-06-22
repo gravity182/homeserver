@@ -16,6 +16,8 @@ libraries:
           use_cannes: false
           use_women_directors: false
           use_black_directors: false
+          collection_mode: show_items
+          collection_order: custom
           cache_builders: 7
           cache_builders_1001_movies: 30
           cache_builders_edgarwright: 30
@@ -82,7 +84,7 @@ libraries:
       # you can fetch user ratings from IMDb by uncommenting the line below
       # note this will overwrite the ratings supplied by your Plex users
       #
-    #   - mass_user_rating_update: imdb
+      # - mass_user_rating_update: imdb
       - delete_collections:
           configured: false
   TV Shows:
@@ -151,6 +153,7 @@ plex:
   clean_bundles: false
   empty_trash: false
   optimize: false
+  verify_ssl: false
 tmdb:
   apikey: {{ .Values.services.kometa.connections.tmdb.apiKey | quote }}
   language: {{ .Values.services.kometa.connections.tmdb.language }}

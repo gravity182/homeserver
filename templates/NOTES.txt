@@ -8,19 +8,24 @@ DOCUMENTATION: https://github.com/blinky-z/homeserver/blob/master/Installation.m
 ## Access Information
 
 ### Authentik (SSO)
-- **URL**: `https://{{ first .Values.authentik.server.ingress.hosts }}`
+- **URL**: `https://authentik.{{ .Values.ingress.domain }}`
 - **Admin Credentials**: 
   - Username: `akadmin`
   - Password: Set during the initial setup
 
 ### Services
-{{- range $k, $v := .Values.services }}
+{{- range $services := .Values.services }}
+{{- if not (kindIs "slice" $services) }}
+  {{- $services = list $services }}
+{{- end }}
+{{- range $k, $v := $services }}
 {{- if $v.enabled }}
 - **{{ $k }}**:
   - Exposed: {{ $v.exposed }}
   {{- if $v.exposed }}
   - **URL**: `{{ include "homeserver.common.utils.ingressUrl" ( dict "service" $v "context" $ ) }}`
   {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -46,8 +51,8 @@ DOCUMENTATION: https://github.com/blinky-z/homeserver/blob/master/Installation.m
    - The status should be "Certificate is up to date and has not expired"
 
 4. **Configure Services**:
-   - Go to each service using the provided URLs
-   - Configure it to your liking
+   - Go to each of the enabled services using the URLs above
+   - Configure them to your liking
 
 5. **VPN Configuration (Optional)**:
    - If VPN is enabled, ensure the WireGuard configuration secret exists and is valid:
@@ -66,12 +71,17 @@ DOCUMENTATION: https://github.com/blinky-z/homeserver/blob/master/Installation.m
 
 - **Check Authentik's logs**:
   ```bash
-  kubectl -n {{ .Values.authentik.namespaceOverride }} logs -l app.kubernetes.io/name=authentik
+  kubectl -n {{ include "homeserver.authentik.names.namespace" . }} logs -l app.kubernetes.io/name=authentik
   ```
 
 - **Check cert-manager's logs**:
   ```bash
-  kubectl -n {{ (index .Values "cert-manager").namespace }} logs -l app=cert-manager
+  kubectl -n {{ include "homeserver.cert-manager.names.namespace" . }} logs -l app=cert-manager
+  ```
+
+- **Check a TLS certificate is created and up to date**:
+  ```bash
+  kubectl -n {{ .Release.Namespace }} describe certificate
   ```
 
 - **Restart Pods**:

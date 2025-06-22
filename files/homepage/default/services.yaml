@@ -9,7 +9,7 @@
             widget:
                 type: radarr
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.radarr "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.radarr.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_RADARR_API_KEY}}`}}"
       {{- end }}
       {{- if .Values.services.sonarr.enabled }}
       - Sonarr:
@@ -20,7 +20,7 @@
             widget:
                 type: sonarr
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.sonarr "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.sonarr.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_SONARR_API_KEY}}`}}"
       {{- end }}
       {{- if .Values.services.lidarr.enabled }}
       - Lidarr:
@@ -31,7 +31,7 @@
             widget:
                 type: lidarr
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.lidarr "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.lidarr.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_LIDARR_API_KEY}}`}}"
       {{- end }}
       {{- if .Values.services.whisparr.enabled }}
       - Whisparr:
@@ -49,7 +49,7 @@
             widget:
                 type: bazarr
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.bazarr "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.bazarr.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_BAZARR_API_KEY}}`}}"
       {{- end }}
       {{- if .Values.services.autobrr.enabled }}
       - Autobrr:
@@ -60,7 +60,7 @@
             widget:
                 type: autobrr
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.autobrr "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.autobrr.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_AUTOBRR_API_KEY}}`}}"
       {{- end }}
       {{- if .Values.services.prowlarr.enabled }}
       - Prowlarr:
@@ -71,7 +71,7 @@
             widget:
                 type: prowlarr
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.prowlarr "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.prowlarr.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_PROWLARR_API_KEY}}`}}"
       {{- end }}
 - Downloaders:
       {{- if .Values.services.qbittorrent.enabled }}
@@ -94,7 +94,7 @@
             widget:
                 type: sabnzbd
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.sabnzbd "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.sabnzbd.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_SABNZBD_API_KEY}}`}}"
       {{- end }}
       {{- if .Values.services.pinchflat.enabled }}
       - Pinchflat:
@@ -113,7 +113,7 @@
             widget:
                 type: jellyseerr
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.jellyseerr "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.jellyseerr.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_JELLYSEERR_API_KEY}}`}}"
       {{- end }}
       {{- if .Values.services.plex.enabled }}
       - Plex:
@@ -124,26 +124,45 @@
             widget:
                 type: tautulli
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.tautulli "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.tautulli.apiKey }}"
-                enableUser: true # optional, defaults to false
-                showEpisodeNumber: true # optional, defaults to false
-                expandOneStreamToTwoRows: false # optional, defaults to true
+                key: "{{`{{HOMEPAGE_VAR_TAUTULLI_API_KEY}}`}}"
+                enableUser: true
+                showEpisodeNumber: true
+                expandOneStreamToTwoRows: false
       {{- end }}
-      {{- if .Values.services.jellyfin.enabled }}
+      {{- $jellyfinServices := list }}
+      {{- if kindIs "slice" .Values.services.jellyfin }}
+        {{- $jellyfinServices = .Values.services.jellyfin }}
+      {{- else }}
+        {{- $jellyfinServices = list .Values.services.jellyfin }}
+      {{- end }}
+      {{- range $index, $service := $jellyfinServices }}
+      {{- if $service.enabled }}
       - Jellyfin:
             icon: sh-jellyfin
-            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.jellyfin "context" $ ) | quote }}
-            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.jellyfin "context" $ ) | quote }}
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" $service "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" $service "context" $ ) | quote }}
             description: Media server
             widget:
                 type: jellyfin
-                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.jellyfin "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.jellyfin.apiKey }}"
-                enableBlocks: true # optional, defaults to false
-                enableNowPlaying: true # optional, defaults to true
-                enableUser: false # optional, defaults to false
-                showEpisodeNumber: true # optional, defaults to false
-                expandOneStreamToTwoRows: false # optional, defaults to true
+                url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" $service "context" $ ) | quote }}
+                key: "{{`{{HOMEPAGE_VAR_JELLYFIN_API_KEY_`}}{{ $index }}{{`}}`}}"
+                enableBlocks: true
+                enableNowPlaying: true
+                enableUser: false
+                showEpisodeNumber: true
+                expandOneStreamToTwoRows: false
+      {{- end }}
+      {{- end }}
+      {{- if .Values.services.stash.enabled }}
+      - Stash:
+            icon: sh-stash
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.stash "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.stash "context" $ ) | quote }}
+            description: Stash
+            widget:
+              type: stash
+              url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.stash "context" $ ) | quote }}
+              fields: ["scenes", "sceneDuration"]
       {{- end }}
 - Books:
       {{- if .Values.services.calibre.enabled }}
@@ -155,8 +174,8 @@
             widget:
                 type: calibreweb
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.calibre "context" $ ) | quote }}
-                username: "{{ .Values.services.homepage.widgets.calibre.username }}"
-                password: "{{ .Values.services.homepage.widgets.calibre.password }}"
+                username: "{{`{{HOMEPAGE_VAR_CALIBRE_USERNAME}}`}}"
+                password: "{{`{{HOMEPAGE_VAR_CALIBRE_PASSWORD}}`}}"
                 fields: ["books", "authors", "series"]
       {{- end }}
       {{- if .Values.services.kavita.enabled }}
@@ -168,8 +187,8 @@
             widget:
                 type: kavita
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.kavita "context" $ ) | quote }}
-                username: "{{ .Values.services.homepage.widgets.kavita.username }}"
-                password: "{{ .Values.services.homepage.widgets.kavita.password }}"
+                username: "{{`{{HOMEPAGE_VAR_KAVITA_USERNAME}}`}}"
+                password: "{{`{{HOMEPAGE_VAR_KAVITA_PASSWORD}}`}}"
       {{- end }}
       {{- if .Values.services.calibrebookdownloader.enabled }}
       - "Anna's Archive":
@@ -203,7 +222,7 @@
                 type: miniflux
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.miniflux "context" $ ) | quote }}
                 fields: ["unread"]
-                key: "{{ .Values.services.homepage.widgets.miniflux.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_MINIFLUX_API_KEY}}`}}"
       {{- end }}
       {{- if .Values.services.thelounge.enabled }}
       - The Lounge:
@@ -221,7 +240,7 @@
             widget:
                 type: mealie
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.mealie "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.mealie.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_MEALIE_API_KEY}}`}}"
                 version: 2
       {{- end }}
       {{- if .Values.services.convertx.enabled }}
@@ -254,7 +273,7 @@
             widget:
                 type: changedetectionio
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.changedetectionio "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.changedetection.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_CHANGEDETECTION_API_KEY}}`}}"
       {{- end }}
       {{- if .Values.services.archivebox.enabled }}
       - Archivebox:
@@ -279,7 +298,7 @@
             widget:
                 type: gotify
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.gotify "context" $ ) | quote }}
-                key: "{{ .Values.services.homepage.widgets.gotify.apiKey }}"
+                key: "{{`{{HOMEPAGE_VAR_GOTIFY_API_KEY}}`}}"
       {{- end }}
 - Monitoring:
       {{- if .Values.services.myspeed.enabled }}
@@ -292,15 +311,27 @@
                 type: myspeed
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.myspeed "context" $ ) | quote }}
       {{- end }}
+      {{- if .Values.monitoring.enabled }}
+      - Grafana:
+            icon: sh-grafana
+            href: {{ printf "https://grafana.%s" .Values.ingress.domain | quote }}
+            siteMonitor: {{ printf "http://grafana.%s.svc.cluster.local" (include "homeserver.monitoring.names.namespace" .) | quote }}
+            description: Grafana
+            widget:
+                type: grafana
+                url: {{ printf "http://grafana.%s.svc.cluster.local" (include "homeserver.monitoring.names.namespace" .) | quote }}
+                username: "{{`{{HOMEPAGE_VAR_GRAFANA_USERNAME}}`}}"
+                password: "{{`{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}`}}"
+      {{- end }}
       - Authentik:
             icon: sh-authentik
-            href: https://authentik.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
-            siteMonitor: https://authentik.{{ required "A valid .Values.ingress.domain required!" .Values.ingress.domain }}
+            href: {{ printf "https://authentik.%s" .Values.ingress.domain | quote }}
+            siteMonitor: {{ printf "http://authentik-server.%s.svc.cluster.local" (include "homeserver.authentik.names.namespace" .) | quote }}
             description: SSO authentication
             widget:
                 type: authentik
-                url: http://{{ .Release.Name }}-authentik-server.{{ .Values.authentik.namespace }}.svc.cluster.local:80
-                key: "{{ .Values.services.homepage.widgets.authentik.apiKey }}"
+                url: {{ printf "http://authentik-server.%s.svc.cluster.local" (include "homeserver.authentik.names.namespace" .) | quote }}
+                key: "{{`{{HOMEPAGE_VAR_AUTHENTIK_API_KEY}}`}}"
       {{- if .Values.services.backrest.enabled }}
       - Backrest:
             icon: sh-backrest-light

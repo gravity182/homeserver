@@ -1,13 +1,12 @@
-{{- if .Values.services.librechat.enabled }}
-{{- $service := .Values.services.librechat  }}
-{{- $kind := "app" }}
+{{- $service := .Values.services.librechat }}
+{{- if $service.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 data:
   librechat.yaml: |-
 {{ .Files.Get "files/librechat/librechat.yaml" | indent 4 }}

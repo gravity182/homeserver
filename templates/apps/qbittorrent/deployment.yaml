@@ -1,50 +1,54 @@
-{{- if .Values.services.qbittorrent.enabled }}
-{{- $service := .Values.services.qbittorrent  }}
-{{- $kind := "app" }}
+{{- $service := .Values.services.qbittorrent }}
+{{- if $service.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 spec:
   revisionHistoryLimit: 3
   replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
-    matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
+    matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "context" $ ) | nindent 6 }}
   template:
     metadata:
-      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
-      annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+      annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
     spec:
-      automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
-      enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
-      priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
-      securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-      initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-        {{- if $service.useVuetorrent }}
+      automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "context" $) }}
+      enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "context" $) }}
+      priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "context" $) | quote }}
+      affinity: {{- include "homeserver.common.pod.affinity" (dict "service" $service "context" $) | nindent 8 }}
+      tolerations: {{- include "homeserver.common.pod.tolerations" (dict "service" $service "context" $) | nindent 8 }}
+      securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "context" $) | nindent 8 }}
+      initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "context" $) | nindent 8 }}
+        {{- if $service.vuetorrent.enabled }}
         - name: init-vuetorrent
           image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
           imagePullPolicy: IfNotPresent
-          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
           command:
             - /bin/sh
             - -ec
             - |-
-                curl -sSfL https://github.com/VueTorrent/VueTorrent/releases/latest/download/vuetorrent.zip -o /tmp/vuetorrent.zip \
-                  && cd /vuetorrent \
-                  && unzip -q /tmp/vuetorrent.zip \
-                  && mv vuetorrent/* . \
-                  && rm -r vuetorrent \
+                set -euo pipefail
+                VUETORRENT_DOWNLOAD_URL="https://github.com/VueTorrent/VueTorrent/releases/download/${VUETORRENT_VERSION}/vuetorrent.zip"
+                echo "Downloading VueTorrent ${VUETORRENT_VERSION}..." \
+                  && curl -sSfL "${VUETORRENT_DOWNLOAD_URL}" -o /tmp/vuetorrent.zip \
+                  && echo "Extracting..." \
+                  && unzip -qn /tmp/vuetorrent.zip -d / \
                   && echo -e "VueTorrent initialized!\nTo use, set '/vuetorrent' as Alternative WebUI path in the qBittorrent settings.\nRead more at https://github.com/VueTorrent/VueTorrent"
+          env:
+            - name: VUETORRENT_VERSION
+              value: {{ .Values.services.qbittorrent.vuetorrent.version | quote }}
+          securityContext: {{- include "homeserver.common.securityContext.strict" . | nindent 12 }}
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 16 }}
           volumeMounts:
-            - name: empty-dir
+            - name: vuetorrent
               mountPath: /vuetorrent
-              subPath: vuetorrent-dir
             - name: empty-dir
               mountPath: /tmp
               subPath: tmp-dir
@@ -53,9 +57,9 @@ spec:
         - name: qbittorrent
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
-          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
+          envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
+          env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
             - name: QBT_WEBUI_PORT
               value: "8080"
             - name: QBT_TORRENTING_PORT
@@ -70,21 +74,24 @@ spec:
             - name: p2pudp
               containerPort: 6881
               protocol: UDP
-          resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 12 }}
           livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
-          volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-            {{- if $service.useVuetorrent }}
-            - name: empty-dir
+          volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
+            {{- if $service.vuetorrent.enabled }}
+            - name: vuetorrent
               mountPath: /vuetorrent
-              subPath: vuetorrent-dir
             {{- end }}
             - name: config
               mountPath: /config
             - name: data
               mountPath: {{ $service.persistence.data | quote }}
-      volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
+          {{- if $service.vuetorrent.enabled }}
+        - name: vuetorrent
+          emptyDir: {}
+          {{- end }}
         - name: config
           hostPath:
             path: {{ $service.persistence.config | quote }}

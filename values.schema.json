@@ -37,48 +37,57 @@
       "description": "cert-manager subchart configuration",
       "$ref": "https://raw.githubusercontent.com/cert-manager/cert-manager/refs/heads/release-1.17/deploy/charts/cert-manager/values.schema.json"
     },
-    "tls": {
+    "x-cert-manager": {
       "type": "object",
       "description": "Automatic TLS certificate provisioning configuration\nDepends on cert-manager",
       "additionalProperties": false,
       "properties": {
-        "tlsSecretName": {
-          "type": "string",
-          "description": "TLS secret name",
-          "examples": [ "certs.letsencrypt.key.tls" ]
-        },
-        "acme": {
+        "cluster-issuer": {
           "type": "object",
-          "description": "ACME configuration",
+          "description": "Cluster Issuer configuration",
           "properties": {
+            "server": {
+              "type": "string",
+              "description": "ACME server",
+              "default": "https://acme-v02.api.letsencrypt.org/directory",
+              "examples": [ "https://acme-v02.api.letsencrypt.org/directory" ]
+            },
             "email": {
               "type": "string",
               "description": "ACME email",
               "examples": [ "example@gmail.com" ]
             },
-            "dns01": {
-              "type": "object",
-              "description": "DNS01 challenge configuration\nRead more: https://letsencrypt.org/docs/challenge-types/#dns-01-challenge",
-              "properties": {
-                "cfApiToken": {
-                  "type": "string",
-                  "description": "Cloudflare API token"
-                }
+            "solvers": {
+              "type": "array",
+              "description": "Solvers configuration",
+              "items": {
+                "type": "object"
               },
-              "required": [
-                "cfApiToken"
+              "examples": [
+                [
+                  {
+                    "dns01": {
+                      "cloudflare": {
+                        "apiTokenSecretRef": {
+                          "name": "cloudflare-api-key-secret",
+                          "key": "api-key"
+                        }
+                      }
+                    }
+                  }
+                ]
               ]
             }
           },
           "required": [
+            "server",
             "email",
-            "dns01"
+            "solvers"
           ]
         }
       },
       "required": [
-        "tlsSecretName",
-        "acme"
+        "cluster-issuer"
       ]
     },
     "authentik": {
@@ -86,9 +95,9 @@
       "description": "Authentik subchart configuration",
       "additionalProperties": true,
       "properties": {
-        "namespaceOverride": {
+        "namespace": {
           "type": "string",
-          "description": "Namespace override",
+          "description": "Namespace to deploy resources to",
           "default": "authentik"
         },
         "authentik": {
@@ -125,7 +134,7 @@
                 "password": {
                   "type": "string",
                   "description": "PostgreSQL password",
-                  "default": ""
+                  "default": "file:///secrets/postgres/user-password"
                 }
               },
               "required": [
@@ -157,54 +166,15 @@
               "required": [
                 "enabled"
               ]
-            },
-            "ingress": {
-              "type": "object",
-              "description": "Ingress configuration",
-              "properties": {
-                "enabled": {
-                  "type": "boolean",
-                  "description": "Enable ingress",
-                  "default": true
-                },
-                "ingressClassName": {
-                  "type": "string",
-                  "description": "Ingress class name",
-                  "default": "traefik"
-                },
-                "hosts": {
-                  "type": "array",
-                  "description": "List of hosts",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": [
-                "enabled",
-                "ingressClassName",
-                "hosts"
-              ]
             }
           },
           "required": [
-            "metrics",
-            "ingress"
+            "metrics"
           ]
         },
         "worker": {
           "type": "object",
-          "description": "Worker configuration",
-          "properties": {
-            "serviceAccountName": {
-              "type": "string",
-              "description": "Service account name",
-              "default": "authentik"
-            }
-          },
-          "required": [
-            "serviceAccountName"
-          ]
+          "description": "Worker configuration"
         },
         "serviceAccount": {
           "type": "object",
@@ -220,131 +190,23 @@
             "create"
           ]
         },
-        "authentik-remote-cluster": {
-          "type": "object",
-          "description": "authentik-remote-cluster subchart configuration",
-          "properties": {
-            "namespaceOverride": {
-              "type": "string",
-              "description": "Namespace override",
-              "default": "authentik"
-            },
-            "fullnameOverride": {
-              "type": "string",
-              "description": "Fullname override",
-              "default": "authentik"
-            },
-            "serviceAccountSecret": {
-              "type": "object",
-              "description": "Service account secret configuration",
-              "properties": {
-                "enabled": {
-                  "type": "boolean",
-                  "description": "Enable service account secret",
-                  "default": false
-                }
-              },
-              "required": [
-                "enabled"
-              ]
-            }
-          },
-          "required": [
-            "namespaceOverride",
-            "fullnameOverride",
-            "serviceAccountSecret"
-          ]
-        },
         "postgresql": {
           "type": "object",
-          "description": "PostgreSQL Bitnami subchart configuration",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "description": "Enable PostgreSQL",
-              "default": true
-            },
-            "namespaceOverride": {
-              "type": "string",
-              "description": "Namespace override",
-              "default": "authentik"
-            },
-            "auth": {
-              "type": "object",
-              "description": "Authentication configuration",
-              "properties": {
-                "password": {
-                  "type": "string",
-                  "description": "PostgreSQL password",
-                  "default": ""
-                }
-              },
-              "required": [
-                "password"
-              ]
-            },
-            "backup": {
-              "type": "object",
-              "description": "Backup configuration",
-              "properties": {
-                "dir": {
-                  "type": "string",
-                  "description": "Backup directory",
-                  "examples": [ "/opt/service/postgresql/17/backup" ]
-                },
-                "scheduleCron": {
-                  "type": "string",
-                  "description": "Schedule cron",
-                  "examples": [ "0 5 * * *" ]
-                },
-                "retentionDays": {
-                  "type": "integer",
-                  "description": "Retention days",
-                  "examples": [ 180 ]
-                }
-              },
-              "required": [
-                "dir",
-                "scheduleCron",
-                "retentionDays"
-              ]
-            }
-          },
-          "required": [
-            "enabled",
-            "namespaceOverride",
-            "auth",
-            "backup"
-          ]
+          "description": "PostgreSQL Bitnami chart configuration",
+          "$ref": "https://raw.githubusercontent.com/bitnami/charts/refs/tags/postgresql/16.7.4/bitnami/postgresql/values.schema.json"
         },
         "redis": {
           "type": "object",
-          "description": "Redis Bitnami subchart configuration",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "description": "Enable Redis",
-              "default": true
-            },
-            "namespaceOverride": {
-              "type": "string",
-              "description": "Namespace override",
-              "default": "authentik"
-            }
-          },
-          "required": [
-            "enabled",
-            "namespaceOverride"
-          ]
+          "description": "Redis Bitnami chart configuration",
+          "$ref": "https://raw.githubusercontent.com/bitnami/charts/refs/tags/redis/21.1.6/bitnami/redis/values.schema.json"
         }
       },
       "required": [
-        "namespaceOverride",
+        "namespace",
         "authentik",
         "server",
         "worker",
         "serviceAccount",
-        "authentik-remote-cluster",
         "postgresql",
         "redis"
       ]
@@ -365,16 +227,15 @@
           "default": "homepage",
           "examples": [ "homepage" ]
         },
-        "annotations": {
+        "extraAnnotations": {
           "type": "object",
-          "description": "Custom annotations to add to the Ingress resource",
+          "description": "Extra annotations to add to the Ingress resource",
           "default": { }
         }
       },
       "required": [
         "domain",
-        "rootService",
-        "annotations"
+        "rootService"
       ]
     },
     "vpn": {
@@ -484,6 +345,17 @@
       "description": "Whether to mount Service Account token in pods",
       "default": false
     },
+    "affinity": {
+      "type": "object",
+      "description": "Affinity configuration for pods\nSee https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity"
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "Tolerations configuration for pods\nSee https://kubernetes.io/docs/concepts/configuration/taint-and-toleration",
+      "items": {
+        "type": "object"
+      }
+    },
     "commonLabels": {
       "type": "object",
       "description": "Common labels to add to all the deployed resources",
@@ -558,8 +430,18 @@
           "$ref": "#/$defs/plexService"
         },
         "jellyfin": {
-          "description": "Jellyfin configuration\nhttps://github.com/jellyfin/jellyfin",
-          "$ref": "#/$defs/jellyfinService"
+          "description": "Jellyfin configuration. Supports multiple instances\nhttps://github.com/jellyfin/jellyfin",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/jellyfinService"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/jellyfinService"
+              }
+            }
+          ]
         },
         "autobrr": {
           "description": "Autobrr configuration\nhttps://github.com/autobrr/autobrr",
@@ -742,12 +624,14 @@
   "required": [
     "host",
     "cert-manager",
-    "tls",
+    "x-cert-manager",
     "authentik",
     "ingress",
     "vpn",
     "enableServiceLinks",
     "automountServiceAccountToken",
+    "affinity",
+    "tolerations",
     "commonLabels",
     "commonAnnotations",
     "livenessProbe",
@@ -891,9 +775,92 @@
         "failureThreshold"
       ]
     },
-    "commonProperties": {
+    "serviceCommon": {
       "type": "object",
       "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the service",
+          "default": true
+        },
+        "exposed": {
+          "type": "boolean",
+          "description": "Expose the service publicly via ingress",
+          "default": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Controls the names of the deployed k8s resources"
+        },
+        "replicaCount": {
+          "type": "integer",
+          "description": "Number of replicas",
+          "default": 1
+        },
+        "critical": {
+          "type": "boolean",
+          "description": "Give the service higher priority",
+          "default": false
+        },
+        "image": {
+          "type": "object",
+          "description": "Image configuration",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Image repository"
+            },
+            "tag": {
+              "type": "string",
+              "description": "Image tag",
+              "examples": [ "latest" ]
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Image pull policy",
+              "enum": [ "Always", "IfNotPresent", "Never" ]
+            }
+          },
+          "required": [
+            "repository",
+            "tag",
+            "pullPolicy"
+          ]
+        },
+        "ports": {
+          "type": "object",
+          "description": "Ports configuration"
+        },
+        "ingress": {
+          "type": "array",
+          "description": "Ingress configuration",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vpn": {
+          "type": "object",
+          "description": "VPN configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable VPN",
+              "default": false
+            }
+          }
+        },
+        "livenessProbe": {
+          "description": "Service liveness probe.\nOverrides the global value.",
+          "$ref": "#/$defs/livenessProbe"
+        },
+        "readinessProbe": {
+          "description": "Service readiness probe.\nOverrides the global value.",
+          "$ref": "#/$defs/readinessProbe"
+        },
+        "startupProbe": {
+          "description": "Service startup probe.\nOverrides the global value.",
+          "$ref": "#/$defs/startupProbe"
+        },
         "securityContext": {
           "type": "object",
           "description": "Security context configuration",
@@ -1000,181 +967,31 @@
         "extraAnnotations": {
           "type": "object",
           "description": "Extra annotations.\nMerges with the global value."
+        },
+        "affinity": {
+          "type": "object",
+          "description": "Pod affinity configuration.\nRead https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity",
+          "additionalProperties": true
+        },
+        "tolerations": {
+          "type": "array",
+          "description": "Pod tolerations configuration.\nRead https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration",
+          "items": {
+            "type": "object"
+          }
         }
       },
       "required": [
+        "enabled",
+        "exposed",
+        "name",
+        "replicaCount",
+        "critical",
+        "image",
         "securityContext",
-        "resourcesPreset"
-      ]
-    },
-    "serviceCommon": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/commonProperties"
-        },
-        {
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "description": "Enable the service",
-              "default": true
-            },
-            "exposed": {
-              "type": "boolean",
-              "description": "Expose the service publicly via ingress",
-              "default": true
-            },
-            "name": {
-              "type": "string",
-              "description": "Controls the names of the deployed k8s resources"
-            },
-            "replicaCount": {
-              "type": "integer",
-              "description": "Number of replicas",
-              "default": 1
-            },
-            "critical": {
-              "type": "boolean",
-              "description": "Give the service higher priority",
-              "default": false
-            },
-            "image": {
-              "type": "object",
-              "description": "Image configuration",
-              "properties": {
-                "repository": {
-                  "type": "string",
-                  "description": "Image repository"
-                },
-                "tag": {
-                  "type": "string",
-                  "description": "Image tag",
-                  "examples": [ "latest" ]
-                },
-                "pullPolicy": {
-                  "type": "string",
-                  "description": "Image pull policy",
-                  "enum": [ "Always", "IfNotPresent", "Never" ]
-                }
-              },
-              "required": [
-                "repository",
-                "tag",
-                "pullPolicy"
-              ]
-            },
-            "ports": {
-              "type": "object",
-              "description": "Ports configuration"
-            },
-            "ingress": {
-              "type": "array",
-              "description": "Ingress configuration",
-              "items": {
-                "type": "string"
-              }
-            },
-            "vpn": {
-              "type": "object",
-              "description": "VPN configuration",
-              "properties": {
-                "enabled": {
-                  "type": "boolean",
-                  "description": "Enable VPN",
-                  "default": false
-                }
-              }
-            },
-            "livenessProbe": {
-              "description": "Service liveness probe.\nOverrides the global value.",
-              "$ref": "#/$defs/livenessProbe"
-            },
-            "readinessProbe": {
-              "description": "Service readiness probe.\nOverrides the global value.",
-              "$ref": "#/$defs/readinessProbe"
-            },
-            "startupProbe": {
-              "description": "Service startup probe.\nOverrides the global value.",
-              "$ref": "#/$defs/startupProbe"
-            }
-          },
-          "required": [
-            "enabled",
-            "exposed",
-            "name",
-            "replicaCount",
-            "critical",
-            "image",
-            "securityContext",
-            "resourcesPreset",
-            "ports",
-            "ingress"
-          ]
-        }
-      ]
-    },
-    "serviceDbCommon": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/commonProperties"
-        },
-        {
-          "properties": {
-            "ports": {
-              "type": "object",
-              "description": "Ports configuration"
-            },
-            "livenessProbe": {
-              "description": "Database liveness probe.\nOverrides the global value.",
-              "$ref": "#/$defs/livenessProbe"
-            },
-            "readinessProbe": {
-              "description": "Database readiness probe.\nOverrides the global value.",
-              "$ref": "#/$defs/readinessProbe"
-            },
-            "startupProbe": {
-              "description": "Database startup probe.\nOverrides the global value.",
-              "$ref": "#/$defs/startupProbe"
-            }
-          },
-          "required": [
-            "ports"
-          ]
-        }
-      ]
-    },
-    "serviceDbBackupCommon": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/commonProperties"
-        },
-        {
-          "properties": {
-            "dir": {
-              "type": "string",
-              "description": "Backup directory",
-              "examples": [ "/opt/service/postgresql/17/backup" ]
-            },
-            "scheduleCron": {
-              "type": "string",
-              "description": "Schedule cron",
-              "examples": [ "0 5 * * *" ]
-            },
-            "retentionDays": {
-              "type": "integer",
-              "description": "Retention days",
-              "examples": [ 180 ]
-            }
-          },
-          "required": [
-            "dir",
-            "scheduleCron",
-            "retentionDays"
-          ]
-        }
+        "resourcesPreset",
+        "ports",
+        "ingress"
       ]
     },
     "backrestService": {
@@ -1234,265 +1051,8 @@
         },
         {
           "properties": {
-            "widgets": {
-              "type": "object",
-              "description": "Widgets configuration",
-              "properties": {
-                "authentik": {
-                  "type": "object",
-                  "description": "Authentik widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Admin Portal > Directory > Tokens & App passwords and generate a new API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "miniflux": {
-                  "type": "object",
-                  "description": "Miniflux widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> API Keys and generate a new API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "radarr": {
-                  "type": "object",
-                  "description": "Radarr widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> General and retrieve the API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "sonarr": {
-                  "type": "object",
-                  "description": "Sonarr widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> General and retrieve the API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "lidarr": {
-                  "type": "object",
-                  "description": "Lidarr widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> General and retrieve the API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "bazarr": {
-                  "type": "object",
-                  "description": "Bazarr widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> General and retrieve the API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "prowlarr": {
-                  "type": "object",
-                  "description": "Prowlarr widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> General and retrieve the API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "autobrr": {
-                  "type": "object",
-                  "description": "Autobrr widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> API Keys and generate a new API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "jellyseerr": {
-                  "type": "object",
-                  "description": "Jellyseerr widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> General and retrieve the API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "tautulli": {
-                  "type": "object",
-                  "description": "Tautulli widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> Web Interface and retrieve the API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "jellyfin": {
-                  "type": "object",
-                  "description": "Jellyfin widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> API Keys and generate a new API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "sabnzbd": {
-                  "type": "object",
-                  "description": "Sabnzbd widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Settings -> General and retrieve the API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "changedetection": {
-                  "type": "object",
-                  "description": "Changedetection widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "gotify": {
-                  "type": "object",
-                  "description": "Gotify widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "go to Clients and generate a new client"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                },
-                "kavita": {
-                  "type": "object",
-                  "description": "Kavita widget configuration",
-                  "properties": {
-                    "username": {
-                      "type": "string",
-                      "description": "Kavita username"
-                    },
-                    "password": {
-                      "type": "string",
-                      "description": "Kavita password"
-                    }
-                  },
-                  "required": [
-                    "username",
-                    "password"
-                  ]
-                },
-                "calibre": {
-                  "type": "object",
-                  "description": "Calibre widget configuration",
-                  "properties": {
-                    "username": {
-                      "type": "string",
-                      "description": "Calibre username"
-                    },
-                    "password": {
-                      "type": "string",
-                      "description": "Calibre password"
-                    }
-                  },
-                  "required": [
-                    "username",
-                    "password"
-                  ]
-                },
-                "mealie": {
-                  "type": "object",
-                  "description": "Mealie widget configuration",
-                  "properties": {
-                    "apiKey": {
-                      "type": "string",
-                      "description": "API key"
-                    }
-                  },
-                  "required": [
-                    "apiKey"
-                  ]
-                }
-              },
-              "required": [
-                "authentik",
-                "miniflux",
-                "radarr",
-                "sonarr",
-                "lidarr",
-                "bazarr",
-                "prowlarr",
-                "autobrr",
-                "jellyseerr",
-                "tautulli",
-                "jellyfin",
-                "sabnzbd",
-                "changedetection",
-                "gotify",
-                "kavita",
-                "calibre",
-                "mealie"
-              ]
-            }
           },
           "required": [
-            "widgets"
           ]
         }
       ]
@@ -1613,9 +1173,21 @@
         },
         {
           "properties": {
-            "useVuetorrent": {
-              "type": "boolean",
-              "description": "Use Vuetorrent"
+            "vuetorrent": {
+              "type": "object",
+              "description": "VueTorrent configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable VueTorrent",
+                  "default": true
+                },
+                "version": {
+                  "type": "string",
+                  "description": "VueTorrent version",
+                  "default": "v2.24.2"
+                }
+              }
             },
             "persistence": {
               "type": "object",
@@ -1637,7 +1209,7 @@
             }
           },
           "required": [
-            "useVuetorrent",
+            "vuetorrent",
             "persistence"
           ]
         }
@@ -2028,9 +1600,27 @@
               "type": "string",
               "description": "Schedule cron"
             },
-            "enableJmxdOverlays": {
-              "type": "boolean",
-              "description": "Enable JMXD overlays"
+            "jmxdOverlays": {
+              "type": "object",
+              "description": "Jmxd overlays configuration\nSee https://github.com/jmxd/Kometa",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable Jmxd overlays",
+                  "default": false,
+                  "examples": [ true ]
+                },
+                "commitHash": {
+                  "type": "string",
+                  "description": "Commit hash",
+                  "default": "75a1c1f83d62d4b7d334d2dffa90e6865649ee39",
+                  "examples": [ "75a1c1f83d62d4b7d334d2dffa90e6865649ee39" ]
+                }
+              },
+              "required": [
+                "enabled",
+                "commitHash"
+              ]
             },
             "connections": {
               "type": "object",
@@ -2170,8 +1760,6 @@
           },
           "required": [
             "scheduleCron",
-            "enableJmxdOverlays",
-            "connections",
             "persistence"
           ]
         }
@@ -2287,61 +1875,10 @@
         },
         {
           "properties": {
-            "db": {
+            "postgresql": {
               "type": "object",
-              "description": "Database configuration",
-              "unevaluatedProperties": false,
-              "allOf": [
-                {
-                  "$ref": "#/$defs/serviceDbCommon"
-                },
-                {
-                  "properties": {
-                    "dbName": {
-                      "type": "string",
-                      "description": "Database name"
-                    },
-                    "user": {
-                      "type": "string",
-                      "description": "Database user"
-                    },
-                    "password": {
-                      "type": "string",
-                      "description": "Database password"
-                    },
-                    "persistence": {
-                      "type": "object",
-                      "description": "Persistence configuration",
-                      "properties": {
-                        "data": {
-                          "type": "string",
-                          "description": "Data directory"
-                        }
-                      },
-                      "required": [
-                        "data"
-                      ]
-                    },
-                    "backup": {
-                      "type": "object",
-                      "description": "Backup configuration",
-                      "unevaluatedProperties": false,
-                      "allOf": [
-                        {
-                          "$ref": "#/$defs/serviceDbBackupCommon"
-                        }
-                      ]
-                    }
-                  },
-                  "required": [
-                    "dbName",
-                    "user",
-                    "password",
-                    "persistence",
-                    "backup"
-                  ]
-                }
-              ]
+              "description": "PostgreSQL Bitnami chart configuration",
+              "$ref": "https://raw.githubusercontent.com/bitnami/charts/refs/tags/postgresql/16.7.4/bitnami/postgresql/values.schema.json"
             },
             "cleanupArchiveReadDays": {
               "type": "integer",
@@ -2357,7 +1894,7 @@
             }
           },
           "required": [
-            "db",
+            "postgresql",
             "cleanupArchiveReadDays",
             "cleanupArchiveUnreadDays",
             "cleanupFrequencyHours"
@@ -2374,84 +1911,61 @@
         },
         {
           "properties": {
-            "db": {
+            "postgresql": {
               "type": "object",
-              "description": "Database configuration",
-              "unevaluatedProperties": false,
-              "allOf": [
-                {
-                  "$ref": "#/$defs/serviceDbCommon"
-                },
-                {
-                  "properties": {
-                    "dbName": {
-                      "type": "string",
-                      "description": "Database name"
-                    },
-                    "user": {
-                      "type": "string",
-                      "description": "Database user"
-                    },
-                    "password": {
-                      "type": "string",
-                      "description": "Database password"
-                    },
-                    "persistence": {
-                      "type": "object",
-                      "description": "Persistence configuration",
-                      "properties": {
-                        "data": {
-                          "type": "string",
-                          "description": "Data directory"
-                        }
-                      },
-                      "required": [
-                        "data"
-                      ]
-                    },
-                    "backup": {
-                      "type": "object",
-                      "description": "Backup configuration",
-                      "unevaluatedProperties": false,
-                      "allOf": [
-                        {
-                          "$ref": "#/$defs/serviceDbBackupCommon"
-                        },
-                        {
-                          "properties": {
-                            "dir": {
-                              "type": "string",
-                              "description": "Backup directory"
-                            }
-                          },
-                          "required": [
-                            "dir"
-                          ]
-                        }
-                      ]
-                    }
-                  },
-                  "required": [
-                    "dbName",
-                    "user",
-                    "password",
-                    "persistence",
-                    "backup"
-                  ]
-                }
-              ]
+              "description": "PostgreSQL Bitnami chart configuration",
+              "$ref": "https://raw.githubusercontent.com/bitnami/charts/refs/tags/postgresql/16.7.4/bitnami/postgresql/values.schema.json"
             },
             "appSecretToken": {
-              "type": "string",
-              "description": "App secret token"
+              "type": "object",
+              "description": "App secret token",
+              "properties": {
+                "secretName": {
+                  "type": "string",
+                  "description": "Secret name"
+                },
+                "secretKey": {
+                  "type": "string",
+                  "description": "Secret key"
+                }
+              },
+              "required": [
+                "secretName",
+                "secretKey"
+              ]
             },
             "invitationCode": {
-              "type": "string",
-              "description": "Invitation code"
+              "type": "object",
+              "description": "Invitation code",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable invitation code",
+                  "default": false
+                },
+                "secretName": {
+                  "type": "string",
+                  "description": "Secret name"
+                },
+                "secretKey": {
+                  "type": "string",
+                  "description": "Secret key"
+                }
+              },
+              "required": [
+                "enabled",
+                "secretName",
+                "secretKey"
+              ]
+            },
+            "requireConfirmedEmail": {
+              "type": "boolean",
+              "description": "Whether to require email confirmation for new users",
+              "default": false
             }
           },
           "required": [
-            "db",
+            "postgresql",
             "appSecretToken",
             "invitationCode"
           ]
@@ -2572,13 +2086,28 @@
         },
         {
           "properties": {
-            "adminUsername": {
-              "type": "string",
-              "description": "Admin username"
-            },
-            "adminPassword": {
-              "type": "string",
-              "description": "Admin password"
+            "adminCredentials": {
+              "type": "object",
+              "description": "Admin credentials",
+              "properties": {
+                "secretName": {
+                  "type": "string",
+                  "description": "Secret name"
+                },
+                "usernameKey": {
+                  "type": "string",
+                  "description": "Admin username key"
+                },
+                "passwordKey": {
+                  "type": "string",
+                  "description": "Admin password key"
+                }
+              },
+              "required": [
+                "secretName",
+                "usernameKey",
+                "passwordKey"
+              ]
             },
             "mediaMaxSize": {
               "type": "string",
@@ -2658,8 +2187,7 @@
             }
           },
           "required": [
-            "adminUsername",
-            "adminPassword",
+            "adminCredentials",
             "mediaMaxSize",
             "timeout",
             "saveTitle",
@@ -2744,13 +2272,28 @@
         },
         {
           "properties": {
-            "adminUsername": {
-              "type": "string",
-              "description": "Admin username"
-            },
-            "adminPassword": {
-              "type": "string",
-              "description": "Admin password"
+            "adminCredentials": {
+              "type": "object",
+              "description": "Admin credentials",
+              "properties": {
+                "secretName": {
+                  "type": "string",
+                  "description": "Secret name"
+                },
+                "usernameKey": {
+                  "type": "string",
+                  "description": "Admin username key"
+                },
+                "passwordKey": {
+                  "type": "string",
+                  "description": "Admin password key"
+                }
+              },
+              "required": [
+                "secretName",
+                "usernameKey",
+                "passwordKey"
+              ]
             },
             "databaseDialect": {
               "type": "string",
@@ -2775,8 +2318,7 @@
             }
           },
           "required": [
-            "adminUsername",
-            "adminPassword",
+            "adminCredentials",
             "databaseDialect",
             "databaseConnection",
             "persistence"
@@ -3097,55 +2639,10 @@
                 "clientImages"
               ]
             },
-            "db": {
+            "mongodb": {
               "type": "object",
               "description": "Database configuration",
-              "unevaluatedProperties": false,
-              "allOf": [
-                {
-                  "$ref": "#/$defs/serviceDbCommon"
-                },
-                {
-                  "properties": {
-                    "dbName": {
-                      "type": "string",
-                      "description": "Database name"
-                    },
-                    "secretName": {
-                      "type": "string",
-                      "description": "Secrete name"
-                    },
-                    "persistence": {
-                      "type": "object",
-                      "description": "Persistence configuration",
-                      "properties": {
-                        "data": {
-                          "type": "string",
-                          "description": "Data directory"
-                        }
-                      },
-                      "required": [
-                        "data"
-                      ]
-                    },
-                    "backup": {
-                      "type": "object",
-                      "description": "Backup configuration",
-                      "unevaluatedProperties": false,
-                      "allOf": [
-                        {
-                          "$ref": "#/$defs/serviceDbBackupCommon"
-                        }
-                      ]
-                    }
-                  },
-                  "required": [
-                    "dbName",
-                    "secretName",
-                    "persistence"
-                  ]
-                }
-              ]
+              "$ref": "https://raw.githubusercontent.com/bitnami/charts/refs/tags/mongodb/16.5.9/bitnami/mongodb/values.schema.json"
             }
           },
           "required": [
@@ -3157,7 +2654,7 @@
             "customFooter",
             "search",
             "persistence",
-            "db"
+            "mongodb"
           ]
         }
       ]
@@ -3171,9 +2668,23 @@
         },
         {
           "properties": {
-            "masterKeySecret": {
-              "type": "string",
-              "description": "Name of the secret containing the master key\n\nMust have the 'master-key' key"
+            "masterKey": {
+              "type": "object",
+              "description": "Master key",
+              "properties": {
+                "secretName": {
+                  "type": "string",
+                  "description": "Secret name"
+                },
+                "secretKey": {
+                  "type": "string",
+                  "description": "Secret key"
+                }
+              },
+              "required": [
+                "secretName",
+                "secretKey"
+              ]
             },
             "persistence": {
               "type": "object",
@@ -3190,7 +2701,7 @@
             }
           },
           "required": [
-            "masterKeySecret",
+            "masterKey",
             "persistence"
           ]
         }

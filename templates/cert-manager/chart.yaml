@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "homeserver.cert-manager.names.namespace" . }}
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: cert-manager
+  namespace: {{ include "homeserver.common.names.namespace" $ }}
+spec:
+  repo: https://charts.jetstack.io
+  chart: cert-manager
+  version: 1.17.2
+  targetNamespace: {{ include "homeserver.cert-manager.names.namespace" . }}
+  createNamespace: false
+  valuesContent: |
+{{- include "homeserver.common.tplvalues.render" (dict "value" (omit (index .Values "cert-manager") "namespace") "context" .) | nindent 4 }}

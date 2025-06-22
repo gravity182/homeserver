@@ -1,37 +1,38 @@
-{{- if .Values.services.calibrebookdownloader.enabled }}
-{{- $service := .Values.services.calibrebookdownloader  }}
-{{- $kind := "app" }}
+{{- $service := .Values.services.calibrebookdownloader }}
+{{- if $service.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) | quote }}
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 spec:
   revisionHistoryLimit: 3
   replicas: {{ $service.replicaCount }}
   strategy:
     type: Recreate
   selector:
-    matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 6 }}
+    matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "context" $ ) | nindent 6 }}
   template:
     metadata:
-      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
-      annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 8 }}
+      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+      annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
     spec:
-      automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "kind" $kind "context" $) }}
-      enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "kind" $kind "context" $) }}
-      priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "kind" $kind "context" $) | quote }}
-      securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
-      initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "context" $) }}
+      enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "context" $) }}
+      priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "context" $) | quote }}
+      affinity: {{- include "homeserver.common.pod.affinity" (dict "service" $service "context" $) | nindent 8 }}
+      tolerations: {{- include "homeserver.common.pod.tolerations" (dict "service" $service "context" $) | nindent 8 }}
+      securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "context" $) | nindent 8 }}
+      initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "context" $) | nindent 8 }}
       containers:
         - name: calibre-book-downloader
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
-          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
-          env: {{- include "homeserver.common.container.env" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
+          envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
+          env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
             - name: UID
               value: {{ required "A valid UID required!" .Values.host.uid | quote }}
             - name: GID
@@ -69,14 +70,14 @@ spec:
             - name: http
               containerPort: 8084
               protocol: TCP
-          resources: {{- include "homeserver.common.container.resources" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 12 }}
           livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
-          volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" $kind "context" $) | nindent 12 }}
+          volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
             - name: ingest
               mountPath: /cwa-book-ingest
-      volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "kind" $kind "context" $) | nindent 8 }}
+      volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
         - name: ingest
           hostPath:
             path: {{ .Values.services.calibre.persistence.ingest | quote }}

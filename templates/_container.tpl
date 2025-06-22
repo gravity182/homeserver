@@ -1,10 +1,10 @@
 {{/*
 Security context for containers.
 Usage:
-{{ include "homeserver.common.container.securityContext" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "homeserver.common.container.securityContext" (dict "service" $service "context" $) }}
 */}}
 {{- define "homeserver.common.container.securityContext" -}}
-{{- if (include "homeserver.common.utils.getSecurityContext" (dict "service" .service "kind" .kind) | fromYaml).strict }}
+{{- if (include "homeserver.common.utils.getSecurityContext" (dict "service" .service) | fromYaml).strict }}
 {{ include "homeserver.common.securityContext.strict" .context }}
 {{- else }}
 {{ include "homeserver.common.securityContext.lenient" .context }}
@@ -13,11 +13,11 @@ Usage:
 
 {{/* Resources for containers.
 Usage:
-{{ include "homeserver.common.container.resources" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "homeserver.common.container.resources" (dict "service" $service "context" $) }}
 */}}
 {{- define "homeserver.common.container.resources" -}}
 {{- if .context.Values.resources.enabled -}}
-{{- $preset := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "resourcesPreset") -}}
+{{- $preset := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "resourcesPreset") -}}
 {{- if not $preset -}}
 {{- printf "Resources preset is missing" | fail -}}
 {{- end -}}
@@ -29,13 +29,13 @@ Usage:
 
 {{/* Env from for containers.
 Usage:
-{{ include "homeserver.common.container.envFrom" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "homeserver.common.container.envFrom" (dict "service" $service "context" $) }}
 {{ include "homeserver.common.container.envFrom" (dict "context" $) }}
 */}}
 {{- define "homeserver.common.container.envFrom" -}}
-{{- if and (hasKey . "service") (hasKey . "kind") -}}
-{{- $extraEnvFromCM := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraEnvFromCM") -}}
-{{- $extraEnvFromSecret := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "kind" .kind "key" "extraEnvFromSecret") -}}
+{{- if (hasKey . "service") -}}
+{{- $extraEnvFromCM := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "extraEnvFromCM") -}}
+{{- $extraEnvFromSecret := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "extraEnvFromSecret") -}}
 {{- if $extraEnvFromCM }}
 - configMapRef:
     name: {{ $extraEnvFromCM | quote }}
@@ -51,7 +51,7 @@ Usage:
 
 {{/* Env vars for containers.
 Usage:
-{{ include "homeserver.common.container.env" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "homeserver.common.container.env" (dict "service" $service "context" $) }}
 {{ include "homeserver.common.container.env" (dict "context" $) }}
 */}}
 {{- define "homeserver.common.container.env" -}}
@@ -61,9 +61,9 @@ Usage:
   valueFrom:
     fieldRef:
       fieldPath: status.podIP
-{{- if and (hasKey . "service") (hasKey . "kind") -}}
-{{- $extraEnv := include "homeserver.common.utils.getExtraEnv" (dict "service" .service "kind" .kind) | fromYamlArray -}}
-{{- $extraEnvSecrets := include "homeserver.common.utils.getExtraEnvSecrets" (dict "service" .service "kind" .kind) | fromYamlArray -}}
+{{- if (hasKey . "service") -}}
+{{- $extraEnv := include "homeserver.common.utils.getExtraEnv" (dict "service" .service) | fromYamlArray -}}
+{{- $extraEnvSecrets := include "homeserver.common.utils.getExtraEnvSecrets" (dict "service" .service) | fromYamlArray -}}
 {{- range $extraEnv }}
 - name: {{ .name | quote }}
   value: {{ include "homeserver.common.tplvalues.render" (dict "value" .value "context" $.context) | quote }}
@@ -82,7 +82,7 @@ Usage:
 {{/*
 Volume mounts for containers.
 Usage:
-{{ include "homeserver.common.container.volumeMounts" (dict "service" $service "kind" "app" "context" $) }}
+{{ include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) }}
 {{ include "homeserver.common.container.volumeMounts" (dict "context" $) }}
 */}}
 {{- define "homeserver.common.container.volumeMounts" -}}
@@ -92,8 +92,8 @@ Usage:
 - name: empty-dir
   mountPath: /log
   subPath: log-dir
-{{- if and (hasKey . "service") (hasKey . "kind") -}}
-{{- $extraVolumeMounts := include "homeserver.common.utils.getExtraVolumeMounts" (dict "service" .service "kind" .kind) -}}
+{{- if (hasKey . "service") -}}
+{{- $extraVolumeMounts := include "homeserver.common.utils.getExtraVolumeMounts" (dict "service" .service) -}}
 {{- if $extraVolumeMounts }}
 {{ include "homeserver.common.tplvalues.render" (dict "value" $extraVolumeMounts "context" .context) }}
 {{- end }}

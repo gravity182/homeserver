@@ -1,0 +1,30 @@
+{{- $service := .Values.services.homepage }}
+{{- if $service.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: homepage-egress-policy
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+spec:
+  podSelector:
+    matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "context" $ ) | nindent 6 }}
+  policyTypes:
+    - Egress
+  egress:
+    # Allow communication with Authentk (for healthchecks on the homepage)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ include "homeserver.authentik.names.namespace" . | quote }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: authentik
+    # Allow communication with Grafana (for healthchecks on the homepage)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ include "homeserver.monitoring.names.namespace" . | quote }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: grafana
+{{- end }}

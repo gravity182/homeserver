@@ -5,7 +5,6 @@
 - [Post-installation](#post-installation)
     - [Authentik](#authentik)
         - [Setup](#setup)
-        - [Managing PostgreSQL](#managing-postgresql)
     - [Cert-manager](#cert-manager)
     - [Traefik](#traefik)
 - [Chart customization](#chart-customization)
@@ -64,6 +63,8 @@
 - [Miniflux](#miniflux)
     - [Auth proxy header](#auth-proxy-header-2)
 - [Mealie](#mealie)
+    - [Managing PostgreSQL](#managing-postgresql)
+    - [Managing MongoDB](#managing-mongodb)
 
 ## Installation
 
@@ -206,23 +207,6 @@ Give it a couple of minutes for changes to take effect. Log out of your admin ac
 
 Great. Now your ingress paths are protected.
 
-#### Managing PostgreSQL
-
-Sometimes you'll might want to perform manual actions with the Authentik's PostgreSQL database.
-
-Before doing that, stop the server and worker first:
-```sh
-kubectl -n authentik scale deploy --replicas 0 authentik-server
-kubectl -n authentik scale deploy --replicas 0 authentik-worker
-```
-
-Now you connect to the running pod. For instance, this is how you would jump into `psql`:
-```sh
-kubectl -n authentik exec -it pods/jellywatch-postgresql-0 -- bash
-export PGPASSWORD="$(cat $POSTGRES_PASSWORD_FILE)"
-psql -U $POSTGRES_USER -d $POSTGRES_DATABASE
-```
-
 ---
 
 ### Cert-manager
@@ -323,14 +307,14 @@ If you'd like to learn more about this topic, refer to the [cert-manager docs](h
 
 ### Traefik
 
-If you put your homeserver behind another Reverse Proxy such as Cloudflare, we'll need to configure Traefik to trust this proxy, otherwise the `X-Forwarded-*` headers will be discarded.
+If you put your homeserver behind another Reverse Proxy such as Cloudflare, you'll need to configure Traefik to trust this proxy, otherwise the `X-Forwarded-*` headers will be discarded.
 
 This affects Authentik, limiting its possibility to apply geo-policies and trace real client IPs.
-Moreover, this also affects the possibility of Traefik to apply ip-based middlewares such as rate-limiting.
+Moreover, this also affects the possibility of Traefik to apply IP-based middlewares such as rate-limiting.
 
 By default Traefik does not trust any IPs that pass these headers.
 
-Fortunately, this chart already fixes that for you. Just make sure to set
+Fortunately, this chart already fixes that for you given that you're using Cloudflare as a DNS provider.
 
 You can verify that `X-Forwarded` headers are passed by logging in into Authentik and looking at your sessions in the Dashboard - you should see you real IP.
 
@@ -1476,3 +1460,67 @@ The user will be created automatically on the first login. The username of a cre
 See the official docs at <https://docs.mealie.io/documentation/getting-started/introduction/>.
 
 ---
+
+### Managing PostgreSQL
+
+Sometimes you'll might want to perform manual actions with a PostgreSQL database.
+
+Before doing that, stop the services using this database:
+```sh
+kubectl -n authentik scale deploy --replicas 0 <deployment>
+```
+
+Now you can connect to the running container.
+
+For instance, this is how you would jump into `psql`:
+```sh
+# connect to the container
+kubectl -n authentik exec -it pods/authentik-postgresql-0 -- bash
+# inside the container
+export PGPASSWORD="$(cat $POSTGRES_PASSWORD_FILE)"
+psql -U $POSTGRES_USER -d $POSTGRES_DATABASE
+```
+
+Or restore the backup, assuming the backup exists on the local machine in current workdir:
+```sh
+# copy the backup into the container
+kubectl cp authentik_db_backup_2025_05_18.dump authentik/authentik-postgresql-0:/tmp/backup.dump
+# connect to the container
+kubectl -n authentik exec -it pods/authentik-postgresql-0 -- bash
+# inside the container
+export PGPASSWORD="$(cat $POSTGRES_PASSWORD_FILE)"
+pg_restore --clean --create -U $POSTGRES_USER -d $POSTGRES_DATABASE /tmp/backup.dump
+```
+
+---
+
+### Managing MongoDB
+
+Sometimes you'll might want to perform manual actions with a MongoDB database.
+
+Before doing that, stop the services using this database:
+```sh
+kubectl -n authentik scale deploy --replicas 0 <deployment>
+```
+
+Now you can connect to the running container.
+
+For instance, this is how you would jump into `mongosh`:
+```sh
+# connect to the container
+kubectl -n authentik exec -it pods/librechat-mongo-0 -- bash
+# inside the container
+export MONGODB_ROOT_PASSWORD=$(cat $MONGODB_ROOT_PASSWORD_FILE)
+mongosh admin --authenticationDatabase admin --username $MONGODB_ROOT_USER --password $MONGODB_ROOT_PASSWORD
+```
+
+Or restore the backup, assuming the backup exists on the local machine in current workdir:
+```sh
+# copy the backup into the container
+kubectl cp db_backup_2025_05_18.gz homeserver/librechat-mongo-0:/tmp/backup.gz
+# connect to the container
+kubectl -n authentik exec -it pods/librechat-mongo-0 -- bash
+# inside the container
+export MONGODB_ROOT_PASSWORD=$(cat $MONGODB_ROOT_PASSWORD_FILE)
+mongorestore --authenticationDatabase=admin --username=${MONGODB_ROOT_USER} --password=${MONGODB_ROOT_PASSWORD} --gzip --archive="/tmp/backup.gz"
+```

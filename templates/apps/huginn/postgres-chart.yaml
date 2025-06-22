@@ -1,0 +1,37 @@
+{{- $service := .Values.services.huginn }}
+{{- if $service.enabled }}
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: huginn-postgres
+  namespace: {{ include "homeserver.common.names.namespace" $ }}
+spec:
+  chart: oci://registry-1.docker.io/bitnamicharts/postgresql
+  version: 16.7.4
+  set:
+    # Set correct permissions for the pods
+    volumePermissions.enabled: "true"
+    primary.podSecurityContext.fsGroup: {{ .Values.host.gid }}
+    primary.containerSecurityContext.runAsUser: {{ .Values.host.uid }}
+    primary.containerSecurityContext.runAsGroup: {{ .Values.host.gid }}
+    readReplicas.podSecurityContext.fsGroup: {{ .Values.host.gid }}
+    readReplicas.containerSecurityContext.runAsUser: {{ .Values.host.uid }}
+    readReplicas.containerSecurityContext.runAsGroup: {{ .Values.host.gid }}
+    backup.cronjob.podSecurityContext.fsGroup: {{ .Values.host.gid }}
+    backup.cronjob.containerSecurityContext.runAsUser: {{ .Values.host.uid }}
+    backup.cronjob.containerSecurityContext.runAsGroup: {{ .Values.host.gid }}
+    backup.cronjob.timezone: {{ .Values.host.tz | quote }}
+  valuesContent: |
+    fullnameOverride: {{ include "homeserver.common.names.database" (dict "service" $service "database" "postgres") | quote }}
+    commonLabels: {{- include "homeserver.common.labels.database" (dict "service" $service "database" "postgres" "context" $) | nindent 6 }}
+    commonAnnotations: {{- include "homeserver.common.annotations.database" (dict "service" $service "database" "postgres" "context" $) | nindent 6 }}
+    auth:
+      username: huginn
+      database: huginn
+      existingSecret: huginn-postgres-credentials
+      secretKeys:
+        adminPasswordKey: admin-password
+        userPasswordKey: user-password
+      usePasswordFiles: true
+{{- include "homeserver.common.tplvalues.render" (dict "value" (default "" (omit .Values.services.huginn.postgresql "fullnameOverride" "commonLabels" "commonAnnotations" "auth")) "context" .) | nindent 4 }}
+{{- end }}

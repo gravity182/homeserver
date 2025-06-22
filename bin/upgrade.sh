@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_FILE="$(pwd)/.homeserver"
+CONFIG_FILE="$(dirname "${BASH_SOURCE[0]}")/.homeserver"
 
 ask_for_input() {
   local prompt="$1"
@@ -41,17 +41,10 @@ if [ $config_updated -eq 1 ]; then
   echo "NAMESPACE=\"$NAMESPACE\"" >> "$CONFIG_FILE"
 fi
 
-# Upgrade the cert-manager's CRDs
-# https://cert-manager.io/docs/installation/upgrade/#crds-managed-separately
-helm template "$RELEASE_NAME" . \
+helm upgrade --install "$RELEASE_NAME" . \
   -f values.yaml \
-  --set "cert-manager.crds.enabled=true" \
-  --show-only charts/cert-manager/templates/crds.yaml \
-  | kubectl apply -f -
-
-helm upgrade "$RELEASE_NAME" . \
-  -f values.yaml \
-  --namespace "$NAMESPACE"
+  --namespace "$NAMESPACE" \
+  --create-namespace
 
 if [ $config_updated -eq 1 ]; then
   echo "---"

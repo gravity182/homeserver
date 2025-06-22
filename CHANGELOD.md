@@ -5,15 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## \[5.0.0] - 2025-05-13
+## \[5.0.0] - 2025-05-18
 
 Changes:
-- Added monitoring: Grafana, Loki, Alloy
-- Added more security-tailored middlewares to Ingress
+- Added monitoring stack: Grafana, Loki, Alloy
+- Added more security-tailored HTTP middlewares
 - Added a new housekeeping cronjob to clean leftover dirs
+- Subcharts are now deployed via k3s' Helm Controller
+- Added Gateway API, which fully replaces the old Ingress
+- Added customization of pod affinity and tolerations
+- Added Traefik configuration:
+    - Trust Cloudflare's IP when accepting `X-Forwarded-*` headers
+    - Forward `http` traffic to `https`
 
 Breaking changes:
-- This update uses Gateway API, which might be not available in the old versions of Traefik. Please upgrade your k3s cluster to the latest version (`v1.32.4`)
+- Refactored configuration schema of the cert-manager's ClusterIssue:
+    - Customize solvers
+    - Customize ACME server URL
+- Since this update uses Gateway API, it might be not available in the old versions of Traefik. Please upgrade your k3s cluster to the latest version (`v1.32.4`)
+    - Moreover, please disable your Authentik ingress as it'll no longer work
 
 ## \[4.11.0] - 2025-04-29
 

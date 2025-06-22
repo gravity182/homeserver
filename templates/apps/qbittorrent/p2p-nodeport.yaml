@@ -1,16 +1,15 @@
-{{- if .Values.services.qbittorrent.enabled }}
-{{- $service := .Values.services.qbittorrent  }}
-{{- $kind := "app" }}
+{{- $service := .Values.services.qbittorrent }}
+{{- if $service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) }}-active-p2p"
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: "{{ include "homeserver.common.names.name" ( dict "service" $service ) }}-active-p2p"
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 spec:
   type: NodePort
-  selector:
+  selector: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "context" $ ) | nindent 4 }}
   ports:
     - name: p2p
       port: {{ $service.ports.p2p }}

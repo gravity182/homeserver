@@ -2,7 +2,7 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: https-only
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
 spec:

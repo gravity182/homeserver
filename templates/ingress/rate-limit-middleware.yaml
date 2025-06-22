@@ -2,7 +2,7 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: rate-limit
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
 spec:
@@ -12,4 +12,5 @@ spec:
     burst: 50
     sourceCriterion:
       ipStrategy:
-        depth: 1
+        excludedIPs:
+          - 10.42.0.0/16

@@ -1,0 +1,45 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: gateway
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
+    {{- include "homeserver.cert-manager.ingress.annotations" . | nindent 4 }}
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 8443
+      hostname: {{ printf "*.%s" .Values.ingress.domain | quote }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          # This certificate is created automatically by cert-manager
+          - name: gateway-tls-cert
+            kind: Secret
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - {{ include "homeserver.common.names.namespace" . | quote }}
+                  - {{ include "homeserver.monitoring.names.namespace" . | quote }}
+    - name: https-root
+      protocol: HTTPS
+      port: 8443
+      hostname: {{ .Values.ingress.domain | quote }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          # This certificate is created automatically by cert-manager
+          - name: gateway-tls-cert
+            kind: Secret
+      allowedRoutes:
+        namespaces:
+          from: Same

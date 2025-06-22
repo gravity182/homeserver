@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-egress-policy
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchExpressions:
+              - key: k8s-app
+                operator: In
+                values:
+                  - kube-dns
+                  - coredns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow communication with the Kubernetes API server
+    - to:
+        - ipBlock:
+            cidr: "10.96.0.0/12"
+      ports:
+        - port: 443
+          protocol: TCP
+        - port: 6443
+          protocol: TCP
+    # Allow internal namespace communication
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ include "homeserver.common.names.namespace" . | quote }}
+    # Allow HTTP(S) traffic to external services
+    #
+    # Direct pod communication by IP is not allowed, use service names
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 10.0.0.0/8

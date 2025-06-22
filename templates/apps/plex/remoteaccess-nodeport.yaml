@@ -1,13 +1,12 @@
-{{- if .Values.services.plex.enabled }}
-{{- $service := .Values.services.plex  }}
-{{- $kind := "app" }}
+{{- $service := .Values.services.plex }}
+{{- if $service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ include "homeserver.common.names.name" ( dict "service" $service "kind" $kind ) }}-remoteaccess"
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
-  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
-  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  name: "{{ include "homeserver.common.names.name" ( dict "service" $service ) }}-remoteaccess"
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 spec:
   type: NodePort
   ports:
@@ -16,5 +15,5 @@ spec:
       nodePort: {{ $service.ports.remoteAccess }}
       targetPort: http
       protocol: TCP
-  selector: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "kind" $kind "context" $ ) | nindent 4 }}
+  selector: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "context" $ ) | nindent 4 }}
 {{- end }}

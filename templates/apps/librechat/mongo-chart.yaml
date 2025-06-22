@@ -1,0 +1,34 @@
+{{- $service := .Values.services.librechat }}
+{{- if $service.enabled }}
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: librechat-mongodb
+  namespace: {{ include "homeserver.common.names.namespace" $ }}
+spec:
+  chart: oci://registry-1.docker.io/bitnamicharts/mongodb
+  version: 16.5.9
+  set:
+    # Set correct permissions for the pods
+    volumePermissions.enabled: "true"
+    podSecurityContext.fsGroup: {{ .Values.host.gid }}
+    containerSecurityContext.runAsUser: {{ .Values.host.uid }}
+    containerSecurityContext.runAsGroup: {{ .Values.host.gid }}
+    backup.cronjob.podSecurityContext.fsGroup: {{ .Values.host.gid }}
+    backup.cronjob.containerSecurityContext.runAsUser: {{ .Values.host.uid }}
+    backup.cronjob.containerSecurityContext.runAsGroup: {{ .Values.host.gid }}
+    backup.cronjob.timeZone: {{ .Values.host.tz | quote }}
+  valuesContent: |
+    fullnameOverride: {{ include "homeserver.common.names.database" (dict "service" $service "database" "mongo") | quote }}
+    commonLabels: {{- include "homeserver.common.labels.database" (dict "service" $service "database" "mongo" "context" $) | nindent 6 }}
+    commonAnnotations: {{- include "homeserver.common.annotations.database" (dict "service" $service "database" "mongo" "context" $) | nindent 6 }}
+    architecture: standalone
+    useStatefulSet: "true"
+    auth:
+      enabled: true
+      usernames: [ "librechat" ]
+      databases: [ "librechat" ]
+      existingSecret: librechat-mongodb-credentials
+    usePasswordFiles: true
+{{- include "homeserver.common.tplvalues.render" (dict "value" (default "" (omit .Values.services.librechat.mongodb "fullnameOverride" "commonLabels" "commonAnnotations" "architecture" "useStatefulSet" "auth" "usePasswordFiles")) "context" .) | nindent 4 }}
+{{- end }}

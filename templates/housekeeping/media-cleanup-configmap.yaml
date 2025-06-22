@@ -3,8 +3,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: media-cleanup-script
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: media-cleanup
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
 data:
   cleanup.py: |
@@ -12,11 +13,21 @@ data:
     import fnmatch
     import json
     import shutil
+    import logging
+    import time
+
+    # Configure logging
+    log_level_value = os.environ['LOG_LEVEL'].upper()
+    log_level = getattr(logging, log_level_value, logging.INFO)
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
 
     # Load configuration from env vars
     media_dirs = json.loads(os.environ['MEDIA_ROOT_DIRS'])
     metadata_patterns = json.loads(os.environ['METADATA_PATTERNS'])
-    dry_run = os.environ.get('DRY_RUN', 'false').lower() == 'true'
+    dry_run = os.environ['DRY_RUN'].lower() == 'true'
 
     def is_metadata_file(filename):
         """Check if a file matches any of the metadata patterns"""
@@ -33,18 +44,20 @@ data:
 
     def check_dir(path):
         """Check all files in the directory tree and remove it if all are metadata"""
-        print(f"Checking directory: {path}")
+        logging.debug(f"Checking directory: {path}")
 
         # Get all files recursively
         all_files = get_all_files(path)
         if not all_files:
-            print(f"Removing directory: {path}")
+            logging.info(f"Empty directory - removing: '{path}'")
             if not dry_run:
                 shutil.rmtree(path)
             return
 
-        if all(is_metadata_file(os.path.basename(f)) for f in all_files):
-            print(f"Removing directory: {path}")
+        metadata_files = [f for f in all_files if is_metadata_file(os.path.basename(f))]
+        if len(metadata_files) == len(all_files):
+            metadata_files_relative = [os.path.relpath(f, path) for f in metadata_files]
+            logging.info(f"Directory contains only metadata files - removing: '{path}', metadata_files={metadata_files_relative}")
             if not dry_run:
                 shutil.rmtree(path)
 
@@ -76,28 +89,35 @@ data:
     def scan_root_dirs(media_dirs_config):
         """Check directories at their specified depth levels"""
         for dir_config in media_dirs_config:
-            print("\n" + "="*50 + "\n")  # Add separator between root directories
+            logging.info("="*50)
 
             root_path = dir_config['path']
             max_depth = dir_config.get('maxDepth', 1)  # Default to 1 if not specified
 
             if not os.path.exists(root_path):
-                print(f"Root directory does not exist: {root_path}")
+                logging.warning(f"Root directory does not exist: {root_path}")
                 continue
 
-            print(f"Scanning {root_path} with max depth level {max_depth}")
+            logging.info(f"Scanning {root_path} with max depth level {max_depth}")
             dirs_to_check = get_subdirs_at_depth(root_path, max_depth)
             for dir_path in dirs_to_check:
                 if os.path.exists(dir_path):  # Check if path still exists (might have been removed)
                     check_dir(dir_path)
 
     if __name__ == '__main__':
-        print("Starting media directory cleanup...")
+        logging.info("="*50)
+        logging.info("Starting media directory cleanup...")
         if dry_run:
-            print("DRY RUN MODE ENABLED - No files will be deleted")
-        print(f"Media directories to scan: {media_dirs}")
-        print(f"Metadata file globs: {metadata_patterns}")
+            logging.info("DRY RUN MODE ENABLED - No files will be deleted")
+        logging.info(f"Media directories to scan: {media_dirs}")
+        logging.info(f"Metadata file globs: {metadata_patterns}")
+        logging.info("="*50)
+        start_time = time.time()
         scan_root_dirs(media_dirs)
-        print("\n" + "="*50 + "\n")  # Add separator between root directories
-        print("Cleanup complete!")
+        elapsed_time = time.time() - start_time
+        logging.info("="*50)
+        logging.info("="*50)
+        logging.info("Finished Run")
+        logging.info(f"Run Time: {elapsed_time:.2f} seconds")
+        logging.info("="*50)
 {{- end }}

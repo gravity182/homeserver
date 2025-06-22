@@ -1,8 +1,9 @@
+---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: security-chain
-  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
 spec:
@@ -11,4 +12,18 @@ spec:
       - name: https-only
       - name: rate-limit
       - name: forwardauth-authentik
+      - name: security-headers
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: security-chain-no-auth
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
+spec:
+  chain:
+    middlewares:
+      - name: https-only
+      - name: rate-limit
       - name: security-headers
