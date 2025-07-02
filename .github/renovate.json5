@@ -2,9 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [ "config:recommended" ],
   "baseBranches": [ "master" ],
-  "platform": "github",
   "branchPrefix": "renovate/",
-  "forkProcessing": "enabled",
   "repositories": [
     "gravity182/homeserver"
   ],
@@ -17,12 +15,11 @@
       "description": "Docker image updates",
       "matchDatasources": "docker",
       "matchManagers": [ "helm-values" ],
-      "major": { "automerge": false },
-      "minor": { "automerge": false },
-      "patch": { "automerge": true, "labels": [ "renovate", "patch-update" ] },
-      "commitMessageSuffix": "{{#if major}} ⚠️{{else if minor}} ✨{{else}} 🩹{{/if}}",
-      "prHeader": "This PR updates an image for the `{{chartName}}` Helm chart.",
-      "prFooter": "If you find this update useful, please consider [sponsoring Renovate](https://renovatebot.com/donate)."
+      "labels": [ "renovate" ],
+      "major": { "automerge": false, "labels": [ "major-update" ] },
+      "minor": { "automerge": false, "labels": [ "minor-update" ] },
+      "patch": { "automerge": true, "labels": [ "patch-update" ] },
+      "commitMessageSuffix": "{{#if major}} ⚠️{{else if minor}} ✨{{else}} 🩹{{/if}}"
     }
   ]
 }
