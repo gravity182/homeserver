@@ -724,7 +724,7 @@ monitoring:
       enabled: false
 services:
   backrest:
-    enabled: true
+    enabled: false
     exposed: true
     name: backrest
     replicaCount: 1
@@ -759,7 +759,7 @@ services:
         secretName: backrest-aws-s3-yandex-cloud-secret
         secretKey: aws-secret-access-key
   homepage:
-    enabled: true
+    enabled: false
     exposed: true
     name: homepage
     replicaCount: 1
@@ -845,7 +845,7 @@ services:
         secretKey: api-key
     extraEnv: []
   plex:
-    enabled: true
+    enabled: false
     exposed: true
     name: plex
     replicaCount: 1
@@ -868,11 +868,9 @@ services:
     persistence:
       config: /opt/plex/config
       library: /data/library
-    vpn:
-      enabled: false
     extraEnv: []
   jellyfin:
-    - enabled: true
+    - enabled: false
       exposed: true
       name: jellyfin
       replicaCount: 1
@@ -920,7 +918,7 @@ services:
     #
     extraEnv: []
   qbittorrent:
-    enabled: true
+    enabled: false
     exposed: true
     name: qbittorrent
     replicaCount: 1
@@ -955,7 +953,7 @@ services:
     vpn: {}
     extraEnv: []
   qbit_manage:
-    enabled: true
+    enabled: false
     exposed: false
     name: qbit-manage
     replicaCount: 1
@@ -979,7 +977,7 @@ services:
       - name: QBT_LOG_LEVEL
         value: INFO
   sabnzbd:
-    enabled: true
+    enabled: false
     exposed: true
     name: sabnzbd
     replicaCount: 1
@@ -1002,7 +1000,7 @@ services:
       data: /data/usenet
     extraEnv: []
   prowlarr:
-    enabled: true
+    enabled: false
     exposed: true
     name: prowlarr
     replicaCount: 1
@@ -1023,7 +1021,7 @@ services:
       config: /opt/prowlarr/config
     extraEnv: []
   radarr:
-    enabled: true
+    enabled: false
     exposed: true
     name: radarr
     replicaCount: 1
@@ -1047,7 +1045,7 @@ services:
       data: /data
     extraEnv: []
   sonarr:
-    enabled: true
+    enabled: false
     exposed: true
     name: sonarr
     replicaCount: 1
@@ -1095,7 +1093,7 @@ services:
       data: /data
     extraEnv: []
   whisparr:
-    enabled: true
+    enabled: false
     exposed: true
     name: whisparr
     replicaCount: 1
@@ -1118,36 +1116,8 @@ services:
     persistence:
       config: /opt/whisparr/config
       data: /data
-    automountServiceAccountToken: true
-    enableServiceLinks: true
-    # this field should be not allowed, but currently schema validation doesn't support extra fields validation
-    blaa: false
-    extraLabels:
-      some-shitty/label: foo
-      someShittyLabel2: "{{ .Release.Name }}-bar"
-    extraAnnotations:
-      some-shitty/annotation: foo
-      someShittyAnnotation2: "{{ .Release.Name }}-bar"
-    extraVolumeMounts:
-      - name: empty-dir2
-        mountPath: /tmp/cache
-    extraVolumes:
-      - name: empty-dir2
-        emptyDir: {}
-    extraEnv:
-      - name: TEST_VAR2
-        value: "test2"
-      - name: TEST_VAR1
-        value: "test1"
-      - name: TESTOVICK
-        value: '{{ printf "%s-blaa" .Values.host.tz }}'
-      - name: TESTOVICK2
-        value: |-
-          #/bin/bash
-          {{ .Values.host.tz }}-blaa
-          {{ .Values.host.uid }}-bar
   bazarr:
-    enabled: true
+    enabled: false
     exposed: true
     name: bazarr
     replicaCount: 1
@@ -1165,8 +1135,7 @@ services:
       - bazarr
       - subtitles
       - subtitle
-    vpn:
-      enabled: true
+    vpn: {}
     persistence:
       config: /opt/bazarr/config
       data: /data
@@ -1188,13 +1157,11 @@ services:
       http: 5055
     ingress:
       - jellyseerr
-    vpn:
-      enabled: false
     persistence:
       config: /opt/jellyseerr/config
     extraEnv: []
   flaresolverr:
-    enabled: true
+    enabled: false
     exposed: false
     name: flaresolverr
     replicaCount: 1
@@ -1224,7 +1191,7 @@ services:
     #
     extraEnv: []
   cloudflarebypassforscraping:
-    enabled: true
+    enabled: false
     exposed: false
     name: cloudflarebypassforscraping
     replicaCount: 1
@@ -1239,8 +1206,7 @@ services:
     ports:
       http: 8000
     ingress: []
-    vpn:
-      enabled: true
+    vpn: {}
     extraEnv: []
   tautulli:
     enabled: false
@@ -1264,7 +1230,7 @@ services:
       config: /opt/tautulli/config
     extraEnv: []
   kometa:
-    enabled: true
+    enabled: false
     exposed: false
     name: kometa
     replicaCount: 1
@@ -1279,8 +1245,7 @@ services:
     ports:
       http: 8181
     ingress: []
-    vpn:
-      enabled: true
+    vpn: {}
     persistence:
       config: /opt/kometa/config
     ## Schedule
@@ -1290,7 +1255,7 @@ services:
     ## See https://github.com/jmxd/Kometa
     ##
     jmxdOverlays:
-      enabled: true
+      enabled: false
       commitHash: 75a1c1f83d62d4b7d334d2dffa90e6865649ee39
     connections:
       tmdb:
@@ -1356,8 +1321,6 @@ services:
     ingress:
       - myspeed
       - speedtest
-    vpn:
-      enabled: false
     persistence:
       config: /opt/myspeed/config
     extraEnv: []
@@ -1396,7 +1359,7 @@ services:
       # - name: UI_APP_NAME
       #   value: "My very own Stirling PDF"
   miniflux:
-    enabled: true
+    enabled: false
     exposed: true
     name: miniflux
     replicaCount: 1
@@ -1413,8 +1376,7 @@ services:
     ingress:
       - miniflux
       - rss
-    vpn:
-      enabled: true
+    vpn: {}
     # postgresql bitnami subchart
     # https://artifacthub.io/packages/helm/bitnami/postgresql#parameters
     postgresql:
@@ -1539,7 +1501,7 @@ services:
     ports:
       http: 3000
     ingress: []
-    token: "UKJPWgKjrvMFtkMztEEjK9L9rwjMLcRw"
+    token: "" # REQUIRED
     timeout: 60000
     maxConcurrentSessions: 4
     maxQueueLength: 10
@@ -1600,8 +1562,7 @@ services:
     ingress:
       - archivebox
       - archive
-    vpn:
-      enabled: true
+    vpn: {}
     persistence:
       data: /opt/archivebox/data
     ## Admin credentials for the web interface
@@ -1649,8 +1610,6 @@ services:
       http: 8000
     ingress:
       - apprise
-    vpn:
-      enabled: false
     logLevel: INFO
     statefulMode: simple
     # attach size is limited to 500 Mb
@@ -1740,7 +1699,7 @@ services:
       library: /data/library/books
     extraEnv: []
   calibre:
-    enabled: true
+    enabled: false
     exposed: true
     name: calibre
     replicaCount: 1
@@ -1766,7 +1725,7 @@ services:
       data: /data/library/books
     extraEnv: []
   calibrebookdownloader:
-    enabled: true
+    enabled: false
     exposed: true
     name: calibre-book-downloader
     replicaCount: 1
@@ -1787,7 +1746,7 @@ services:
       - anna-archive
     # Anna's Archive is blocked in some countries, you can use a VPN to bypass the block
     vpn:
-      enabled: true
+      enabled: false
     # bypasses Cloudflare's protection when downloading books from Anna's Archive
     useCfBypass: true
     # preferred books language, you can add more languages separated by a comma
@@ -1803,7 +1762,7 @@ services:
     annasArchiveDonatorKey: "" # set your donator key if you have one; this will make downloads much faster and more reliable
     extraEnv: []
   openbooks:
-    enabled: true
+    enabled: false
     exposed: true
     name: openbooks
     replicaCount: 1
@@ -1821,14 +1780,12 @@ services:
       - openbooks
       - irchighway
       - highway
-    vpn:
-      enabled: false
     # your IRC name, it will be used to identify you in the IRC channel
     ircname: pebble
     # if true, won't send files to browser
     noBrowserDownloads: false
   convertx:
-    enabled: true
+    enabled: false
     exposed: true
     name: convertx
     replicaCount: 1
@@ -1845,8 +1802,6 @@ services:
     ingress:
       - convertx
       - convert
-    vpn:
-      enabled: false
     persistence:
       data: /opt/convertx/data
     # set to 0 to disable auto-delete
@@ -1873,8 +1828,7 @@ services:
     ingress:
       - pinchflat
       - youtube
-    vpn:
-      enabled: true
+    vpn: {}
     persistence:
       config: /opt/pinchflat/config
       data: /data/library/videos
@@ -1903,11 +1857,9 @@ services:
     tokenTimeHours: 4320
     persistence:
       data: /opt/mealie/data
-    vpn:
-      enabled: false
     extraEnv: []
   librechat:
-    enabled: true
+    enabled: false
     exposed: true
     name: librechat
     replicaCount: 1
@@ -1926,7 +1878,7 @@ services:
       - chatgpt
       - ai
     secretName: librechat-secret
-    endpoints: "OpenRouter,openAI"
+    endpoints: "openAI"
     allowEmailLogin: false
     allowSocialLogin: true
     # controls how long an auth session lives
@@ -1941,7 +1893,7 @@ services:
     # see https://www.librechat.ai/docs/features/search
     #
     # make sure the MeiliSearch service is enabled
-    search: true
+    search: false
     persistence:
       # directory where to keep user-uploaded images
       clientImages: /opt/librechat/client/images
@@ -1966,8 +1918,6 @@ services:
             - name: backup-dir
               mountPath: /backup/mongodump
       systemLogVerbosity: 0
-    vpn:
-      enabled: false
     extraEnvFromSecret: ""
     # you can pass your API keys and other secrets securely here
     extraEnvSecrets: []
@@ -1979,7 +1929,7 @@ services:
     #   secretKey: librechat-openrouter-api-key
     extraEnv: []
   meilisearch:
-    enabled: true
+    enabled: false
     exposed: false
     name: meilisearch
     replicaCount: 1
@@ -2002,11 +1952,9 @@ services:
     masterKey:
       secretName: meilisearch-secret
       secretKey: master-key
-    vpn:
-      enabled: false
     extraEnv: []
   stash:
-    enabled: true
+    enabled: false
     exposed: true
     name: stash
     replicaCount: 1
@@ -2022,8 +1970,7 @@ services:
       http: 9999
     ingress:
       - stash
-    vpn:
-      enabled: true
+    vpn: {}
     persistence:
       ## Point this at your collection
       data: /data/library-xxx/xxx
@@ -2039,7 +1986,7 @@ services:
       generated: /opt/stash/generated
     extraEnv: []
   opengist:
-    enabled: true
+    enabled: false
     exposed: true
     name: opengist
     replicaCount: 1
