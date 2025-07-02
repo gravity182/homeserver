@@ -1068,7 +1068,7 @@ services:
     critical: false
     image:
       repository: lscr.io/linuxserver/lidarr
-      tag: "2.11.2"
+      tag: "2.12.4"
       pullPolicy: IfNotPresent
     securityContext:
       # the Linuxserver image uses s6-overlay,
