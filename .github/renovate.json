@@ -3,6 +3,10 @@
   "baseBranches": [ "master" ],
   "platform": "github",
   "branchPrefix": "renovate/",
+  "forkProcessing": "enabled",
+  "repositories": [
+    "gravity182/homeserver"
+  ],
   "prConcurrentLimit": 1,
   "helm-values": {
     "enabled": true
