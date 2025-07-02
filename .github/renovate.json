@@ -1,0 +1,27 @@
+{
+  "baseBranches": ["master"],
+  "autodiscover": false,
+  "packageRules": [
+    {
+      "matchDatasource": "docker",
+      "matchPaths": ["values.yaml"],
+      "matchManagers": ["regex"],
+      "extractVersion": "(^|\\n)services:\\s*[^:]+:\\s*.*?image:\\s*.*?repository:\\s*(?<repository>[^\\s:]+/[^\\s]+(?:\\/[^\\s/]+)?)\\s*.*?tag:\\s*\"?v?(?<version>[^\"'\\s]+)\"?",
+      "depNameTemplate": "{{repository}}",
+      "major": {
+        "enabled": false
+      },
+      "minor": {
+        "automerge": false
+      },
+      "patch": {
+        "automerge": false,
+        "labels": ["renovate", "patch-update"]
+      },
+      "commitMessageSuffix": "{{#if major}} ⚠️{{else if minor}} ✨{{else}} 🩹{{/if}}",
+      "branchTopic": "renovate/{{datasource}}-{{depName}}-{{currentVersion}}-to-{{newVersion}}-{{chartName}}",
+      "prHeader": "This PR updates an image for the `{{chartName}}` Helm chart.",
+      "prFooter": "If you find this update useful, please consider [sponsoring Renovate](https://renovatebot.com/donate)."
+    }
+  ]
+}

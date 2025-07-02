@@ -47,7 +47,9 @@ helm upgrade --install "$RELEASE_NAME" . \
   --create-namespace
 
 if [ $config_updated -eq 1 ]; then
+  echo ""
   echo "---"
+  echo ""
   echo "Deployment config saved to $CONFIG_FILE"
   echo "  Release Name: $RELEASE_NAME"
   echo "  Namespace: $NAMESPACE"
