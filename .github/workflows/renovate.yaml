@@ -32,7 +32,7 @@ jobs:
           egress-policy: audit # 'audit' for logging all attempts, 'restrict' for strict control
 
       - name: Run Renovate
-        uses: renovatebot/github-action@v43 # Official Renovate action
+        uses: renovatebot/github-action@v43.0.2 # Official Renovate action
         with:
           configurationFile: .github/renovate.json # Path to your Renovate config
           # Command-line arguments for Renovate (optional, but useful for debugging)
