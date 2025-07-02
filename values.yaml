@@ -927,7 +927,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/qbittorrent
-      tag: "5.1.0"
+      tag: "5.1.2"
       pullPolicy: Always
     securityContext:
       strict: true
