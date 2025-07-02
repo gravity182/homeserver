@@ -19,7 +19,7 @@
       "major": { "automerge": false, "labels": [ "major-update" ] },
       "minor": { "automerge": false, "labels": [ "minor-update" ] },
       "patch": { "automerge": true, "labels": [ "patch-update" ] },
-      "commitMessageSuffix": "{{#if major}} ⚠️{{else if minor}} ✨{{else}} 🩹{{/if}}"
+      "commitMessageSuffix": "{{#if isMajor}} ⚠️{{else if isMinor}} ✨{{else}} 🩹{{/if}}"
     }
   ]
 }
