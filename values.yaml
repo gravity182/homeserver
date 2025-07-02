@@ -894,7 +894,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/autobrr/autobrr
-      tag: v1.62
+      tag: v1.63
       pullPolicy: Always
     securityContext:
       strict: true
