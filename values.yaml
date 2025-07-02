@@ -1835,7 +1835,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/c4illin/convertx
-      tag: v0.13.0
+      tag: v0.14.1
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
