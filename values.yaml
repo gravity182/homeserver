@@ -1,0 +1,2066 @@
+# yaml-language-server: $schema=values.schema.json
+---
+## Host configuration
+##
+host:
+  ## Host timezone
+  ## e.g. 'Europe/Berlin'
+  ##
+  tz: Europe/Berlin
+  ## Host user's ID
+  ## Can be obtained via `id -u`
+  ##
+  uid: -1
+  ## Host user's group ID
+  ## Can be obtained via `id -g`
+  ##
+  gid: -1
+## cert-manager chart configuration
+## see available values at https://artifacthub.io/packages/helm/cert-manager/cert-manager#configuration
+##
+cert-manager:
+  namespace: cert-manager
+  crds:
+    enabled: true
+    keep: true
+  config:
+    apiVersion: controller.config.cert-manager.io/v1alpha1
+    kind: ControllerConfiguration
+    logging:
+      verbosity: 2
+      format: text
+    # DO NOT disable this option, otherwise cert-manager won't be able to create a cert for Gateway API
+    enableGatewayAPI: true
+## Additional configuration for cert-manager tailored to this chart
+##
+x-cert-manager:
+  ## ClusterIssuer configuration
+  ## This issuer will be used to automatically issue TLS certificates for Ingress/Gateway API
+  ##
+  cluster-issuer:
+    ## ACME server URL
+    ## By default points to the Let's Encrypt's prod environment
+    ##
+    ## If you're having issues, you can switch to the staging environment to not hit the rate limits
+    ## Staging URL: https://acme-staging-v02.api.letsencrypt.org/directory
+    ##
+    ## DO NOT change this option unless you know what you're doing
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Your email to register an account with Let's Encrypt
+    email: "" # REQUIRED
+    ## Solvers configuration
+    ##
+    ## Cloudflare is used by default with implication that you've transferred your domain to Cloudflare.
+    ##
+    ## The only thing you must do is to create a Cloudflare API token:
+    ## 1. Go to the Cloudflare Dashboard: User Profile > API Tokens > API Tokens.
+    ## 2. Specify the permissions for the token as follows:
+    ##    Permissions:
+    ##      Zone - DNS - Edit
+    ##      Zone - Zone - Read
+    ##    Zone Resources:
+    ##      Include - All Zones
+    ## 3. Create a secret in the `cert-manager` namespace with the name `cloudflare-api-key-secret`
+    ##
+    ## If you want to use a different provider, please read docs on DNS01 validation and supported providers:
+    ## https://cert-manager.io/docs/configuration/acme/dns01/
+    ## NOTE: The only valid solver is a DNS01 solver, since only it can issue wildcard certs
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-key-secret
+              key: api-key
+## Authentik chart configuration
+## See available values at https://artifacthub.io/packages/helm/goauthentik/authentik#values
+##
+authentik:
+  ## Namespace to deploy authentik resources to
+  ##
+  namespace: authentik
+  authentik:
+    enabled: true
+    secret_key: file:///secrets/authentik/secret-key
+    error_reporting:
+      enabled: false
+    postgresql:
+      user: authentik
+      password: file:///secrets/postgres/user-password
+  server:
+    metrics:
+      enabled: false
+    volumes:
+      - name: secret-key-creds
+        secret:
+          secretName: authentik-secret-key
+      - name: postgres-creds
+        secret:
+          secretName: authentik-postgres-credentials
+    volumeMounts:
+      - name: secret-key-creds
+        mountPath: /secrets/authentik
+        readOnly: true
+      - name: postgres-creds
+        mountPath: /secrets/postgres
+        readOnly: true
+  worker:
+    volumes:
+      - name: secret-key-creds
+        secret:
+          secretName: authentik-secret-key
+      - name: postgres-creds
+        secret:
+          secretName: authentik-postgres-credentials
+    volumeMounts:
+      - name: secret-key-creds
+        mountPath: /secrets/authentik
+        readOnly: true
+      - name: postgres-creds
+        mountPath: /secrets/postgres
+        readOnly: true
+  # service account is required by worker to create a managed embedded outpost
+  # DO NOT DISABLE
+  serviceAccount:
+    create: true
+  # postgresql bitnami subchart
+  # https://artifacthub.io/packages/helm/bitnami/postgresql#parameters
+  postgresql:
+    enabled: true
+    auth:
+      username: authentik
+      database: authentik
+      existingSecret: authentik-postgres-credentials
+      secretKeys:
+        adminPasswordKey: admin-password
+        userPasswordKey: user-password
+      usePasswordFiles: true
+    backup:
+      enabled: true
+      cronjob:
+        schedule: "0 5 * * *"
+        concurrencyPolicy: Replace
+        storage:
+          # disable PVC, we'll save backups to a local dir
+          enabled: false
+          mountPath: /backup/pgdump
+        extraVolumes:
+          - name: backup-dir
+            hostPath:
+              path: /opt/authentik/postgresql/backup
+              type: Directory
+        extraVolumeMounts:
+          - name: backup-dir
+            mountPath: /backup/pgdump
+  # redis bitnami subchart
+  redis:
+    enabled: true
+## Ingress configuration
+##
+ingress:
+  ## Your domain without a scheme
+  ## e.g. 'example.com'
+  ##
+  domain: "" # REQUIRED
+  ## The service to serve on the root domain
+  ## Set it to `services.<service>.name`. Leave empty to disable.
+  ##
+  rootService: homepage
+  ## Extra annotations to add to the Ingress resource
+  ##
+  extraAnnotations: {}
+## VPN configuration
+## To enable VPN for a service, set `services.<service_name>.vpn.enabled=true`
+##
+vpn:
+  ## Enables SYS_MODULE capability
+  ## Disable only if you know what you're doing
+  ##
+  sysModule: true
+  ## Name of the secret containing the WireGuard configuration
+  ##
+  secretRef: wireguard-conf-linuxserver
+  ## Key inside the secret
+  ##
+  secretKey: wg0.conf
+## Traefik additional configuration
+##
+x-traefik:
+  forwardedHeaders:
+    ## The list of Cloudflare's IPs, which will be trusted when accepting 'X-Forwarded-*' headers
+    ## See the full list at https://www.cloudflare.com/ips/
+    ##
+    trustedIPs:
+      - 173.245.48.0/20
+      - 103.21.244.0/22
+      - 103.22.200.0/22
+      - 103.31.4.0/22
+      - 141.101.64.0/18
+      - 108.162.192.0/18
+      - 190.93.240.0/20
+      - 188.114.96.0/20
+      - 197.234.240.0/22
+      - 198.41.128.0/17
+      - 162.158.0.0/15
+      - 104.16.0.0/13
+      - 104.24.0.0/14
+      - 172.64.0.0/13
+      - 131.0.72.0/22
+      # Needed to trust Traefik's own IPs
+      - 10.0.0.0/8
+## Whether information about services should be injected into pod's environment variables
+## The environment variables injected by service links are usually not needed, but can lead to slow boot times.
+## Recommended to keep it disabled.
+## Can be overriden per service
+##
+enableServiceLinks: false
+## Whether to mount Service Account token in pods
+## Recommended to keep it disabled.
+## Can be overriden per service
+##
+automountServiceAccountToken: false
+## Affinity configuration for pods
+## See https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## Can be overriden per service
+##
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: "node-role.kubernetes.io/master"
+              operator: In
+              values:
+                - "true"
+  podAffinity: {}
+  podAntiAffinity: {}
+## Tolerations configuration for pods
+## See https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+## Can be overriden per service
+##
+tolerations: []
+## Common labels to add to all the deployed resources. Evaluated as a template
+##
+## Usage:
+## commonLabels:
+##    app.kubernetes.io/managed-by: Helm
+##
+commonLabels: {}
+## Common annotations to add to all the deployed resources. Evaluated as a template
+##
+## Usage:
+## commonAnnotations:
+##    app.kubernetes.io/managed-by: Helm
+##
+commonAnnotations: {}
+## Pods' global liveness probe. Evaluated as a template.
+## see https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 20
+  timeoutSeconds: 10
+  failureThreshold: 6
+  successThreshold: 1
+## Pods' global readiness probe. Evaluated as a template.
+## see https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+##
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+## Pods' global startup probe. Evaluated as a template.
+## Slow starting containers can be protected through startup probes
+## see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+##
+startupProbe:
+  enabled: false
+  initialDelaySeconds: 5
+  periodSeconds: 20
+  timeoutSeconds: 10
+  failureThreshold: 30
+  successThreshold: 1
+## Resources configuration
+##
+resources:
+  ## Whether resources management should be enabled
+  ## see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  enabled: false
+## Fix volume permissions automatically
+## Enable this if you're having permission issues
+## If that solves your problem, you should properly chown/chmod your persistence directory on the host
+## NOTE: it's not recommended to keep it enabled, since the init container works as a root user
+##
+volumePermissions:
+  enabled: false
+## Housekeeping configuration
+##
+housekeeping:
+  ## Media cleanup job configuration
+  ## This job will remove empty directories that possibly only contain metadata files
+  ##
+  mediaCleanup:
+    enabled: true
+    # How often to run the cleanup job (cron)
+    # Every hour by default
+    scheduleCron: "*/10 * * * *"
+    # Whether to run in dry-run mode (only report which folders would be deleted)
+    dryRun: false
+    # Logging level (debug, info, warning, error, critical)
+    logLevel: "info"
+    # List of the media directories on the host to watch
+    paths:
+      # Example:
+      # - path: /data/library/movies    # Required: path to the media directory
+      #   maxDepth: 2                   # Optional: maximum directory depth level to scan (default: 1)
+      #
+      # Explanation of maxDepth:
+      # - maxDepth = 0: Scans only the root directory itself.
+      #                 Good for uncategorized media: root dir -> media files without subdirs.
+      #                 For instance, /data/library/videos/*.mp4
+      # - maxDepth = 1: Scans immediate subdirectories.
+      #                 Good for Movies and TV shows: root dir -> movie dir.
+      #                 For instance, /data/library/movies/Avatar/*.mkv
+      # - maxDepth = 2: Scans one level deeper.
+      #                 Good for Music: root dir -> author dir -> album dir.
+      #                 For instance, /data/library/music/Eminem/Relapse/*.m4a
+      #
+      - path: /data/library/movies
+        maxDepth: 1
+      - path: /data/library/tv
+        maxDepth: 1
+      - path: /data/library/music
+        maxDepth: 2
+    # List of file globs considered as metadata files
+    # See https://docs.python.org/3/library/fnmatch.html for more information about the glob patterns
+    metadataFileGlobs:
+      - "*.nfo"
+      - "*.json"
+      - "*.jpg"
+      - "*.jpeg"
+      - "*.png"
+      - "*.svg"
+      - "*.sub"
+      - "*.srt"
+      - "*.vtt"
+      - "*.idx"
+      - "*.trickplay"
+      - "theme.mp3"
+      - ".DS_Store"
+      - "Thumbs.db"
+## Monitoring configuration
+## This will install and configure Grafana and Loki
+##
+monitoring:
+  ## Whether to enable monitoring
+  enabled: true
+  ## Namespace to deploy monitoring resources to
+  namespace: monitoring
+  ## Loki chart configuration
+  ## See available values https://github.com/grafana/loki/blob/main/production/helm/loki/values.yaml
+  ##
+  loki:
+    global:
+      dnsService: "kube-dns"
+      dnsNamespace: "kube-system"
+      extraArgs:
+        - "-log.level=info"
+        - "-config.expand-env=true"
+      extraEnv:
+        - name: S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: loki-s3-credentials
+              key: S3_ACCESS_KEY
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: loki-s3-credentials
+              key: S3_SECRET_KEY
+    loki:
+      auth_enabled: false
+      commonConfig:
+        replication_factor: 1
+      storage:
+        type: s3
+        bucketNames:
+          chunks: homeserver-loki-chunks
+          ruler: homeserver-loki-ruler
+          admin: homeserver-loki-admin
+        s3:
+          endpoint: https://storage.yandexcloud.net
+          accessKeyId: ${S3_ACCESS_KEY}
+          secretAccessKey: ${S3_SECRET_KEY}
+          region: ru-central1
+          s3ForcePathStyle: false
+          insecure: false
+      schemaConfig:
+        configs:
+          - from: 2025-05-01
+            store: tsdb
+            object_store: s3
+            schema: v13
+            index:
+              prefix: loki_index_
+              period: 24h
+      pattern_ingester:
+        enabled: true
+      ingester:
+        chunk_encoding: snappy
+      tracing:
+        enabled: true
+      # https://grafana.com/docs/loki/latest/configure/#limits_config
+      limits_config:
+        # Allow user to send structured metadata in push payload
+        allow_structured_metadata: true
+        # Discover and add log levels during ingestion, if not present already
+        discover_log_levels: true
+        volume_enabled: true
+        retention_period: 672h # 28 days retention
+      ruler:
+        enable: true
+      querier:
+        # Default is 4, if you have enough memory and CPU you can increase, reduce if OOMing
+        max_concurrent: 4
+
+    deploymentMode: SingleBinary
+    singleBinary:
+      replicas: 1
+      resources: {}
+      # resources:
+      #   limits:
+      #     cpu: 4
+      #     memory: 4Gi
+      #   requests:
+      #     cpu: 2
+      #     memory: 2Gi
+      extraArgs:
+        - "-log.level=info"
+        - "-config.expand-env=true"
+      extraEnv:
+        - name: S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: loki-s3-credentials
+              key: S3_ACCESS_KEY
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: loki-s3-credentials
+              key: S3_SECRET_KEY
+
+    chunksCache:
+      enabled: true
+      # Amount of memory allocated to chunks-cache for object storage (in MB)
+      # Increase the limit if you have sufficient memory, this should make queries faster
+      allocatedMemory: 64
+      # default is 500MB, with limited memory keep this smaller
+      writebackSizeLimit: 10MB
+    resultsCache:
+      # Enable results cache if you have sufficient memory
+      enabled: true
+      # Amount of memory allocated to results-cache for object storage (in MB)
+      # Increase the limit if you have sufficient memory, this should make queries faster
+      allocatedMemory: 32
+      # default is 500MB, with limited memory keep this smaller
+      writebackSizeLimit: 10MB
+
+    # Zero out replica counts of other deployment modes
+    backend:
+      replicas: 0
+    read:
+      replicas: 0
+    write:
+      replicas: 0
+
+    ingester:
+      replicas: 0
+    querier:
+      replicas: 0
+    queryFrontend:
+      replicas: 0
+    queryScheduler:
+      replicas: 0
+    distributor:
+      replicas: 0
+    compactor:
+      replicas: 0
+    indexGateway:
+      replicas: 0
+    bloomCompactor:
+      replicas: 0
+    bloomGateway:
+      replicas: 0
+  ## Grafana chart configuration
+  ## See available values https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
+  ##
+  grafana:
+    persistence:
+      type: pvc
+      enabled: true
+
+    ## Grafana admin credentials
+    admin:
+      # Name of the existing secret
+      existingSecret: grafana-admin-credentials
+      userKey: username
+      passwordKey: password
+
+    service:
+      enabled: true
+      type: ClusterIP
+
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+          - name: Loki
+            type: loki
+            access: proxy
+            orgId: 1
+            url: "http://loki-gateway:80"
+            basicAuth: false
+            isDefault: true
+            editable: false
+            version: 1
+  ## k8s monitoring chart configuration
+  ## See overview of this chart - https://grafana.com/docs/grafana-cloud/monitor-infrastructure/kubernetes-monitoring/configuration/helm-chart-config/helm-chart/
+  ##
+  ## Docs:
+  ## - Structure: https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/docs/Structure.md
+  ## - Features: https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/docs/Features.md
+  ## - Collectors: https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/docs/Collectors.md
+  ##
+  ## See available values https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/values.yaml
+  ##
+  k8s-monitoring:
+    cluster:
+      ## This a static label that will be attached to all collected logs
+      name: homeserver
+
+    destinations:
+      - name: loki
+        type: loki
+        url: '{{ printf "http://loki-gateway.%s.svc.cluster.local/loki/api/v1/push" (include "homeserver.monitoring.names.namespace" .) }}'
+
+    # --------
+    # Features
+    # --------
+
+    # Gathers Kubernetes lifecycle events as log data
+    clusterEvents:
+      enabled: true
+      collector: alloy-singleton
+      labelsToKeep:
+        - "level"
+        - "namespace"
+        - "node"
+        - "source"
+        - "reason"
+        - "job"
+      structuredMetadata:
+        name: name
+      # filter namespaces
+      # you can add your other namespaces to scrape
+      # [] means all namespaces
+      namespaces:
+        - '{{ include "homeserver.common.names.namespace" . }}'
+        - '{{ include "homeserver.monitoring.names.namespace" . }}'
+        - kube-system
+
+    # Gathers logs from the Kubernetes Nodes
+    nodeLogs:
+      enabled: true
+      gatherMethod: volumes
+      collector: alloy-logs
+      journal:
+        maxAge: "8h"
+        path: "/var/log/journal"
+        # The list of systemd units to keep scraped logs from, this can be a valid RE2 regex.
+        # If empty, all units are scraped.
+        units: []
+
+    # Gathers logs from the Kubernetes Pods
+    #
+    # You can obtain the final Alloy config by going to the respective collector's pod
+    # and executing `cat /etc/alloy/config.alloy`
+    podLogs:
+      enabled: true
+      gatherMethod: volumes
+      collector: alloy-logs
+      # remap labels
+      # target: source
+      labels:
+        app_kubernetes_io_name: app.kubernetes.io/name
+        app_kubernetes_io_component: app.kubernetes.io/component
+        app: app_kubernetes_io_name
+        component: app_kubernetes_io_component
+        homeserver_vpn: homeserver/vpn
+      # extra discovery.relabel rules
+      # see https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.relabel/
+      extraDiscoveryRules: |-
+        // drop loki gateway logs (unnecessary spam)
+        rule {
+          action        = "drop"
+          source_labels = ["app", "component"]
+          separator     = "/"
+          regex         = "loki/gateway"
+        }
+        // drop loki canary logs (unnecessary spam)
+        rule {
+          action        = "drop"
+          source_labels = ["app", "component"]
+          separator     = "/"
+          regex         = "loki/canary"
+        }
+        // add more useful labels
+        rule {
+          action        = "replace"
+          source_labels = ["__meta_kubernetes_pod_node_name"]
+          target_label  = "node_name"
+        }
+        rule {
+          action        = "replace"
+          source_labels = ["__meta_kubernetes_pod_container_image"]
+          target_label  = "container_image"
+        }
+        rule {
+          action        = "replace"
+          source_labels = ["__meta_kubernetes_pod_container_init"]
+          target_label  = "container_init"
+        }
+      # extra loki.process rules
+      # see https://grafana.com/docs/alloy/latest/reference/components/loki/loki.process/
+      extraLogProcessingStages:
+      # indexed labels
+      labelsToKeep:
+        - service_name
+        - app
+        - component
+        - container
+        - container_image
+        - container_init
+        - node_name
+        - namespace
+        - level
+        - homeserver_vpn
+      # unindexed labels
+      # high-cardinality labels should go here
+      structuredMetadata:
+        pod: pod
+      # filter namespaces
+      # you can add your other namespaces to scrape
+      # [] means all namespaces
+      namespaces:
+        - '{{ include "homeserver.common.names.namespace" . }}'
+        - '{{ include "homeserver.monitoring.names.namespace" . }}'
+        - kube-system
+
+    # Gathers metrics related the the Kubernetes Cluster itself
+    clusterMetrics:
+      enabled: false
+      collector: alloy-metrics
+      # filter namespaces
+      # you can add your other namespaces to scrape
+      # [] means all namespaces
+      namespaces:
+        - '{{ include "homeserver.common.names.namespace" . }}'
+        - '{{ include "homeserver.monitoring.names.namespace" . }}'
+        - kube-system
+
+    # ----------
+    # Collectors
+    # ----------
+
+    # The Grafana Alloy instance that is responsible for anything that must be done on a single instance,
+    # such as gathering Cluster events from the API server.
+    # It is deployed as a ReplicaSet with one replica
+    alloy-singleton:
+      enabled: true
+      alloy:
+        resources:
+          requests: {}
+          limits: {}
+        mounts:
+          dockercontainers: false
+          varlog: false
+
+    # The Grafana Alloy instance that scrapes workload logs on each node.
+    # It is deployed as a DaemonSet with one replica per node
+    alloy-logs:
+      enabled: true
+      alloy:
+        resources:
+          requests: {}
+          limits: {}
+        mounts:
+          dockercontainers: false
+          # required for node & pod logs
+          varlog: true
+        clustering:
+          enabled: false
+
+    # The Grafana Alloy instance that is responsible for scraping metrics from prometheus sources like cadvisor and kube-state-metrics
+    # It is deployed as a StatefulSet
+    alloy-metrics:
+      enabled: false
+      alloy:
+        resources:
+          requests: {}
+          limits: {}
+        clustering:
+          enabled: false
+
+    # The Grafana Alloy instance that opens receiver ports to process data delivered directly to Alloy (HTTP, gRPC, Zipkin, etc)
+    # For example, applications instrumented with OpenTelemetry SDKs
+    # It is deployed as a Daemonset
+    alloy-receiver:
+      enabled: false
+
+    alloy-profiles:
+      enabled: false
+services:
+  backrest:
+    enabled: true
+    exposed: true
+    name: backrest
+    replicaCount: 1
+    critical: false
+    image:
+      repository: garethgeorge/backrest
+      tag: v1.8
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 9898
+    ingress:
+      - backrest
+      - backup
+    userdata: /opt
+    persistence:
+      config: /opt/backrest/config
+      data: /opt/backrest/data
+      cache: /opt/backrest/cache
+    vpn: {}
+    extraEnv: []
+    extraEnvSecrets:
+      - name: RESTIC_PASSWORD
+        secretName: backrest-restic-password-secret
+        secretKey: restic-password
+      - name: AWS_ACCESS_KEY_ID
+        secretName: backrest-aws-s3-yandex-cloud-secret
+        secretKey: aws-access-key-id
+      - name: AWS_SECRET_ACCESS_KEY
+        secretName: backrest-aws-s3-yandex-cloud-secret
+        secretKey: aws-secret-access-key
+  homepage:
+    enabled: true
+    exposed: true
+    name: homepage
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/gethomepage/homepage
+      tag: v1.2.0
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 3000
+    ingress:
+      - homepage
+    vpn: {}
+    extraEnvSecrets:
+      - name: HOMEPAGE_VAR_RADARR_API_KEY
+        secretName: homepage-widget-radarr-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_SONARR_API_KEY
+        secretName: homepage-widget-sonarr-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_LIDARR_API_KEY
+        secretName: homepage-widget-lidarr-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_BAZARR_API_KEY
+        secretName: homepage-widget-bazarr-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_AUTOBRR_API_KEY
+        secretName: homepage-widget-autobrr-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_PROWLARR_API_KEY
+        secretName: homepage-widget-prowlarr-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_SABNZBD_API_KEY
+        secretName: homepage-widget-sabnzbd-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_JELLYSEERR_API_KEY
+        secretName: homepage-widget-jellyseerr-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_TAUTULLI_API_KEY
+        secretName: homepage-widget-tautulli-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_JELLYFIN_API_KEY_0
+        secretName: homepage-widget-jellyfin-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_JELLYFIN_API_KEY_1
+        secretName: homepage-widget-jellyfin-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_CALIBRE_USERNAME
+        secretName: homepage-widget-calibre-secret
+        secretKey: username
+      - name: HOMEPAGE_VAR_CALIBRE_PASSWORD
+        secretName: homepage-widget-calibre-secret
+        secretKey: password
+      - name: HOMEPAGE_VAR_KAVITA_USERNAME
+        secretName: homepage-widget-kavita-secret
+        secretKey: username
+      - name: HOMEPAGE_VAR_KAVITA_PASSWORD
+        secretName: homepage-widget-kavita-secret
+        secretKey: password
+      - name: HOMEPAGE_VAR_MINIFLUX_API_KEY
+        secretName: homepage-widget-miniflux-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_CHANGEDETECTION_API_KEY
+        secretName: homepage-widget-changedetection-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_GOTIFY_API_KEY
+        secretName: homepage-widget-gotify-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_MEALIE_API_KEY
+        secretName: homepage-widget-mealie-secret
+        secretKey: api-key
+      - name: HOMEPAGE_VAR_GRAFANA_USERNAME
+        secretName: homepage-widget-grafana-secret
+        secretKey: username
+      - name: HOMEPAGE_VAR_GRAFANA_PASSWORD
+        secretName: homepage-widget-grafana-secret
+        secretKey: password
+      - name: HOMEPAGE_VAR_AUTHENTIK_API_KEY
+        secretName: homepage-widget-authentik-secret
+        secretKey: api-key
+    extraEnv: []
+  plex:
+    enabled: true
+    exposed: true
+    name: plex
+    replicaCount: 1
+    critical: true
+    image:
+      repository: ghcr.io/home-operations/plex
+      tag: rolling
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "large"
+    ports:
+      http: 8080
+      # make sure to open the remote access port in your firewall
+      # you can change this port but it should be in range of 30000-32767 (k8s NodePort)
+      remoteAccess: 32400
+    ingress:
+      - plex
+    claim: ""
+    persistence:
+      config: /opt/plex/config
+      library: /data/library
+    vpn:
+      enabled: false
+    extraEnv: []
+  jellyfin:
+    - enabled: true
+      exposed: true
+      name: jellyfin
+      replicaCount: 1
+      critical: false
+      image:
+        repository: ghcr.io/jellyfin/jellyfin
+        tag: "10"
+        pullPolicy: Always
+      securityContext:
+        strict: true
+      resourcesPreset: "large"
+      ports:
+        http: 8096
+        udp: 7359
+      ingress:
+        - jellyfin
+      vpn: {}
+      persistence:
+        config: /opt/jellyfin/config
+        cache: /opt/jellyfin/cache
+        library: /data/library
+      extraEnv: []
+  autobrr:
+    enabled: false
+    exposed: true
+    name: autobrr
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/autobrr/autobrr
+      tag: v1.62
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 7474
+    ingress:
+      - autobrr
+    persistence:
+      config: /opt/autobrr/config
+    vpn: {}
+    # see the full list of supported env vars
+    # https://autobrr.com/installation/docker#environment-variables
+    #
+    extraEnv: []
+  qbittorrent:
+    enabled: true
+    exposed: true
+    name: qbittorrent
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/home-operations/qbittorrent
+      tag: "5.1.0"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 8080
+      # make sure the p2p port is allowed in your firewall
+      # you can change this port but it should be in range of 30000-32767 (k8s NodePort)
+      p2p: 32700
+    ingress:
+      - qbittorrent
+      - torrent
+    ## VueTorrent configuration
+    ## see https://github.com/VueTorrent/VueTorrent
+    ##
+    ## After enabling, set '/vuetorrent' in the qBittorrent -> Web UI settings
+    vuetorrent:
+      enabled: true
+      # must match the release version https://github.com/VueTorrent/VueTorrent/releases
+      version: v2.24.2
+    persistence:
+      config: /opt/qbittorrent/config
+      # the container should have access only to the torrent downloads directory
+      data: /data/torrents
+    vpn: {}
+    extraEnv: []
+  qbit_manage:
+    enabled: true
+    exposed: false
+    name: qbit-manage
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/stuffanthings/qbit_manage
+      tag: v4.4.0
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports: {}
+    ingress: []
+    persistence:
+      config: /opt/qbit_manage/config
+    ## script schedule
+    ## every 5 minutes by default
+    scheduleCron: "*/10 * * * *"
+    vpn: {}
+    extraEnv:
+      - name: QBT_LOG_LEVEL
+        value: INFO
+  sabnzbd:
+    enabled: true
+    exposed: true
+    name: sabnzbd
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/home-operations/sabnzbd
+      tag: "4"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 8080
+    ingress:
+      - sabnzbd
+      - usenet
+    vpn: {}
+    persistence:
+      config: /opt/sabnzbd/config
+      data: /data/usenet
+    extraEnv: []
+  prowlarr:
+    enabled: true
+    exposed: true
+    name: prowlarr
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/home-operations/prowlarr
+      tag: "1"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 9696
+    ingress:
+      - prowlarr
+    vpn: {}
+    persistence:
+      config: /opt/prowlarr/config
+    extraEnv: []
+  radarr:
+    enabled: true
+    exposed: true
+    name: radarr
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/home-operations/radarr
+      tag: "5"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 7878
+    ingress:
+      - radarr
+      - movies
+      - movie
+    vpn: {}
+    persistence:
+      config: /opt/radarr/config
+      data: /data
+    extraEnv: []
+  sonarr:
+    enabled: true
+    exposed: true
+    name: sonarr
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/home-operations/sonarr
+      tag: "4"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 8989
+    ingress:
+      - sonarr
+      - tv
+    vpn: {}
+    persistence:
+      config: /opt/sonarr/config
+      data: /data
+    extraEnv: []
+  lidarr:
+    enabled: false
+    exposed: true
+    name: lidarr
+    replicaCount: 1
+    critical: false
+    image:
+      repository: lscr.io/linuxserver/lidarr
+      tag: "2.11.2"
+      pullPolicy: IfNotPresent
+    securityContext:
+      # the Linuxserver image uses s6-overlay,
+      # which has its own mechanism for switching to a non-root user via PUID/GUID
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 8686
+    ingress:
+      - lidarr
+      - music
+    vpn: {}
+    persistence:
+      config: /opt/lidarr/config
+      data: /data
+    extraEnv: []
+  whisparr:
+    enabled: true
+    exposed: true
+    name: whisparr
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/hotio/whisparr
+      tag: v3
+      pullPolicy: Always
+    securityContext:
+      # the Hotio image uses s6-overlay,
+      # which has its own mechanism for switching to a non-root user via PUID/GUID
+      strict: false
+    resourcesPreset: "none"
+    ports:
+      http: 6969
+    ingress:
+      - whisparr
+      - porn
+      - xxx
+    persistence:
+      config: /opt/whisparr/config
+      data: /data
+    automountServiceAccountToken: true
+    enableServiceLinks: true
+    # this field should be not allowed, but currently schema validation doesn't support extra fields validation
+    blaa: false
+    extraLabels:
+      some-shitty/label: foo
+      someShittyLabel2: "{{ .Release.Name }}-bar"
+    extraAnnotations:
+      some-shitty/annotation: foo
+      someShittyAnnotation2: "{{ .Release.Name }}-bar"
+    extraVolumeMounts:
+      - name: empty-dir2
+        mountPath: /tmp/cache
+    extraVolumes:
+      - name: empty-dir2
+        emptyDir: {}
+    extraEnv:
+      - name: TEST_VAR2
+        value: "test2"
+      - name: TEST_VAR1
+        value: "test1"
+      - name: TESTOVICK
+        value: '{{ printf "%s-blaa" .Values.host.tz }}'
+      - name: TESTOVICK2
+        value: |-
+          #/bin/bash
+          {{ .Values.host.tz }}-blaa
+          {{ .Values.host.uid }}-bar
+  bazarr:
+    enabled: true
+    exposed: true
+    name: bazarr
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/home-operations/bazarr
+      tag: "1"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 6767
+    ingress:
+      - bazarr
+      - subtitles
+      - subtitle
+    vpn:
+      enabled: true
+    persistence:
+      config: /opt/bazarr/config
+      data: /data
+    extraEnv: []
+  jellyseerr:
+    enabled: false
+    exposed: true
+    name: jellyseerr
+    replicaCount: 1
+    critical: false
+    image:
+      repository: fallenbagel/jellyseerr
+      tag: "2.5.2"
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 5055
+    ingress:
+      - jellyseerr
+    vpn:
+      enabled: false
+    persistence:
+      config: /opt/jellyseerr/config
+    extraEnv: []
+  flaresolverr:
+    enabled: true
+    exposed: false
+    name: flaresolverr
+    replicaCount: 1
+    critical: false
+    image:
+      # up to date fork of FlareSolverr
+      # uses nodriver method instead of obsolete undetected-chromedriver
+      repository: 21hsmw/flaresolverr
+      tag: nodriver
+      pullPolicy: Always
+    securityContext:
+      # throws exception if strict, hard to debug
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 8191
+    ingress: []
+    vpn: {}
+    # nodriver is a preferred method
+    # it's the official successor of undetected-chromedriver
+    # do not change this value unless you know what you are doing
+    driver: nodriver
+    logLevel: INFO
+    lang: en_US
+    # see the full list of supported env vars
+    # https://github.com/21hsmw/FlareSolverr?tab=readme-ov-file#environment-variables
+    #
+    extraEnv: []
+  cloudflarebypassforscraping:
+    enabled: true
+    exposed: false
+    name: cloudflarebypassforscraping
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/sarperavci/cloudflarebypassforscraping
+      tag: latest
+      pullPolicy: Always
+    securityContext:
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 8000
+    ingress: []
+    vpn:
+      enabled: true
+    extraEnv: []
+  tautulli:
+    enabled: false
+    exposed: true
+    name: tautulli
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/home-operations/tautulli
+      tag: "2"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 8181
+    ingress:
+      - tautulli
+    vpn: {}
+    persistence:
+      config: /opt/tautulli/config
+    extraEnv: []
+  kometa:
+    enabled: true
+    exposed: false
+    name: kometa
+    replicaCount: 1
+    critical: false
+    image:
+      repository: kometateam/kometa
+      tag: v2.2.0
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 8181
+    ingress: []
+    vpn:
+      enabled: true
+    persistence:
+      config: /opt/kometa/config
+    ## Schedule
+    ##
+    scheduleCron: "0 5 * * *"
+    ## Jmxd overlays configuration
+    ## See https://github.com/jmxd/Kometa
+    ##
+    jmxdOverlays:
+      enabled: true
+      commitHash: 75a1c1f83d62d4b7d334d2dffa90e6865649ee39
+    connections:
+      tmdb:
+        apiKey: "" # REQUIRED
+        language: en
+        region: US
+      imdb:
+        userId: "" # REQUIRED
+      letterboxd:
+        username: "" # REQUIRED
+      plex:
+        apiKey: "" # REQUIRED
+      radarr:
+        apiKey: "" # go to Settings -> General and retrieve the API key
+        rootFolderPath: /data/library/movies
+        qualityProfile: "Best 1080p"
+      sonarr:
+        apiKey: "" # go to Settings -> General and retrieve the API key
+        rootFolderPath: /data/library/tv
+        qualityProfile: "Best 1080p"
+    ## see the full list of supported env vars
+    ## https://kometa.wiki/en/latest/kometa/environmental
+    ##
+    extraEnv: []
+  thelounge:
+    enabled: false
+    exposed: true
+    name: thelounge
+    replicaCount: 1
+    critical: false
+    image:
+      repository: thelounge/thelounge
+      tag: "4"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 9000
+    ingress:
+      - thelounge
+      - lounge
+      - irc
+    vpn: {}
+    persistence:
+      config: /opt/thelounge/config
+    extraEnv: []
+  myspeed:
+    enabled: false
+    exposed: true
+    name: myspeed
+    replicaCount: 1
+    critical: false
+    image:
+      repository: germannewsmaker/myspeed
+      tag: "1.0.9"
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 5216
+    ingress:
+      - myspeed
+      - speedtest
+    vpn:
+      enabled: false
+    persistence:
+      config: /opt/myspeed/config
+    extraEnv: []
+  stirlingpdf:
+    enabled: false
+    exposed: true
+    name: stirlingpdf
+    replicaCount: 1
+    critical: false
+    image:
+      repository: frooodle/s-pdf
+      tag: "0.46.2-ultra-lite"
+      pullPolicy: IfNotPresent
+    securityContext:
+      # unfortunately the image needs root access
+      # in order to install packages
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 8080
+    ingress:
+      - stirlingpdf
+      - stirling-pdf
+      - pdf
+    vpn: {}
+    enableLogin: false
+    installBookAndAdvancedHtmlOps: true
+    langs: "en_GB,en_US,ru_RU"
+    persistence:
+      config: /opt/stirlingpdf/config
+    extraEnv:
+      []
+      ## see the full list of supported env vars
+      ## https://github.com/Stirling-Tools/Stirling-PDF?tab=readme-ov-file#customisation
+      ##
+      # - name: UI_APP_NAME
+      #   value: "My very own Stirling PDF"
+  miniflux:
+    enabled: true
+    exposed: true
+    name: miniflux
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/miniflux/miniflux
+      tag: "2.2.8"
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 8080
+    ingress:
+      - miniflux
+      - rss
+    vpn:
+      enabled: true
+    # postgresql bitnami subchart
+    # https://artifacthub.io/packages/helm/bitnami/postgresql#parameters
+    postgresql:
+      primary:
+        resources:
+          limits:
+            cpu: 200m
+            ephemeral-storage: 1Gi
+            memory: 192Mi
+          requests:
+            cpu: 100m
+            ephemeral-storage: 50Mi
+            memory: 128Mi
+      backup:
+        enabled: true
+        cronjob:
+          schedule: "0 5 * * *"
+          concurrencyPolicy: Replace
+          storage:
+            # disable PVC, we'll save backups to a local dir
+            enabled: false
+            mountPath: /backup/pgdump
+          extraVolumes:
+            - name: backup-dir
+              hostPath:
+                path: /opt/miniflux/postgresql/backup
+                type: Directory
+          extraVolumeMounts:
+            - name: backup-dir
+              mountPath: /backup/pgdump
+    # number of days after which marking read items as removed; set to -1 to disable this feature
+    cleanupArchiveReadDays: 3600
+    # number of days after which marking unread items as removed; set to -1 to disable this feature
+    cleanupArchiveUnreadDays: 360
+    # cleanup job frequency
+    cleanupFrequencyHours: 24
+    extraEnv: []
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+                - key: "dedicated/secondary"
+                  operator: In
+                  values:
+                    - "true"
+  huginn:
+    enabled: false
+    exposed: true
+    name: huginn
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/huginn/huginn
+      tag: 1e0c359a46b1e84eb8c658404212eaf693b30e61
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 3000
+    ingress:
+      - huginn
+    vpn: {}
+    # postgresql bitnami subchart
+    # https://artifacthub.io/packages/helm/bitnami/postgresql#parameters
+    postgresql:
+      backup:
+        enabled: true
+        cronjob:
+          schedule: "0 5 * * *"
+          concurrencyPolicy: Replace
+          storage:
+            # disable PVC, we'll save backups to a local dir
+            enabled: false
+            mountPath: /backup/pgdump
+          extraVolumes:
+            - name: backup-dir
+              hostPath:
+                path: /opt/huginn/postgresql/backup
+                type: Directory
+          extraVolumeMounts:
+            - name: backup-dir
+              mountPath: /backup/pgdump
+    ## App secret token
+    appSecretToken:
+      ## Specify the secret containing the App secret token
+      secretName: huginn-app-secret-token
+      secretKey: app-secret-token
+    ## Invitation code that users must submit before registration
+    ##
+    ## Normally not needed, since your Huginn instance is protected by Authentik
+    invitationCode:
+      ## Whether invitation code is required
+      enabled: false
+      ## Specify the secret containing the Invitation code
+      secretName: ""
+      secretKey: ""
+    ## Whether to require email confirmation for new users
+    ##
+    ## Normally not needed, since your Huginn instance is protected by Authentik
+    requireConfirmedEmail: false
+    # Specify the default User-Agent header value for HTTP requests made
+    userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.3"
+    # see all the available env vars
+    # https://github.com/huginn/huginn/blob/master/.env.example
+    extraEnv: []
+  playwright:
+    enabled: false
+    exposed: false
+    name: playwright
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/browserless/chromium
+      tag: v2.30.1
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 3000
+    ingress: []
+    token: "UKJPWgKjrvMFtkMztEEjK9L9rwjMLcRw"
+    timeout: 60000
+    maxConcurrentSessions: 4
+    maxQueueLength: 10
+    persistence:
+      config: /opt/playwright/config
+    vpn: {}
+    # see the full list of supported env vars
+    # https://docs.browserless.io/docker/config
+    #
+    extraEnv: []
+  changedetectionio:
+    enabled: false
+    exposed: true
+    name: changedetection
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/dgtlmoon/changedetection.io
+      tag: "0.49"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 5000
+    ingress:
+      - changedetectionio
+      - changedetection
+    vpn: {}
+    playwrightLaunchOptions:
+      # see the full list of available launch options
+      # https://docs.browserless.io/chrome-flags
+      stealth: true
+      headless: true
+      args: ["--lang=en-US", "--hide-scrollbars"]
+    persistence:
+      config: /opt/changedetectionio/config
+    # see the full list of supported env vars
+    # https://github.com/dgtlmoon/changedetection.io/blob/master/docker-compose.yml#L11
+    #
+    extraEnv: []
+  archivebox:
+    enabled: false
+    exposed: true
+    name: archivebox
+    replicaCount: 1
+    critical: false
+    image:
+      repository: archivebox/archivebox
+      tag: "0.7"
+      pullPolicy: Always
+    securityContext:
+      # uses its own mechanism for switching to a non-root user via PUID/GUID
+      strict: false
+    resourcesPreset: "none"
+    ports:
+      http: 8000
+    ingress:
+      - archivebox
+      - archive
+    vpn:
+      enabled: true
+    persistence:
+      data: /opt/archivebox/data
+    ## Admin credentials for the web interface
+    ##
+    adminCredentials:
+      secretName: archivebox-admin-credentials
+      usernameKey: username
+      passwordKey: password
+    mediaMaxSize: 750m
+    timeout: 120
+    saveTitle: true
+    saveFavicon: true
+    saveWget: false
+    saveWarc: false
+    savePdf: false
+    saveScreenshot: false
+    saveDom: false
+    saveSinglefile: true
+    saveReadability: true
+    saveMercury: false
+    saveGit: false
+    saveMedia: false
+    saveArchiveDotOrg: false
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    # see the full list of supported env vars
+    # https://github.com/ArchiveBox/ArchiveBox/wiki/Configuration
+    #
+    extraEnv: []
+  apprise:
+    enabled: false
+    exposed: true
+    name: apprise
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/caronc/apprise
+      tag: "1.1"
+      pullPolicy: Always
+    securityContext:
+      # incompatible with read-only file system
+      # though non-root user is supported
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 8000
+    ingress:
+      - apprise
+    vpn:
+      enabled: false
+    logLevel: INFO
+    statefulMode: simple
+    # attach size is limited to 500 Mb
+    attachSizeMegabytes: 500
+    defaultConfigId: apprise
+    defaultTheme: dark
+    persistence:
+      config: /opt/apprise/config
+    # see the full list of supported env vars
+    # https://github.com/caronc/apprise-api?tab=readme-ov-file#environment-variables
+    #
+    extraEnv: []
+  gotify:
+    enabled: false
+    exposed: true
+    name: gotify
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/gotify/server
+      tag: "2.6"
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 80
+    ingress:
+      - gotify
+    vpn: {}
+    persistence:
+      data: /opt/gotify/data
+    ## Admin credentials for the web interface
+    ##
+    adminCredentials:
+      secretName: gotify-admin-credentials
+      usernameKey: username
+      passwordKey: password
+    databaseDialect: sqlite3
+    databaseConnection: data/gotify.db
+    # see the full list of supported env vars
+    # https://gotify.net/docs/config#environment-variables
+    #
+    extraEnv: []
+  kavita:
+    enabled: false
+    exposed: true
+    name: kavita
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/kareadita/kavita
+      tag: "0.8.6"
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 5000
+    ingress:
+      - kavita
+    vpn: {}
+    persistence:
+      config: /opt/kavita/config
+      library: /data/library/books
+    extraEnv: []
+  stump:
+    enabled: false
+    exposed: true
+    name: stump
+    replicaCount: 1
+    critical: false
+    image:
+      repository: aaronleopold/stump
+      tag: "0.0.10"
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 10801
+    ingress:
+      - stump
+    vpn: {}
+    persistence:
+      config: /opt/stump/config
+      library: /data/library/books
+    extraEnv: []
+  calibre:
+    enabled: true
+    exposed: true
+    name: calibre
+    replicaCount: 1
+    critical: false
+    image:
+      repository: crocodilestick/calibre-web-automated
+      tag: V3.0.4
+      pullPolicy: IfNotPresent
+    securityContext:
+      # the image uses s6-overlay,
+      # which has its own mechanism for switching to a non-root user via PUID/GUID
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 8083
+    ingress:
+      - calibre
+      - books
+    vpn: {}
+    persistence:
+      config: /opt/calibre-web-automated/config
+      ingest: /opt/calibre-web-automated/ingest
+      data: /data/library/books
+    extraEnv: []
+  calibrebookdownloader:
+    enabled: true
+    exposed: true
+    name: calibre-book-downloader
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/calibrain/calibre-web-automated-book-downloader
+      tag: latest
+      pullPolicy: Always
+    securityContext:
+      # has its own mechanism for switching to a non-root user via UID/UID
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 8084
+    ingress:
+      - calibre-book-downloader
+      - annas-archive
+      - anna-archive
+    # Anna's Archive is blocked in some countries, you can use a VPN to bypass the block
+    vpn:
+      enabled: true
+    # bypasses Cloudflare's protection when downloading books from Anna's Archive
+    useCfBypass: true
+    # preferred books language, you can add more languages separated by a comma
+    bookLanguage: "en,ru"
+    # restricts the search to specific formats
+    # you can add more formats separated by a comma
+    #
+    # pay attention to compatibility with CWA - some formats may not be ingested
+    # the default value is synced with the current version of CWA (3.0.1)
+    #
+    # formats are sorted in the order of preference
+    supportedFormats: "epub,azw,azw3,azw4,mobi,fb2,cbz,cbr,cb7,cbc,chm,pdf,djvu,docx,fbz,html,htmlz,lit,lrf,odt,prc,pdb,pml,rb,rtf,snb,tcr,txtz"
+    annasArchiveDonatorKey: "" # set your donator key if you have one; this will make downloads much faster and more reliable
+    extraEnv: []
+  openbooks:
+    enabled: true
+    exposed: true
+    name: openbooks
+    replicaCount: 1
+    critical: false
+    image:
+      repository: evanbuss/openbooks
+      tag: "4.5.0"
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 8080
+    ingress:
+      - openbooks
+      - irchighway
+      - highway
+    vpn:
+      enabled: false
+    # your IRC name, it will be used to identify you in the IRC channel
+    ircname: pebble
+    # if true, won't send files to browser
+    noBrowserDownloads: false
+  convertx:
+    enabled: true
+    exposed: true
+    name: convertx
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/c4illin/convertx
+      tag: v0.13.0
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "none"
+    ports:
+      http: 3000
+    ingress:
+      - convertx
+      - convert
+    vpn:
+      enabled: false
+    persistence:
+      data: /opt/convertx/data
+    # set to 0 to disable auto-delete
+    autoDeleteEveryNHours: 24
+    # see available env vars
+    # https://github.com/C4illin/ConvertX?tab=readme-ov-file#environment-variables
+    #
+    extraEnv: []
+  pinchflat:
+    enabled: false
+    exposed: true
+    name: pinchflat
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/kieraneglin/pinchflat
+      tag: v2025.3.17
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 8945
+    ingress:
+      - pinchflat
+      - youtube
+    vpn:
+      enabled: true
+    persistence:
+      config: /opt/pinchflat/config
+      data: /data/library/videos
+    extraEnv:
+      - name: LOG_LEVEL
+        value: info
+  mealie:
+    enabled: false
+    exposed: true
+    name: mealie
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/mealie-recipes/mealie
+      tag: v2.8.0
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "none"
+    ports:
+      http: 9000
+    ingress:
+      - mealie
+      - recipes
+      - recipe
+    tokenTimeHours: 4320
+    persistence:
+      data: /opt/mealie/data
+    vpn:
+      enabled: false
+    extraEnv: []
+  librechat:
+    enabled: true
+    exposed: true
+    name: librechat
+    replicaCount: 1
+    critical: true
+    image:
+      repository: ghcr.io/danny-avila/librechat
+      tag: v0.7.8
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 3080
+    ingress:
+      - librechat
+      - chatgpt
+      - ai
+    secretName: librechat-secret
+    endpoints: "OpenRouter,openAI"
+    allowEmailLogin: false
+    allowSocialLogin: true
+    # controls how long an auth session lives
+    # 180 days (15552000000 milliseconds) by default
+    #
+    # this settings has no effect if you've enabled OpenID refresh tokens
+    # see https://www.librechat.ai/docs/configuration/authentication/OAuth2-OIDC/token-reuse
+    # when this feature is active, the refresh token is issued by your OpenID provider instead of LibreChat
+    refreshTokenExpiryMilliseconds: 15552000000
+    customFooter: ""
+    # enable search backed by MeiliSearch
+    # see https://www.librechat.ai/docs/features/search
+    #
+    # make sure the MeiliSearch service is enabled
+    search: true
+    persistence:
+      # directory where to keep user-uploaded images
+      clientImages: /opt/librechat/client/images
+    # MongoDB Chart configuration
+    # https://artifacthub.io/packages/helm/bitnami/mongodb#parameters
+    mongodb:
+      backup:
+        enabled: true
+        cronjob:
+          schedule: "0 5 * * *"
+          concurrencyPolicy: Replace
+          storage:
+            # disable PVC, we'll save backups to a local dir
+            enabled: false
+            mountPath: /backup/mongodump
+          extraVolumes:
+            - name: backup-dir
+              hostPath:
+                path: /opt/librechat/postgresql/backup
+                type: Directory
+          extraVolumeMounts:
+            - name: backup-dir
+              mountPath: /backup/mongodump
+      systemLogVerbosity: 0
+    vpn:
+      enabled: false
+    extraEnvFromSecret: ""
+    # you can pass your API keys and other secrets securely here
+    extraEnvSecrets: []
+    # - name: OPENAI_API_KEY
+    #   secretName: librechat-endpoints-secret
+    #   secretKey: librechat-openai-api-key
+    # - name: OPENROUTER_KEY
+    #   secretName: librechat-endpoints-secret
+    #   secretKey: librechat-openrouter-api-key
+    extraEnv: []
+  meilisearch:
+    enabled: true
+    exposed: false
+    name: meilisearch
+    replicaCount: 1
+    critical: true
+    image:
+      repository: getmeili/meilisearch
+      tag: v1.13.3
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "medium"
+    ports:
+      http: 7700
+    ingress: []
+    persistence:
+      data: /opt/meilisearch/data
+    ## Master key
+    ## must be at least 16 bytes long
+    ##
+    masterKey:
+      secretName: meilisearch-secret
+      secretKey: master-key
+    vpn:
+      enabled: false
+    extraEnv: []
+  stash:
+    enabled: true
+    exposed: true
+    name: stash
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/hotio/stash
+      tag: release-0.28.1
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: false
+    resourcesPreset: "small"
+    ports:
+      http: 9999
+    ingress:
+      - stash
+    vpn:
+      enabled: true
+    persistence:
+      ## Point this at your collection
+      data: /data/library-xxx/xxx
+      ## Keep configs, scrapers, and plugins here
+      config: /opt/stash/.stash
+      ## This is where metadata lives
+      metadata: /opt/stash/metadata
+      ## Any other cache content
+      cache: /opt/stash/cache
+      ## Where to store binary blob data (scene covers, images)
+      blobs: /opt/stash/blobs
+      ## Where to store generated content (screenshots, previews, transcodes, sprites)
+      generated: /opt/stash/generated
+    extraEnv: []
+  opengist:
+    enabled: true
+    exposed: true
+    name: opengist
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/thomiceli/opengist
+      tag: "1.10"
+      pullPolicy: Always
+    securityContext:
+      strict: false
+    resourcesPreset: "micro"
+    ports:
+      http: 6157
+    ingress:
+      - opengist
+    persistence:
+      config: /opt/opengist/config
+    vpn: {}
+    # see the full list of supported env vars
+    # https://opengist.io/docs/configuration/cheat-sheet.html
+    extraEnvSecrets: []
+    extraEnv:
+      - name: OG_LOG_LEVEL
+        value: "warn"

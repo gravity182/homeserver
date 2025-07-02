@@ -41,8 +41,13 @@ if [ $config_updated -eq 1 ]; then
   echo "NAMESPACE=\"$NAMESPACE\"" >> "$CONFIG_FILE"
 fi
 
+f_values=( -f values.yaml )
+if [ -f "values.extend.yaml" ]; then
+  f_values+=( -f values.extend.yaml )
+fi
+
 helm upgrade --install "$RELEASE_NAME" . \
-  -f values.yaml \
+  "${f_values[@]}" \
   --namespace "$NAMESPACE" \
   --create-namespace
 

@@ -4,7 +4,8 @@
 .idea
 .git
 .env
-/values.y*
+/values*
+!values.yaml
 .homeserver
 
 /files/homepage/*
