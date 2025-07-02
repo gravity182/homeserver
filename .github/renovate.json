@@ -1,17 +1,21 @@
 {
+  "extends": [ "config:base" ],
   "baseBranches": [ "master" ],
   "autodiscover": false,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "logLevel": "debug",
+  "helm-values": {
+    "enabled": true
+  },
   "packageRules": [
     {
-      "description": "Image updates",
+      "description": "Docker image updates",
       "matchDatasources": "docker",
-      "matchFileNames": [ "values.yaml" ],
-      "matchManagers": [ "custom.regex" ],
-      "matchDepNames": "{{repository}}",
-      "extractVersion": "(^|\\n)services:\\s*[^:]+:\\s*.*?image:\\s*.*?repository:\\s*(?<repository>[^\\s:]+/[^\\s]+(?:\\/[^\\s/]+)?)\\s*.*?tag:\\s*\"?v?(?<version>[^\"'\\s]+)\"?",
+      "matchManagers": [ "helm-values" ],
       "major": { "enabled": false },
       "minor": { "automerge": false },
-      "patch": { "automerge": false, "labels": [ "renovate", "patch-update" ] },
+      "patch": { "automerge": true, "labels": [ "renovate", "patch-update" ] },
       "commitMessageSuffix": "{{#if major}} ⚠️{{else if minor}} ✨{{else}} 🩹{{/if}}",
       "branchTopic": "renovate/{{datasource}}-{{depName}}-{{currentVersion}}-to-{{newVersion}}-{{chartName}}",
       "prHeader": "This PR updates an image for the `{{chartName}}` Helm chart.",
