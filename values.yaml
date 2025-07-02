@@ -1986,7 +1986,7 @@ services:
     critical: true
     image:
       repository: getmeili/meilisearch
-      tag: v1.13.3
+      tag: v1.15.2
       pullPolicy: Always
     securityContext:
       strict: true
