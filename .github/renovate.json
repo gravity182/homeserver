@@ -1,6 +1,8 @@
 {
   "extends": [ "config:recommended" ],
   "baseBranches": [ "master" ],
+  "platform": "github",
+  "branchPrefix": "renovate/",
   "prConcurrentLimit": 1,
   "helm-values": {
     "enabled": true
@@ -14,7 +16,6 @@
       "minor": { "automerge": false },
       "patch": { "automerge": true, "labels": [ "renovate", "patch-update" ] },
       "commitMessageSuffix": "{{#if major}} ⚠️{{else if minor}} ✨{{else}} 🩹{{/if}}",
-      "branchTopic": "renovate/{{datasource}}-{{depName}}-{{currentVersion}}-to-{{newVersion}}-{{chartName}}",
       "prHeader": "This PR updates an image for the `{{chartName}}` Helm chart.",
       "prFooter": "If you find this update useful, please consider [sponsoring Renovate](https://renovatebot.com/donate)."
     }
