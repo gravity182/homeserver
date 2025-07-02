@@ -3,9 +3,6 @@
   "extends": [ "config:recommended" ],
   "baseBranches": [ "master" ],
   "branchPrefix": "renovate/",
-  "repositories": [
-    "gravity182/homeserver"
-  ],
   "prConcurrentLimit": 10,
   "helm-values": {
     "enabled": true
