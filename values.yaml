@@ -10,7 +10,7 @@ host:
   ## Host user's ID
   ## Can be obtained via `id -u`
   ##
-  uid: -1
+  uid:
   ## Host user's group ID
   ## Can be obtained via `id -g`
   ##
@@ -223,14 +223,7 @@ automountServiceAccountToken: false
 ## Can be overriden per service
 ##
 affinity:
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: "node-role.kubernetes.io/master"
-              operator: In
-              values:
-                - "true"
+  nodeAffinity: {}
   podAffinity: {}
   podAntiAffinity: {}
 ## Tolerations configuration for pods
@@ -1414,16 +1407,6 @@ services:
     # cleanup job frequency
     cleanupFrequencyHours: 24
     extraEnv: []
-    affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            preference:
-              matchExpressions:
-                - key: "dedicated/secondary"
-                  operator: In
-                  values:
-                    - "true"
   huginn:
     enabled: false
     exposed: true
