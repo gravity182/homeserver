@@ -39,4 +39,4 @@ jobs:
           # command: "renovate --verbose"
           token: ${{ secrets.RENOVATE_TOKEN }}
         env:
-          LOG_LEVEL: debug
+          LOG_LEVEL: info
