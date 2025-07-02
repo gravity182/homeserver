@@ -37,8 +37,4 @@ jobs:
           configurationFile: .github/renovate.json # Path to your Renovate config
           # Command-line arguments for Renovate (optional, but useful for debugging)
           # command: "renovate --verbose"
-        env:
-          # This GITHUB_TOKEN is provided by GitHub Actions and has the permissions
-          # defined in the 'permissions' block above. It's used by Renovate
-          # to clone the repo, create PRs, etc.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RENOVATE_TOKEN }}
