@@ -15,10 +15,9 @@
       "description": "Docker image updates",
       "matchDatasources": "docker",
       "matchManagers": [ "helm-values" ],
-      "labels": [ "renovate" ],
-      "major": { "automerge": false, "labels": [ "major-update" ] },
-      "minor": { "automerge": false, "labels": [ "minor-update" ] },
-      "patch": { "automerge": true, "labels": [ "patch-update" ] },
+      "major": { "automerge": false, "labels": [ "renovate", "major-update" ] },
+      "minor": { "automerge": false, "labels": [ "renovate", "minor-update" ] },
+      "patch": { "automerge": true, "labels": [ "renovate", "patch-update" ] },
       "commitMessageSuffix": "{{#if isMajor}} ⚠️{{else if isMinor}} ✨{{else}} 🩹{{/if}}"
     }
   ]
