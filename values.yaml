@@ -1863,7 +1863,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/kieraneglin/pinchflat
-      tag: v2025.3.17
+      tag: v2025.6.6
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
