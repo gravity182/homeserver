@@ -39,4 +39,6 @@ jobs:
           # command: "renovate --verbose"
           token: ${{ secrets.RENOVATE_TOKEN }}
         env:
+          RENOVATE_PLATFORM: github
+          RENOVATE_AUTODISCOVER: true
           LOG_LEVEL: info
