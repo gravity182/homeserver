@@ -1,10 +1,8 @@
 {
-  "extends": [ "config:base" ],
+  "extends": [ "config:recommended" ],
   "baseBranches": [ "master" ],
   "autodiscover": false,
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 2,
-  "logLevel": "debug",
+  "prConcurrentLimit": 1,
   "helm-values": {
     "enabled": true
   },
@@ -13,7 +11,7 @@
       "description": "Docker image updates",
       "matchDatasources": "docker",
       "matchManagers": [ "helm-values" ],
-      "major": { "enabled": false },
+      "major": { "automerge": false },
       "minor": { "automerge": false },
       "patch": { "automerge": true, "labels": [ "renovate", "patch-update" ] },
       "commitMessageSuffix": "{{#if major}} ⚠️{{else if minor}} ✨{{else}} 🩹{{/if}}",
