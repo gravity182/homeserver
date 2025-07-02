@@ -1,4 +1,5 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [ "config:recommended" ],
   "baseBranches": [ "master" ],
   "platform": "github",
@@ -7,7 +8,7 @@
   "repositories": [
     "gravity182/homeserver"
   ],
-  "prConcurrentLimit": 1,
+  "prConcurrentLimit": 10,
   "helm-values": {
     "enabled": true
   },
