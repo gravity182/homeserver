@@ -1645,7 +1645,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/kareadita/kavita
-      tag: "0.8.6"
+      tag: "0.8.7"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
