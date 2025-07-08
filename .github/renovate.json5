@@ -5,6 +5,7 @@
   "branchPrefix": "renovate/",
   "prConcurrentLimit": 10,
   "platformAutomerge": true,
+  "automergeType": "pr",
   // Allow auto-merge without tests
   "ignoreTests": true,
   "helm-values": {
@@ -18,8 +19,7 @@
       "major": { "automerge": false, "labels": [ "renovate", "major-update" ] },
       "minor": { "automerge": false, "labels": [ "renovate", "minor-update" ] },
       "patch": { "automerge": true, "labels": [ "renovate", "patch-update" ] },
-      "commitMessageSuffix": "{{#if isMajor}} ⚠️{{else if isMinor}} ✨{{else}} 🩹{{/if}}",
-      "ignoreTests": true
+      "commitMessageSuffix": "{{#if isMajor}} ⚠️{{else if isMinor}} ✨{{else}} 🩹{{/if}}"
     }
   ]
 }
