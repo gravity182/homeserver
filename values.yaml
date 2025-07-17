@@ -1985,6 +1985,7 @@ services:
       http: 6157
     ingress:
       - opengist
+      - gist
     persistence:
       config: /opt/opengist/config
     vpn: {}
