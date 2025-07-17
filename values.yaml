@@ -1503,7 +1503,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/dgtlmoon/changedetection.io
-      tag: "0.49"
+      tag: "0.50"
       pullPolicy: Always
     securityContext:
       strict: true
