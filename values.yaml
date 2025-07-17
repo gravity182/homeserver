@@ -953,7 +953,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/stuffanthings/qbit_manage
-      tag: v4.4.0
+      tag: v4.5.0
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
