@@ -1,0 +1,135 @@
+suite: Test Template Helper Functions
+templates:
+  - ../templates/_names.tpl
+  - ../templates/_labels.tpl
+  - ../templates/_container.tpl
+  - ../templates/_security-context.tpl
+  - ../templates/_utils.tpl
+
+tests:
+  - it: should generate correct service name
+    template: ../templates/_names.tpl
+    set:
+      service:
+        name: "my-service"
+    asserts:
+      - equal:
+          path: homeserver.common.names.name
+          value: "my-service"
+        template: ../templates/_names.tpl
+
+  - it: should truncate service name at 63 characters
+    template: ../templates/_names.tpl
+    set:
+      service:
+        name: "this-is-a-very-long-service-name-that-exceeds-sixty-three-characters-limit"
+    asserts:
+      - matchRegex:
+          path: homeserver.common.names.name
+          pattern: "^.{1,63}$"
+        template: ../templates/_names.tpl
+
+  - it: should generate correct database name
+    template: ../templates/_names.tpl
+    set:
+      service:
+        name: "my-service"
+      database: "postgres"
+    asserts:
+      - equal:
+          path: homeserver.common.names.database
+          value: "my-service-postgres"
+        template: ../templates/_names.tpl
+
+  - it: should generate correct chart name and version
+    template: ../templates/_names.tpl
+    chart:
+      name: "homeserver"
+      version: "1.0.0"
+    asserts:
+      - equal:
+          path: homeserver.common.names.chart
+          value: "homeserver-1.0.0"
+        template: ../templates/_names.tpl
+
+  - it: should generate correct namespace
+    template: ../templates/_names.tpl
+    release:
+      namespace: "test-namespace"
+    asserts:
+      - equal:
+          path: homeserver.common.names.namespace
+          value: "test-namespace"
+        template: ../templates/_names.tpl
+
+  - it: should generate standard labels with service
+    template: ../templates/_labels.tpl
+    set:
+      service:
+        name: "homepage"
+        vpn:
+          enabled: false
+        extraLabels:
+          custom: "value"
+    chart:
+      name: "homeserver"
+      version: "1.0.0"
+      appVersion: "1.0.0"
+    release:
+      name: "test-release"
+      service: "Helm"
+    values:
+      commonLabels:
+        environment: "test"
+    asserts:
+      - isKind:
+          of: Dict
+        template: ../templates/_labels.tpl
+      - equal:
+          path: "app.kubernetes.io/name"
+          value: "homepage"
+        template: ../templates/_labels.tpl
+      - equal:
+          path: "app.kubernetes.io/instance"
+          value: "test-release"
+        template: ../templates/_labels.tpl
+      - equal:
+          path: "homeserver/vpn"
+          value: "false"
+        template: ../templates/_labels.tpl
+
+  - it: should generate VPN label when enabled
+    template: ../templates/_labels.tpl
+    set:
+      service:
+        name: "qbittorrent"
+        vpn:
+          enabled: true
+    chart:
+      name: "homeserver"
+      version: "1.0.0"
+    release:
+      name: "test-release"
+      service: "Helm"
+    asserts:
+      - equal:
+          path: "homeserver/vpn"
+          value: "true"
+        template: ../templates/_labels.tpl
+
+  - it: should generate match labels
+    template: ../templates/_labels.tpl
+    set:
+      service:
+        name: "radarr"
+    release:
+      name: "test-release"
+    asserts:
+      - equal:
+          path: "app.kubernetes.io/name"
+          value: "radarr"
+        template: ../templates/_labels.tpl
+      - equal:
+          path: "app.kubernetes.io/instance"
+          value: "test-release"
+        template: ../templates/_labels.tpl

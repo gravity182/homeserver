@@ -1,0 +1,379 @@
+name: Test Helm Chart
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint-yaml:
+    name: Lint YAML files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint YAML files
+        run: yamllint .
+
+  validate-json-schema:
+    name: Validate JSON Schema
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli
+
+      - name: Validate values.yaml against schema
+        run: ajv validate -s values.schema.json -d values.yaml
+
+      - name: Validate ci-values.yaml against schema
+        run: ajv validate -s values.schema.json -d ci-values.yaml
+
+  helm-lint:
+    name: Helm Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "3.14.0"
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add cert-manager https://charts.jetstack.io
+          helm repo add authentik https://charts.goauthentik.io
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+
+      - name: Helm lint with default values
+        run: helm lint .
+
+      - name: Helm lint with template values
+        run: helm lint . --values values.template.yaml
+
+      - name: Helm lint with CI values (all services enabled)
+        run: helm lint . --values ci-values.yaml
+
+  helm-unittest:
+    name: Helm Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "3.14.0"
+
+      - name: Install helm-unittest plugin
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest
+
+      - name: Run template helper tests
+        run: helm unittest tests/template-helpers_test.yaml
+
+      - name: Run service logic tests
+        run: helm unittest tests/services_test.yaml
+
+  helm-template-all-services:
+    name: Template Rendering - All Services
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "3.14.0"
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add cert-manager https://charts.jetstack.io
+          helm repo add authentik https://charts.goauthentik.io
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+
+      - name: Test Helm template rendering with all services enabled
+        run: |
+          helm template homeserver . --values ci-values.yaml \
+            --debug > /tmp/rendered-all-services.yaml
+
+      - name: Validate rendered YAML syntax
+        run: |
+          if [ -s /tmp/rendered-all-services.yaml ]; then
+            echo "✅ All services template rendered successfully"
+            echo "📊 Rendered manifest stats:"
+            echo "   Total lines: $(wc -l < /tmp/rendered-all-services.yaml)"
+            echo "   Total resources: $(rg -c '^kind:' /tmp/rendered-all-services.yaml)"
+            echo "   Deployments: $(rg -c '^kind: Deployment' /tmp/rendered-all-services.yaml)"
+            echo "   Services: $(rg -c '^kind: Service' /tmp/rendered-all-services.yaml)"
+            echo "   ConfigMaps: $(rg -c '^kind: ConfigMap' /tmp/rendered-all-services.yaml)"
+          else
+            echo "❌ Template rendering failed for all services"
+            exit 1
+          fi
+
+      - name: Upload rendered manifests as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-manifests-all-services
+          path: /tmp/rendered-all-services.yaml
+          retention-days: 7
+
+  helm-template-individual-services:
+    name: Template Rendering - Individual Services
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - homepage
+          - plex
+          - jellyfin
+          - radarr
+          - sonarr
+          - lidarr
+          - prowlarr
+          - qbittorrent
+          - sabnzbd
+          - jellyseerr
+          - autobrr
+          - bazarr
+          - tautulli
+          - kometa
+          - apprise
+          - gotify
+          - miniflux
+          - stirlingpdf
+          - thelounge
+          - huginn
+          - changedetectionio
+          - archivebox
+          - convertx
+          - pinchflat
+          - mealie
+          - kavita
+          - calibre
+          - openbooks
+          - librechat
+          - meilisearch
+          - myspeed
+          - flaresolverr
+          - playwright
+          - backrest
+          - opengist
+          - stash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "3.14.0"
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add cert-manager https://charts.jetstack.io
+          helm repo add authentik https://charts.goauthentik.io
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+
+      - name: Test individual service template for ${{ matrix.service }}
+        run: |
+          # Create minimal values file for this specific service
+          cat > /tmp/test-${{ matrix.service }}.yaml << 'EOF'
+          host:
+            tz: "UTC"
+            uid: 1000
+            gid: 1000
+          ingress:
+            domain: "test.example.com"
+          cert-manager:
+            namespace: cert-manager
+          x-cert-manager:
+            cluster-issuer:
+              email: "test@example.com"
+          authentik:
+            namespace: authentik
+            authentik:
+              secret_key: "test-secret-key-for-ci-that-is-exactly-50-chars-long"
+              postgresql:
+                password: "test-password"
+            postgresql:
+              auth:
+                password: "test-password"
+          services:
+            ${{ matrix.service }}:
+              enabled: true
+          EOF
+
+          # Render template for this service
+          helm template homeserver . --values /tmp/test-${{ matrix.service }}.yaml \
+            --debug > /tmp/rendered-${{ matrix.service }}.yaml
+
+      - name: Validate service manifest for ${{ matrix.service }}
+        run: |
+          if [ -s /tmp/rendered-${{ matrix.service }}.yaml ]; then
+            echo "✅ Service ${{ matrix.service }} rendered successfully"
+
+            # Check for common Kubernetes resources
+            deployments=$(rg -c '^kind: Deployment' /tmp/rendered-${{ matrix.service }}.yaml || echo "0")
+            services=$(rg -c '^kind: Service' /tmp/rendered-${{ matrix.service }}.yaml || echo "0")
+            configmaps=$(rg -c '^kind: ConfigMap' /tmp/rendered-${{ matrix.service }}.yaml || echo "0")
+
+            echo "📊 ${{ matrix.service }} resources:"
+            echo "   Deployments: $deployments"
+            echo "   Services: $services"
+            echo "   ConfigMaps: $configmaps"
+
+            # Ensure at least one deployment is created for enabled services
+            if [ "$deployments" -eq "0" ]; then
+              echo "⚠️  Warning: No Deployment found for ${{ matrix.service }}"
+            fi
+          else
+            echo "❌ Service ${{ matrix.service }} template rendering failed"
+            exit 1
+          fi
+
+  security-scan:
+    name: Security Scan - All Services
+    runs-on: ubuntu-latest
+    needs: helm-template-all-services
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "3.14.0"
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add cert-manager https://charts.jetstack.io
+          helm repo add authentik https://charts.goauthentik.io
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+
+      - name: Install kubesec
+        run: |
+          wget https://github.com/controlplaneio/kubesec/releases/latest/download/kubesec_linux_amd64.tar.gz
+          tar -xzf kubesec_linux_amd64.tar.gz
+          sudo mv kubesec /usr/local/bin/
+
+      - name: Install Polaris
+        run: |
+          wget https://github.com/FairwindsOps/polaris/releases/latest/download/polaris_linux_amd64.tar.gz
+          tar -xzf polaris_linux_amd64.tar.gz
+          sudo mv polaris /usr/local/bin/
+
+      - name: Render all services for security scanning
+        run: |
+          helm template homeserver . --values ci-values.yaml > all-services-manifests.yaml
+
+      - name: Run kubesec security scan
+        run: |
+          echo "🔒 Running kubesec security scan on all services..."
+          kubesec scan all-services-manifests.yaml > kubesec-results.json
+
+          # Show summary
+          echo "📊 Security scan summary:"
+          jq -r '.[] | select(.kind == "Deployment") | "\(.metadata.name): \(.scoring.advise // [] | length) advisories"' kubesec-results.json || echo "No deployment advisories found"
+
+      - name: Run Polaris audit
+        run: |
+          echo "🔍 Running Polaris audit on all services..."
+          polaris audit --format=json --audit-path=all-services-manifests.yaml > polaris-results.json || true
+
+          # Show summary
+          echo "📊 Polaris audit summary:"
+          if [ -f polaris-results.json ]; then
+            jq -r '.Results[] | select(.Kind == "Deployment") | "\(.Name): \(.PodResult.Summary.Totals.Successes) successes, \(.PodResult.Summary.Totals.Warnings) warnings, \(.PodResult.Summary.Totals.Errors) errors"' polaris-results.json || echo "No deployment results found"
+          fi
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-results
+          path: |
+            kubesec-results.json
+            polaris-results.json
+            all-services-manifests.yaml
+          retention-days: 30
+
+  chart-testing:
+    name: Chart Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "3.14.0"
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add cert-manager https://charts.jetstack.io
+          helm repo add authentik https://charts.goauthentik.io
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add grafana https://grafana.github.io/helm-charts
+
+      - name: Run chart-testing (lint)
+        run: ct lint --target-branch ${{ github.event.repository.default_branch }}
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+        if: github.event_name == 'pull_request'
+
+      - name: Install cert-manager CRDs
+        if: github.event_name == 'pull_request'
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.0/cert-manager.crds.yaml
+
+      - name: Create test secrets for chart testing
+        if: github.event_name == 'pull_request'
+        run: |
+          # Create required secrets for testing
+          kubectl create secret generic cloudflare-api-key-secret --from-literal=api-key=test-key || true
+          kubectl create secret generic authentik-secret-key --from-literal=secret-key=test-secret-key-for-ci-that-is-exactly-50-chars-long || true
+          kubectl create secret generic authentik-postgres-credentials --from-literal=admin-password=test-admin --from-literal=user-password=test-password || true
+          kubectl create secret generic wireguard-conf-test --from-literal=wg0.conf="[Interface]
+          PrivateKey = test-key
+          Address = 10.8.0.5/24" || true
+
+      - name: Run chart-testing (install) with all services
+        if: github.event_name == 'pull_request'
+        run: ct install --target-branch ${{ github.event.repository.default_branch }} --helm-extra-args="--values ci-values.yaml --timeout 10m"

@@ -1,0 +1,315 @@
+suite: Test Service Logic
+templates:
+  - ../templates/apps/homepage/deployment.yaml
+  - ../templates/apps/homepage/service.yaml
+  - ../templates/apps/radarr/deployment.yaml
+  - ../templates/apps/radarr/service.yaml
+  - ../templates/apps/qbittorrent/deployment.yaml
+  - ../templates/apps/qbittorrent/service.yaml
+  - ../templates/apps/plex/deployment.yaml
+  - ../templates/apps/plex/service.yaml
+
+tests:
+  # Test service enablement logic
+  - it: should not render homepage when disabled
+    template: ../templates/apps/homepage/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        homepage:
+          enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render homepage when enabled
+    template: ../templates/apps/homepage/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        homepage:
+          enabled: true
+          name: "homepage"
+          replicaCount: 1
+          image:
+            repository: "ghcr.io/gethomepage/homepage"
+            tag: "latest"
+          ports:
+            http: 3000
+          securityContext:
+            strict: false
+          resourcesPreset: "micro"
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: "homepage"
+      - equal:
+          path: spec.replicas
+          value: 1
+
+  # Test VPN integration
+  - it: should inject VPN sidecar when enabled
+    template: ../templates/apps/qbittorrent/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      vpn:
+        secretRef: "wireguard-conf"
+        secretKey: "wg0.conf"
+        sysModule: true
+      services:
+        qbittorrent:
+          enabled: true
+          name: "qbittorrent"
+          replicaCount: 1
+          image:
+            repository: "ghcr.io/home-operations/qbittorrent"
+            tag: "latest"
+          ports:
+            http: 8080
+            p2p: 32700
+          vpn:
+            enabled: true
+          securityContext:
+            strict: true
+          resourcesPreset: "micro"
+          persistence:
+            config: "/opt/qbittorrent/config"
+            data: "/data/torrents"
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Deployment
+      - contains:
+          path: spec.template.spec.containers
+          content:
+            name: wireguard
+            image: lscr.io/linuxserver/wireguard:latest
+
+  # Test persistence configuration
+  - it: should mount persistence volumes correctly
+    template: ../templates/apps/radarr/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        radarr:
+          enabled: true
+          name: "radarr"
+          replicaCount: 1
+          image:
+            repository: "ghcr.io/home-operations/radarr"
+            tag: "latest"
+          ports:
+            http: 7878
+          securityContext:
+            strict: true
+          resourcesPreset: "micro"
+          persistence:
+            config: "/opt/radarr/config"
+            data: "/data"
+    asserts:
+      - hasDocuments:
+          count: 1
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: radarr-config
+            hostPath:
+              path: "/opt/radarr/config"
+              type: Directory
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: radarr-data
+            hostPath:
+              path: "/data"
+              type: Directory
+
+  # Test ingress configuration
+  - it: should create service with correct ports
+    template: ../templates/apps/homepage/service.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        homepage:
+          enabled: true
+          exposed: true
+          name: "homepage"
+          ports:
+            http: 3000
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.ports[0].port
+          value: 3000
+      - equal:
+          path: spec.ports[0].targetPort
+          value: 3000
+      - equal:
+          path: spec.ports[0].name
+          value: "http"
+
+  # Test security context logic
+  - it: should apply strict security context when enabled
+    template: ../templates/apps/radarr/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        radarr:
+          enabled: true
+          name: "radarr"
+          replicaCount: 1
+          image:
+            repository: "ghcr.io/home-operations/radarr"
+            tag: "latest"
+          ports:
+            http: 7878
+          securityContext:
+            strict: true
+          resourcesPreset: "micro"
+          persistence:
+            config: "/opt/radarr/config"
+            data: "/data"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsGroup
+          value: 1000
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsNonRoot
+          value: true
+
+  # Test NodePort services
+  - it: should create NodePort service for plex remote access
+    template: ../templates/apps/plex/remoteaccess-nodeport.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        plex:
+          enabled: true
+          name: "plex"
+          ports:
+            http: 8080
+            remoteAccess: 32400
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.type
+          value: "NodePort"
+      - equal:
+          path: spec.ports[0].nodePort
+          value: 32400
+
+  # Test environment variables
+  - it: should inject host environment variables
+    template: ../templates/apps/homepage/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        homepage:
+          enabled: true
+          name: "homepage"
+          replicaCount: 1
+          image:
+            repository: "ghcr.io/gethomepage/homepage"
+            tag: "latest"
+          ports:
+            http: 3000
+          securityContext:
+            strict: false
+          resourcesPreset: "micro"
+          extraEnv:
+            - name: "CUSTOM_VAR"
+              value: "test-value"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: "TZ"
+            value: "UTC"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: "PUID"
+            value: "1000"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: "PGID"
+            value: "1000"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: "CUSTOM_VAR"
+            value: "test-value"
+
+  # Test resource presets
+  - it: should apply resource limits when preset is set
+    template: ../templates/apps/radarr/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      resources:
+        enabled: true
+      services:
+        radarr:
+          enabled: true
+          name: "radarr"
+          replicaCount: 1
+          image:
+            repository: "ghcr.io/home-operations/radarr"
+            tag: "latest"
+          ports:
+            http: 7878
+          securityContext:
+            strict: true
+          resourcesPreset: "small"
+          persistence:
+            config: "/opt/radarr/config"
+            data: "/data"
+    asserts:
+      - exists:
+          path: spec.template.spec.containers[0].resources.limits
+      - exists:
+          path: spec.template.spec.containers[0].resources.requests

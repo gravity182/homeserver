@@ -1,0 +1,349 @@
+suite: Test Advanced Features and Conditional Logic
+templates:
+  - ../templates/apps/qbittorrent/deployment.yaml
+  - ../templates/apps/homepage/deployment.yaml
+  - ../templates/apps/kometa/cronjob.yaml
+  - ../templates/apps/qbit-manage/cronjob.yaml
+  - ../templates/apps/plex/remoteaccess-nodeport.yaml
+  - ../templates/ingress/httproutes.yaml
+
+tests:
+  # Test VPN sidecar injection
+  - it: should inject VPN sidecar when VPN is enabled
+    template: ../templates/apps/qbittorrent/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      vpn:
+        secretRef: "wireguard-conf"
+        secretKey: "wg0.conf"
+        sysModule: true
+      services:
+        qbittorrent:
+          enabled: true
+          name: "qbittorrent"
+          replicaCount: 1
+          image:
+            repository: "ghcr.io/home-operations/qbittorrent"
+            tag: "latest"
+          vpn:
+            enabled: true
+          securityContext:
+            strict: true
+          resourcesPreset: "micro"
+          ports:
+            http: 8080
+          persistence:
+            config: "/opt/qbittorrent/config"
+            data: "/data/torrents"
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Deployment
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wireguard
+            image: lscr.io/linuxserver/wireguard:latest
+            securityContext:
+              privileged: true
+              capabilities:
+                add:
+                  - NET_ADMIN
+                  - SYS_MODULE
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: wireguard-config
+            secret:
+              secretName: "wireguard-conf"
+
+  - it: should not inject VPN sidecar when VPN is disabled
+    template: ../templates/apps/qbittorrent/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        qbittorrent:
+          enabled: true
+          name: "qbittorrent"
+          replicaCount: 1
+          image:
+            repository: "ghcr.io/home-operations/qbittorrent"
+            tag: "latest"
+          vpn:
+            enabled: false
+          securityContext:
+            strict: true
+          resourcesPreset: "micro"
+          ports:
+            http: 8080
+          persistence:
+            config: "/opt/qbittorrent/config"
+            data: "/data/torrents"
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isNull:
+          path: spec.template.spec.initContainers
+      - notContains:
+          path: spec.template.spec.volumes
+          content:
+            name: wireguard-config
+
+  # Test CronJob rendering
+  - it: should render kometa cronjob correctly
+    template: ../templates/apps/kometa/cronjob.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        kometa:
+          enabled: true
+          name: "kometa"
+          image:
+            repository: "kometateam/kometa"
+            tag: "latest"
+          scheduleCron: "0 5 * * *"
+          securityContext:
+            strict: true
+          resourcesPreset: "micro"
+          persistence:
+            config: "/opt/kometa/config"
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.schedule
+          value: "0 5 * * *"
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.restartPolicy
+          value: "OnFailure"
+
+  # Test NodePort services
+  - it: should create NodePort service for plex remote access
+    template: ../templates/apps/plex/remoteaccess-nodeport.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        plex:
+          enabled: true
+          name: "plex"
+          ports:
+            http: 8080
+            remoteAccess: 32400
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.type
+          value: "NodePort"
+      - equal:
+          path: spec.ports[0].nodePort
+          value: 32400
+      - equal:
+          path: spec.ports[0].port
+          value: 32400
+      - equal:
+          path: spec.ports[0].targetPort
+          value: 32400
+
+  # Test conditional rendering based on exposure
+  - it: should create ingress when service is exposed
+    template: ../templates/ingress/httproutes.yaml
+    set:
+      ingress:
+        domain: "test.example.com"
+      services:
+        homepage:
+          enabled: true
+          exposed: true
+          name: "homepage"
+          ingress:
+            - "homepage"
+            - "home"
+        radarr:
+          enabled: true
+          exposed: true
+          name: "radarr"
+          ingress:
+            - "radarr"
+            - "movies"
+        qbittorrent:
+          enabled: true
+          exposed: false  # Not exposed
+          name: "qbittorrent"
+    asserts:
+      - hasDocuments:
+          count: 1
+      # Should contain routes for exposed services
+      - contains:
+          path: spec.rules
+          content:
+            matches:
+              - headers:
+                  - name: ":authority"
+                    value: "homepage.test.example.com"
+      - contains:
+          path: spec.rules
+          content:
+            matches:
+              - headers:
+                  - name: ":authority"
+                    value: "home.test.example.com"
+      - contains:
+          path: spec.rules
+          content:
+            matches:
+              - headers:
+                  - name: ":authority"
+                    value: "radarr.test.example.com"
+      # Should not contain routes for non-exposed services
+      - notContains:
+          path: spec.rules
+          content:
+            matches:
+              - headers:
+                  - name: ":authority"
+                    value: "qbittorrent.test.example.com"
+
+  # Test environment variable injection
+  - it: should inject required environment variables
+    template: ../templates/apps/homepage/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "Europe/Berlin"
+      services:
+        homepage:
+          enabled: true
+          name: "homepage"
+          replicaCount: 1
+          image:
+            repository: "ghcr.io/gethomepage/homepage"
+            tag: "latest"
+          securityContext:
+            strict: false
+          resourcesPreset: "micro"
+          extraEnv:
+            - name: "CUSTOM_VAR"
+              value: "custom-value"
+          extraEnvSecrets:
+            - name: "SECRET_VAR"
+              secretName: "test-secret"
+              secretKey: "secret-key"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: "TZ"
+            value: "Europe/Berlin"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: "PUID"
+            value: "1000"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: "PGID"
+            value: "1000"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: "CUSTOM_VAR"
+            value: "custom-value"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: "SECRET_VAR"
+            valueFrom:
+              secretKeyRef:
+                name: "test-secret"
+                key: "secret-key"
+
+  # Test resource presets
+  - it: should not set resources when preset is none
+    template: ../templates/apps/homepage/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      resources:
+        enabled: true
+      services:
+        homepage:
+          enabled: true
+          name: "homepage"
+          resourcesPreset: "none"
+          image:
+            repository: "ghcr.io/gethomepage/homepage"
+            tag: "latest"
+          securityContext:
+            strict: false
+    asserts:
+      - isNull:
+          path: spec.template.spec.containers[0].resources
+
+  # Test priority class assignment
+  - it: should assign high priority class for critical services
+    template: ../templates/apps/homepage/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        homepage:
+          enabled: true
+          name: "homepage"
+          critical: true
+          image:
+            repository: "ghcr.io/gethomepage/homepage"
+            tag: "latest"
+          securityContext:
+            strict: false
+          resourcesPreset: "micro"
+    asserts:
+      - equal:
+          path: spec.template.spec.priorityClassName
+          value: "high-priority"
+
+  - it: should assign normal priority class for non-critical services
+    template: ../templates/apps/homepage/deployment.yaml
+    set:
+      host:
+        uid: 1000
+        gid: 1000
+        tz: "UTC"
+      services:
+        homepage:
+          enabled: true
+          name: "homepage"
+          critical: false
+          image:
+            repository: "ghcr.io/gethomepage/homepage"
+            tag: "latest"
+          securityContext:
+            strict: false
+          resourcesPreset: "micro"
+    asserts:
+      - equal:
+          path: spec.template.spec.priorityClassName
+          value: "normal-priority"

@@ -1,0 +1,289 @@
+# CI Values - Enable ALL services for comprehensive testing
+# This file is used by GitHub Actions for testing purposes only
+
+host:
+  tz: "UTC"
+  uid: 1000
+  gid: 1000
+
+# Core infrastructure configuration
+cert-manager:
+  namespace: cert-manager
+  crds:
+    enabled: true
+    keep: true
+  config:
+    apiVersion: controller.config.cert-manager.io/v1alpha1
+    kind: ControllerConfiguration
+    logging:
+      verbosity: 2
+      format: text
+    enableGatewayAPI: true
+
+x-cert-manager:
+  cluster-issuer:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory # Use staging for CI
+    email: "test@example.com"
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-key-secret
+              key: api-key
+
+authentik:
+  namespace: authentik
+  authentik:
+    enabled: true
+    secret_key: "test-secret-key-for-ci-that-is-exactly-50-chars-long"
+    error_reporting:
+      enabled: false
+    postgresql:
+      user: authentik
+      password: "test-postgres-password"
+  server:
+    metrics:
+      enabled: false
+  postgresql:
+    auth:
+      password: "test-postgres-password"
+    backup:
+      enabled: false # Disable backups in CI
+  redis:
+    auth:
+      enabled: false # Disable auth in CI
+
+ingress:
+  domain: "test.example.com"
+  rootService: homepage
+
+vpn:
+  sysModule: true
+  secretRef: wireguard-conf-test
+  secretKey: wg0.conf
+
+# Global settings
+enableServiceLinks: false
+automountServiceAccountToken: false
+resources:
+  enabled: false # Disable resource limits in CI for faster testing
+
+# Enable monitoring for testing
+monitoring:
+  enabled: true
+  namespace: monitoring
+  loki:
+    global:
+      dnsService: "kube-dns"
+      dnsNamespace: "kube-system"
+    loki:
+      auth_enabled: false
+      commonConfig:
+        replication_factor: 1
+      storage:
+        type: filesystem
+      schemaConfig:
+        configs:
+          - from: 2025-05-01
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: loki_index_
+              period: 24h
+    deploymentMode: SingleBinary
+    singleBinary:
+      replicas: 1
+  grafana:
+    persistence:
+      enabled: false # Disable persistence in CI
+    admin:
+      existingSecret: ""
+      user: admin
+      password: admin
+
+# Enable ALL services for comprehensive testing
+services:
+  # Infrastructure services
+  backrest:
+    enabled: true
+    extraEnvSecrets: [] # Remove secrets for CI
+
+  homepage:
+    enabled: true
+    extraEnvSecrets: [] # Remove secrets for CI
+
+  # Media servers
+  plex:
+    enabled: true
+    claim: ""
+
+  jellyfin:
+    - enabled: true
+
+  # Media management (*arr stack)
+  autobrr:
+    enabled: true
+
+  radarr:
+    enabled: true
+
+  sonarr:
+    enabled: true
+
+  lidarr:
+    enabled: true
+
+  whisparr:
+    enabled: true
+
+  bazarr:
+    enabled: true
+
+  prowlarr:
+    enabled: true
+
+  # Download clients
+  qbittorrent:
+    enabled: true
+    vuetorrent:
+      enabled: false
+
+  qbit_manage:
+    enabled: true
+
+  sabnzbd:
+    enabled: true
+
+  # Request management
+  jellyseerr:
+    enabled: true
+
+  # Utility services
+  tautulli:
+    enabled: true
+
+  flaresolverr:
+    enabled: true
+
+  cloudflarebypassforscraping:
+    enabled: true
+
+  playwright:
+    enabled: true
+    token: "test-token"
+
+  # Monitoring
+  myspeed:
+    enabled: true
+
+  # Notifications
+  apprise:
+    enabled: true
+
+  gotify:
+    enabled: true
+    adminCredentials:
+      secretName: ""
+      usernameKey: ""
+      passwordKey: ""
+
+  # Content processing
+  kometa:
+    enabled: true
+    connections:
+      tmdb:
+        apiKey: "test-api-key"
+      imdb:
+        userId: "test-user"
+      letterboxd:
+        username: "test-user"
+      plex:
+        apiKey: "test-api-key"
+
+  # Communication
+  thelounge:
+    enabled: true
+
+  huginn:
+    enabled: true
+    appSecretToken:
+      secretName: ""
+    invitationCode:
+      enabled: false
+
+  # Archival and change detection
+  changedetectionio:
+    enabled: true
+
+  archivebox:
+    enabled: true
+    adminCredentials:
+      secretName: ""
+
+  # Utilities
+  stirlingpdf:
+    enabled: true
+
+  miniflux:
+    enabled: true
+    postgresql:
+      backup:
+        enabled: false # Disable backups in CI
+
+  convertx:
+    enabled: true
+
+  # YouTube downloader
+  pinchflat:
+    enabled: true
+
+  # Recipe management
+  mealie:
+    enabled: true
+
+  # Books
+  kavita:
+    enabled: true
+
+  stump:
+    enabled: true
+
+  calibre:
+    enabled: true
+
+  calibrebookdownloader:
+    enabled: true
+    annasArchiveDonatorKey: "" # Empty for CI
+
+  openbooks:
+    enabled: true
+    ircname: "ci-test"
+
+  # AI/Chat
+  librechat:
+    enabled: true
+    secretName: ""
+    extraEnvSecrets: [] # Remove secrets for CI
+    mongodb:
+      backup:
+        enabled: false # Disable backups in CI
+
+  meilisearch:
+    enabled: true
+    masterKey:
+      secretName: ""
+
+  # Adult content
+  stash:
+    enabled: true
+
+  # Code sharing
+  opengist:
+    enabled: true
+    extraEnvSecrets: [] # Remove secrets for CI
+
+# Housekeeping - disable in CI
+housekeeping:
+  mediaCleanup:
+    enabled: false

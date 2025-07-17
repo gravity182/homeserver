@@ -9,6 +9,7 @@
 .yamllint.yaml
 /assets
 /bin
+/tests
 README.md
 CHANGELOG.md
 Installation.md

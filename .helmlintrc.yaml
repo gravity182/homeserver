@@ -1,0 +1,37 @@
+# Helm Lint Configuration
+---
+# Rules for helm lint
+rules:
+  # Require apiVersion
+  apiVersion: error
+
+  # Require kind
+  kind: error
+
+  # Require metadata.name
+  name: error
+
+  # Check for valid Kubernetes resource types
+  validKubernetesKind: error
+
+  # Validate template syntax
+  templateValidation: error
+
+  # Check for duplicate keys
+  duplicateKey: error
+
+  # Validate dependencies
+  dependencies: warning
+
+  # Check Chart.yaml completeness
+  chartYaml: warning
+
+  # Validate values schema
+  valuesSchema: error
+
+# Ignore certain lint warnings
+ignored-rules: []
+
+# Additional settings
+strict: false
+quiet: false

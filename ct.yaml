@@ -1,0 +1,49 @@
+# Chart Testing Configuration
+# Configuration for chart-testing tool
+---
+# The chart directories to test
+chart-dirs:
+  - .
+
+# Charts to exclude from testing
+excluded-charts: []
+
+# Helm repositories to add before testing
+helm-repos:
+  - name: cert-manager
+    url: https://charts.jetstack.io
+  - name: authentik
+    url: https://charts.goauthentik.io
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+# Values files to use for testing
+chart-values-files:
+  - ci-values.yaml
+
+# Additional Helm arguments
+helm-extra-args: "--timeout=10m"
+
+# Validate YAML with yamllint
+validate-yaml: true
+
+# Check version increments
+check-version-increment: false
+
+# Additional validation
+validate-chart-schema: true
+validate-maintainers: false
+
+# Testing configuration
+test-timeout: 10m
+
+# Install timeout
+install-timeout: 10m
+
+# Upgrade timeout  
+upgrade-timeout: 10m
+
+# Whether to print additional debug information
+debug: false
