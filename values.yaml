@@ -1141,7 +1141,7 @@ services:
     critical: false
     image:
       repository: fallenbagel/jellyseerr
-      tag: "2.7.0"
+      tag: "2.7.1"
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
