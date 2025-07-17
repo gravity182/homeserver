@@ -33,6 +33,10 @@ spec:
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
+            - name: OG_EXTERNAL_URL
+              value: {{ include "homeserver.common.utils.ingressUrl" (dict "service" $service "context" $) | quote }}
+            - name: OG_HTTP_PORT
+              value: "6157"
           ports:
             - name: http
               containerPort: 6157

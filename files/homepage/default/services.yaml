@@ -250,6 +250,13 @@
             siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.convertx "context" $ ) | quote }}
             description: File conversion
       {{- end }}
+      {{- if .Values.services.opengist.enabled }}
+      - Opengist:
+            icon: sh-opengist
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.opengist "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.opengist "context" $ ) | quote }}
+            description: Gists
+      {{- end }}
       {{- if .Values.services.stirlingpdf.enabled }}
       - Stirling PDF:
             icon: sh-stirling-pdf
