@@ -10,7 +10,7 @@ host:
   ## Host user's ID
   ## Can be obtained via `id -u`
   ##
-  uid:
+  uid: -1
   ## Host user's group ID
   ## Can be obtained via `id -g`
   ##
@@ -752,7 +752,7 @@ services:
         secretName: backrest-aws-s3-yandex-cloud-secret
         secretKey: aws-secret-access-key
   homepage:
-    enabled: false
+    enabled: true
     exposed: true
     name: homepage
     replicaCount: 1

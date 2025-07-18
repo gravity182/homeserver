@@ -1,4 +1,5 @@
 ---
+{{- if (or .Values.services.radarr.enabled .Values.services.sonarr.enabled .Values.services.lidarr.enabled .Values.services.whisparr.enabled .Values.services.bazarr.enabled .Values.services.autobrr.enabled .Values.services.prowlarr.enabled) }}
 - Arr Stack:
       {{- if .Values.services.radarr.enabled }}
       - Radarr:
@@ -73,6 +74,8 @@
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.prowlarr "context" $ ) | quote }}
                 key: "{{`{{HOMEPAGE_VAR_PROWLARR_API_KEY}}`}}"
       {{- end }}
+{{- end }}
+{{- if (or .Values.services.qbittorrent.enabled .Values.services.sabnzbd.enabled .Values.services.pinchflat.enabled) }}
 - Downloaders:
       {{- if .Values.services.qbittorrent.enabled }}
       - qBittorrent:
@@ -103,6 +106,8 @@
             siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.pinchflat "context" $ ) | quote }}
             description: YouTube downloader
       {{- end }}
+{{- end }}
+{{- if (or .Values.services.jellyseerr.enabled .Values.services.plex.enabled .Values.services.jellyfin.enabled .Values.services.stash.enabled) }}
 - Media:
       {{- if .Values.services.jellyseerr.enabled }}
       - Jellyseerr:
@@ -137,7 +142,7 @@
       {{- end }}
       {{- range $index, $service := $jellyfinServices }}
       {{- if $service.enabled }}
-      - Jellyfin:
+      - Jellyfin {{ $index }}:
             icon: sh-jellyfin
             href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" $service "context" $ ) | quote }}
             siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" $service "context" $ ) | quote }}
@@ -164,6 +169,8 @@
               url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.stash "context" $ ) | quote }}
               fields: ["scenes", "sceneDuration"]
       {{- end }}
+{{- end }}
+{{- if (or .Values.services.calibre.enabled .Values.services.kavita.enabled .Values.services.calibrebookdownloader.enabled .Values.services.openbooks.enabled) }}
 - Books:
       {{- if .Values.services.calibre.enabled }}
       - Calibre:
@@ -204,6 +211,8 @@
             siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.openbooks "context" $ ) | quote }}
             description: Download books from IRCHighWay
       {{- end }}
+{{- end }}
+{{- if (or .Values.services.librechat.enabled .Values.services.miniflux.enabled .Values.services.thelounge.enabled .Values.services.mealie.enabled .Values.services.convertx.enabled .Values.services.opengist.enabled .Values.services.stirlingpdf.enabled .Values.services.huginn.enabled .Values.services.changedetectionio.enabled .Values.services.archivebox.enabled .Values.services.apprise.enabled .Values.services.gotify.enabled) }}
 - Utilities:
       {{- if .Values.services.librechat.enabled }}
       - Librechat:
@@ -307,6 +316,7 @@
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.gotify "context" $ ) | quote }}
                 key: "{{`{{HOMEPAGE_VAR_GOTIFY_API_KEY}}`}}"
       {{- end }}
+{{- end }}
 - Monitoring:
       {{- if .Values.services.myspeed.enabled }}
       - MySpeed:

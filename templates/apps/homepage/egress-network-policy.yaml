@@ -11,14 +11,6 @@ spec:
   policyTypes:
     - Egress
   egress:
-    # Allow communication with Authentk (for healthchecks on the homepage)
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: {{ include "homeserver.authentik.names.namespace" . | quote }}
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/name: authentik
     # Allow communication with Grafana (for healthchecks on the homepage)
     - to:
         - namespaceSelector:
