@@ -1849,7 +1849,7 @@ services:
     critical: true
     image:
       repository: ghcr.io/danny-avila/librechat
-      tag: v0.7.8
+      tag: v0.7.9
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
