@@ -1325,7 +1325,7 @@ services:
     critical: false
     image:
       repository: frooodle/s-pdf
-      tag: "0.46.2-ultra-lite"
+      tag: "1.1.0-ultra-lite"
       pullPolicy: IfNotPresent
     securityContext:
       # unfortunately the image needs root access
