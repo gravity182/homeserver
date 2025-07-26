@@ -5,7 +5,9 @@ on:
     # Renovate runs hourly, every hour on the minute 0.
     # Adjust this cron schedule as needed for your desired frequency.
     # For example, '0 0 * * *' would run once a day at midnight UTC.
-    - cron: "0 * * * *"
+    #
+    # run “At 00:00 on Monday.”
+    - cron: "0 0 * * 1"
   workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
 
 jobs:
