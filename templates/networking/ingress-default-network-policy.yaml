@@ -2,22 +2,40 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-ingress-policy
-  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" . | quote }}
 spec:
   podSelector: {}
   policyTypes:
     - Ingress
   ingress:
+    # -------------
+    # IN NAMESPACE
+    # -------------
+
     # Allow internal namespace communication
     - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: {{ include "homeserver.common.names.namespace" . | quote }}
+        - podSelector: {}
+
+    # -----------
+    # IN CLUSTER
+    # -----------
+
     # Allow traffic from the Traefik ingress controller
     - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
+        - namespaceSelector: {}
           podSelector:
             matchLabels:
               app.kubernetes.io/name: traefik
+
+    # Allow traffic from the Prometheus operator
+    - from:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              app: prometheus
+
+    # --------------------
+    # OUTSIDE THE CLUSTER
+    # --------------------
+
+    # Deny by default

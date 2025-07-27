@@ -4,7 +4,7 @@ metadata:
   name: helm-hook-install-clusterissuer
   namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
   labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 4 }}
-    app.kubernetes.io/name: clusterissuer-install
+    app.kubernetes.io/name: helm-hook-install-clusterissuer
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 4 }}
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "10"
