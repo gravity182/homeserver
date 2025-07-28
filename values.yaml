@@ -1667,7 +1667,7 @@ services:
     critical: false
     image:
       repository: aaronleopold/stump
-      tag: "0.0.10"
+      tag: "0.0.11"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
