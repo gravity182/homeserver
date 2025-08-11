@@ -759,7 +759,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/gethomepage/homepage
-      tag: v1.4.3
+      tag: v1.4.4
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
