@@ -107,11 +107,16 @@ authentik:
         namespaceOverride: authentik # REQUIRED; set a separate namespace where to install the Authentik chart
 cert-manager:
   namespace: cert-manager # REQUIRED; set a separate namespace where to install the cert-manager chart
-tls:
-    acme:
-        email: # REQUIRED; e.g. 'example@gmail.com'
-        dns01:
-            cfApiToken: # REQUIRED
+x-cert-manager:
+  cluster-issuer:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: # REQUIRED; e.g. 'example@gmail.com'
+    solvers: # solvers as supported by cert-manager
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-key-secret ## REQUIRED; name of the secret containing your Cloudflare API Key
+              key: api-key
 ingress:
     domain: # REQUIRED; e.g. 'example.com' (without a scheme)
 ```
