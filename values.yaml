@@ -1689,7 +1689,7 @@ services:
     critical: false
     image:
       repository: crocodilestick/calibre-web-automated
-      tag: V3.0.4
+      tag: V3.1.4
       pullPolicy: IfNotPresent
     securityContext:
       # the image uses s6-overlay,
