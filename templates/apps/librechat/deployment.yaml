@@ -127,6 +127,9 @@ spec:
               mountPath: /app/uploads
               subPath: app-uploads-dir
             - name: empty-dir
+              mountPath: /app/logs
+              subPath: app-logs-dir
+            - name: empty-dir
               mountPath: /app/api/logs
               subPath: app-api-logs-dir
             - name: client-images
