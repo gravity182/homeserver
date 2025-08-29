@@ -1230,7 +1230,7 @@ services:
     critical: false
     image:
       repository: kometateam/kometa
-      tag: v2.2.0
+      tag: v2.2.1
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
