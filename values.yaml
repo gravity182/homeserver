@@ -724,7 +724,7 @@ services:
     critical: false
     image:
       repository: garethgeorge/backrest
-      tag: v1.8
+      tag: v1.9
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
