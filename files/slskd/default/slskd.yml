@@ -1,0 +1,59 @@
+{{- with .Values.services.slskd.config }}
+soulseek:
+  username: ""
+  password: ""
+
+web:
+  port: 5030
+  authentication:
+    disabled: false
+    username: slskd
+    password: slskd
+    jwt:
+      key: ~
+      ttl: 604800000
+    api_keys:
+      {{- if .apiKeySecret }}
+      soularr:
+        key: __SLSKD_API_KEY__
+        cidr: 0.0.0.0/0,::/0
+      {{- end }}
+
+incoming:
+  port: 50300
+
+logging:
+  level: Information
+
+directories:
+  incomplete: /soulseek/incomplete
+  downloads: /soulseek/downloaded
+
+{{- if .shares }}
+shares:
+  directories:
+  {{- range $share := .shares }}
+    - {{ required "containerPath is required for each share" $share.containerPath | quote }}
+  {{- end }}
+  filters:
+    - \.DS_Store$
+    - \.Spotlight-V100$
+    - \.Trashes$
+    - \.fseventsd$
+    - \.TemporaryItems$
+    - \._.*$
+    - \.directory$
+    - lost\+found/
+    - \.git/
+    - \.cache/
+    - \.tmp$
+    - \.temp$
+    - ~$
+    - \.swp$
+    - \.log$
+    - \.bak$
+    - Thumbs\.db$
+    - desktop\.ini$
+{{- end }}
+
+{{- end }}

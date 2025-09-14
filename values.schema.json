@@ -475,6 +475,14 @@
           "description": "Lidarr configuration\nhttps://github.com/Lidarr/Lidarr",
           "$ref": "#/$defs/lidarrService"
         },
+        "slskd": {
+          "description": "Slskd configuration\nhttps://github.com/slskd/slskd",
+          "$ref": "#/$defs/slskdService"
+        },
+        "soularr": {
+          "description": "Soularr configuration\nhttps://github.com/mrusse/soularr",
+          "$ref": "#/$defs/soularrService"
+        },
         "whisparr": {
           "description": "Whisparr configuration\nhttps://github.com/Whisparr/Whisparr",
           "$ref": "#/$defs/whisparrService"
@@ -593,6 +601,8 @@
         "radarr",
         "sonarr",
         "lidarr",
+        "slskd",
+        "soularr",
         "whisparr",
         "bazarr",
         "jellyseerr",
@@ -1410,6 +1420,205 @@
             }
           },
           "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "slskdService": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        {
+          "$ref": "#/$defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                },
+                "incomplete": {
+                  "type": "string",
+                  "description": "Incomplete downloads directory"
+                },
+                "downloads": {
+                  "type": "string",
+                  "description": "Finished downloads directory"
+                }
+              },
+              "required": [
+                "config",
+                "incomplete",
+                "downloads"
+              ]
+            },
+            "apiKeySecret": {
+              "type": "object",
+              "description": "API key secret for Soularr integration (optional)",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the secret containing the API key"
+                },
+                "key": {
+                  "type": "string",
+                  "description": "Key within the secret containing the API key",
+                  "default": "api-key"
+                }
+              },
+              "required": ["name"]
+            },
+            "config": {
+              "type": "object",
+              "description": "slskd configuration",
+              "properties": {
+                "shares": {
+                  "type": "array",
+                  "description": "Configure host directories to share with other Soulseek users",
+                  "items": {
+                    "type": "object",
+                    "description": "Share configuration mapping host path to container path",
+                    "properties": {
+                      "hostPath": {
+                        "type": "string",
+                        "description": "Absolute path to directory on the host",
+                        "examples": ["/data/library/music", "/data/library/movies"]
+                      },
+                      "containerPath": {
+                        "type": "string",
+                        "description": "Path inside the container (what Soulseek users see)",
+                        "examples": ["/shares/music", "/shares/movies"]
+                      }
+                    },
+                    "required": ["hostPath", "containerPath"]
+                  },
+                  "default": []
+                },
+                "apiKeySecret": {
+                  "type": "object",
+                  "description": "API key secret for Soularr integration (optional)",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the secret containing the API key"
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "Key within the secret containing the API key",
+                      "default": "api-key"
+                    }
+                  },
+                  "required": ["name"]
+                },
+                "credentialsSecret": {
+                  "type": "object",
+                  "description": "Soulseek credentials secret (optional)",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the secret containing Soulseek username and password"
+                    },
+                    "usernameKey": {
+                      "type": "string",
+                      "description": "Key for username within the secret",
+                      "default": "username"
+                    },
+                    "passwordKey": {
+                      "type": "string",
+                      "description": "Key for password within the secret",
+                      "default": "password"
+                    }
+                  },
+                  "required": ["name"]
+                }
+              }
+            }
+          },
+          "required": [
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "soularrService": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        {
+          "$ref": "#/$defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "scriptInterval": {
+              "type": "integer",
+              "description": "Script interval in seconds",
+              "default": 300
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "Config directory"
+                }
+              },
+              "required": [
+                "config"
+              ]
+            },
+            "lidarr": {
+              "type": "object",
+              "description": "Lidarr integration configuration",
+              "properties": {
+                "apiKeySecret": {
+                  "type": "object",
+                  "description": "API key secret for Lidarr integration (optional)",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the secret containing the API key"
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "Key within the secret containing the API key",
+                      "default": "api-key"
+                    }
+                  },
+                  "required": ["name"]
+                }
+              }
+            },
+            "slskd": {
+              "type": "object",
+              "description": "Slskd integration configuration",
+              "properties": {
+                "apiKeySecret": {
+                  "type": "object",
+                  "description": "API key secret for Slskd integration (optional)",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the secret containing the API key"
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "Key within the secret containing the API key",
+                      "default": "api-key"
+                    }
+                  },
+                  "required": ["name"]
+                }
+              }
+            }
+          },
+          "required": [
+            "scriptInterval",
             "persistence"
           ]
         }

@@ -1,5 +1,5 @@
-{{- $service := .Values.services.lidarr }}
-{{- if $service.enabled }}
+{{- if .Values.services.soularr.enabled }}
+{{- $service := .Values.services.soularr }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,8 +8,7 @@ metadata:
   labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
   annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
 spec:
-  revisionHistoryLimit: 3
-  replicas: {{ $service.replicaCount }}
+  replicas: {{ $service.replicaCount | default 1 }}
   strategy:
     type: Recreate
   selector:
@@ -18,6 +17,7 @@ spec:
     metadata:
       labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
       annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+        checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/soularr/configmap.yaml" "context" $ ) }}
     spec:
       automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "context" $) }}
       enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "context" $) }}
@@ -27,46 +27,47 @@ spec:
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "context" $) | nindent 8 }}
       containers:
-        - name: lidarr
+        - name: soularr
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
-            - name: PUID
-              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
-            - name: PGID
-              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
-          ports:
-            - name: http
-              containerPort: 8686
-              protocol: TCP
+            - name: SCRIPT_INTERVAL
+              value: {{ $service.scriptInterval | quote }}
+            {{- if $service.lidarr.apiKeySecret }}
+            - name: LIDARR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.lidarr.apiKeySecret.name | quote }}
+                  key: {{ $service.lidarr.apiKeySecret.key | quote }}
+            {{- end }}
+            {{- if $service.slskd.apiKeySecret }}
+            - name: SLSKD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.slskd.apiKeySecret.name | quote }}
+                  key: {{ $service.slskd.apiKeySecret.key | quote }}
+            {{- end }}
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 12 }}
-          livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
-          readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
-          startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
             - name: config
-              mountPath: /config
-            - name: data
-              mountPath: {{ $service.persistence.data | quote }}
-            {{- if .Values.services.slskd.enabled }}
-            - name: slskd-downloads
+              mountPath: /data
+            - name: soularr-config
+              mountPath: /data/config.ini
+              subPath: config.ini
+            - name: downloads
               mountPath: /soulseek/downloaded
-            {{- end }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
+        - name: soularr-config
+          configMap:
+            name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
         - name: config
           hostPath:
             path: {{ $service.persistence.config | quote }}
             type: Directory
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
-        {{- if .Values.services.slskd.enabled }}
-        - name: slskd-downloads
+        - name: downloads
           hostPath:
             path: {{ .Values.services.slskd.persistence.downloads | quote }}
             type: Directory
-        {{- end }}
 {{- end }}

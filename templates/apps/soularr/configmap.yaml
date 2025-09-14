@@ -1,0 +1,17 @@
+{{- if .Values.services.soularr.enabled }}
+{{- $service := .Values.services.soularr }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+data:
+  {{- range $path, $_ := .Files.Glob "files/soularr/**" }}
+  {{- if not (contains "/default/" $path) }}
+  {{ base $path }}: |-
+{{ tpl ($.Files.Get $path) $ | indent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end }}

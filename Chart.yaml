@@ -1,6 +1,6 @@
 apiVersion: v2
 name: Homeserver
-version: 5.0.0
+version: 5.1.0
 kubeVersion: ">= 1.29.0"
 description: Self-hosted media server
 type: application
@@ -48,6 +48,9 @@ keywords:
   - librechat
   - ai
   - llm
+  - slskd
+  - soularr
+  - soulseek
   - traefik
   - authentik
   - sso

@@ -919,7 +919,7 @@ services:
     image:
       repository: ghcr.io/home-operations/qbittorrent
       tag: "5.1.2"
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
     securityContext:
       strict: true
     resourcesPreset: "micro"
@@ -953,7 +953,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/stuffanthings/qbit_manage
-      tag: v4.6.0
+      tag: v4.6.2
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -1084,6 +1084,89 @@ services:
     persistence:
       config: /opt/lidarr/config
       data: /data
+    extraEnv: []
+  slskd:
+    enabled: false
+    exposed: true
+    name: slskd
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/slskd/slskd
+      tag: 0.23.2
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 5030
+      incoming: 50300
+    ingress:
+      - slskd
+      - soulseek
+    vpn: {}
+    persistence:
+      config: /opt/slskd/config
+      downloads: /data/soulseek/downloaded
+      incomplete: /data/soulseek/incomplete
+    ## slskd configuration
+    config:
+      ## Configure the host directories you want to share
+      ## Each entry maps a host directory to a container path
+      ## The `containerPath` is what other Soulseek users will see
+      ##
+      ## Example:
+      ## shares:
+      ## - hostPath: "/data/library/music"
+      ##   containerPath: "/shares/music"
+      ## - hostPath: "/data/library/movies"
+      ##   containerPath: "/shares/movies"
+      ## - hostPath: "/data/library/ebooks"
+      ##   containerPath: "/shares/books"
+      shares: []
+      ## API key secret for Soularr integration (optional)
+      ## If not provided, slskd will use default JWT authentication
+      ## Create secret: kubectl create secret generic slskd-api-key --from-literal=api-key=your-secret-key
+      apiKeySecret:
+        name: "" # OPTIONAL - Secret name containing API key for Soularr integration
+        key: "api-key" # Key within the secret
+      ## Soulseek network credentials secret (optional)
+      ## Create secret: kubectl create secret generic slskd-credentials --from-literal=username=your-username --from-literal=password=your-password
+      credentialsSecret:
+        name: "" # OPTIONAL - Secret name containing Soulseek username and password
+        usernameKey: "username" # Key for username within the secret
+        passwordKey: "password" # Key for password within the secret
+    extraEnv: []
+  soularr:
+    enabled: false
+    exposed: false
+    name: soularr
+    replicaCount: 1
+    critical: false
+    image:
+      repository: mrusse08/soularr
+      tag: latest
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports: {}
+    ingress: []
+    ## script runs continuously with this interval (in seconds)
+    scriptInterval: 300
+    vpn: {}
+    persistence:
+      config: /opt/soularr/config
+    ## Lidarr integration
+    lidarr:
+      apiKeySecret:
+        name: "" # Name of the secret containing the Lidarr API key
+        key: "api-key" # Key within the secret containing the API key
+    ## Slskd integration
+    slskd:
+      apiKeySecret:
+        name: "" # OPTIONAL - Secret name containing API key for Soularr integration
+        key: "api-key" # Key within the secret
     extraEnv: []
   whisparr:
     enabled: false

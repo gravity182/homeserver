@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[5.1.0] - 2025-09-14
+
+New services:
+- [slskd](https://github.com/slskd/slskd): Soulseek client for music sharing and discovery
+- [Soularr](https://github.com/mrusse08/soularr): Soulseek integration with Lidarr for automated music downloads
+
 ## \[5.0.0] - 2025-05-18
 
 Changes:

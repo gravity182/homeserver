@@ -1,4 +1,4 @@
-{{- $service := .Values.services.lidarr }}
+{{- $service := .Values.services.slskd }}
 {{- if $service.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -18,6 +18,7 @@ spec:
     metadata:
       labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
       annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+        checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/slskd/configmap.yaml" "context" $ ) }}
     spec:
       automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "context" $) }}
       enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "context" $) }}
@@ -26,47 +27,104 @@ spec:
       tolerations: {{- include "homeserver.common.pod.tolerations" (dict "service" $service "context" $) | nindent 8 }}
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "context" $) | nindent 8 }}
+        - name: init-config
+          image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ec
+            - |-
+              # Copy config template
+              cp -fL /tmp/config/slskd.yml /app/slskd.yml
+
+              # Substitute API key if provided
+              if [ -n "$SLSKD_API_KEY" ] && [ "$SLSKD_API_KEY" != "" ]; then
+                sed -i "s/__SLSKD_API_KEY__/$SLSKD_API_KEY/g" /app/slskd.yml
+                echo "API key substituted in slskd config"
+              fi
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
+          env:
+            {{- if and $service.config.apiKeySecret $service.config.apiKeySecret.name (ne $service.config.apiKeySecret.name "") }}
+            - name: SLSKD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.config.apiKeySecret.name | quote }}
+                  key: {{ $service.config.apiKeySecret.key | quote }}
+            {{- end }}
+          resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /app
+            - name: slskd-config
+              mountPath: /tmp/config/slskd.yml
+              subPath: slskd.yml
       containers:
-        - name: lidarr
+        - name: slskd
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
           imagePullPolicy: {{ $service.image.pullPolicy }}
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
-            - name: PUID
-              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
-            - name: PGID
-              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+            - name: SLSKD_REMOTE_CONFIGURATION
+              value: "true"
+            {{- if and $service.config.credentialsSecret $service.config.credentialsSecret.name (ne $service.config.credentialsSecret.name "") }}
+            - name: SLSKD_SLSK_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.config.credentialsSecret.name | quote }}
+                  key: {{ $service.config.credentialsSecret.usernameKey | quote }}
+            - name: SLSKD_SLSK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.config.credentialsSecret.name | quote }}
+                  key: {{ $service.config.credentialsSecret.passwordKey | quote }}
+            {{- end }}
           ports:
             - name: http
-              containerPort: 8686
+              containerPort: 5030
+              protocol: TCP
+            - name: incoming
+              containerPort: 50300
               protocol: TCP
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 12 }}
           livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
+            - name: empty-dir
+              mountPath: /.net/slskd
+              subPath: net-slskd-dir
             - name: config
-              mountPath: /config
-            - name: data
-              mountPath: {{ $service.persistence.data | quote }}
-            {{- if .Values.services.slskd.enabled }}
-            - name: slskd-downloads
+              mountPath: /app
+            - name: downloads
               mountPath: /soulseek/downloaded
+            - name: incomplete
+              mountPath: /soulseek/incomplete
+            {{- range $index, $share := $service.config.shares }}
+            - name: {{ printf "share-%d" $index | quote }}
+              mountPath: {{ required "containerPath is required for each share" $share.containerPath | quote }}
+              readOnly: true
             {{- end }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
+        - name: slskd-config
+          configMap:
+            name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
         - name: config
           hostPath:
             path: {{ $service.persistence.config | quote }}
             type: Directory
-        - name: data
+        - name: downloads
           hostPath:
-            path: {{ $service.persistence.data | quote }}
+            path: {{ $service.persistence.downloads | quote }}
             type: Directory
-        {{- if .Values.services.slskd.enabled }}
-        - name: slskd-downloads
+        - name: incomplete
           hostPath:
-            path: {{ .Values.services.slskd.persistence.downloads | quote }}
+            path: {{ $service.persistence.incomplete | quote }}
+            type: Directory
+        {{- range $index, $share := $service.config.shares }}
+        - name: {{ printf "share-%d" $index | quote }}
+          hostPath:
+            path: {{ required "hostPath is required for each share" $share.hostPath | quote }}
             type: Directory
         {{- end }}
 {{- end }}

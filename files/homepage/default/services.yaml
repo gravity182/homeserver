@@ -75,7 +75,7 @@
                 key: "{{`{{HOMEPAGE_VAR_PROWLARR_API_KEY}}`}}"
       {{- end }}
 {{- end }}
-{{- if (or .Values.services.qbittorrent.enabled .Values.services.sabnzbd.enabled .Values.services.pinchflat.enabled) }}
+{{- if (or .Values.services.qbittorrent.enabled .Values.services.sabnzbd.enabled .Values.services.slskd.enabled .Values.services.pinchflat.enabled) }}
 - Downloaders:
       {{- if .Values.services.qbittorrent.enabled }}
       - qBittorrent:
@@ -98,6 +98,13 @@
                 type: sabnzbd
                 url: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.sabnzbd "context" $ ) | quote }}
                 key: "{{`{{HOMEPAGE_VAR_SABNZBD_API_KEY}}`}}"
+      {{- end }}
+      {{- if .Values.services.slskd.enabled }}
+      - Slskd:
+            icon: sh-slskd
+            href: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" .Values.services.slskd "context" $ ) | quote }}
+            siteMonitor: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" .Values.services.slskd "context" $ ) | quote }}
+            description: Soulseek client
       {{- end }}
       {{- if .Values.services.pinchflat.enabled }}
       - Pinchflat:

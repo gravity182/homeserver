@@ -20,6 +20,10 @@
 !/files/pinchflat/yt-dlp-configs/default/
 /files/pinchflat/user-scripts/*
 !/files/pinchflat/user-scripts/default/
+/files/slskd/*
+!/files/slskd/default/
+/files/soularr/*
+!/files/soularr/default/
 
 .DS_Store
 *.gz

@@ -21,6 +21,8 @@ All services are optional and can be enabled/disabled anytime. Detailed list:
     - <img width="15" height="15" src="https://github.com/StuffAnThings/qbit_manage/blob/master/qbm_logo.png"> [qBit_manage](https://github.com/StuffAnThings/qbit_manage) - Manage qBittorrent automatically: tag, categorize, remove orphaned data, remove unregistered torrents, and much much more
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sabnzbd.png"> [SABnzbd](https://github.com/sabnzbd/sabnzbd) - Usenet downloader
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/pinchflat.png"> [Pinchflat](https://github.com/kieraneglin/pinchflat) - YouTube downloader based on yt-dlp
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/slskd.png"> [slskd](https://github.com/slskd/slskd) - Soulseek client for music sharing and discovery
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/soularr.png"> [Soularr](https://github.com/mrusse08/soularr) - Soulseek integration with Lidarr for automated music downloads
 - Books:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/calibre-web.png"> [Calibre-Web Automated](https://github.com/crocodilestick/Calibre-Web-Automated) - Calibre-Web but automated
     - 📚 [Calibre-Web-Automated-Book-Downloader](https://github.com/calibrain/calibre-web-automated-book-downloader) - A web interface for searching and downloading books from Anna's Archive
