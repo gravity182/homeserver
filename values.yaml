@@ -1000,7 +1000,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/prowlarr
-      tag: "1"
+      tag: "2"
       pullPolicy: Always
     securityContext:
       strict: true
