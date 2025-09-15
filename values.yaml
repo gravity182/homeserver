@@ -2018,6 +2018,33 @@ services:
     masterKey:
       secretName: meilisearch-secret
       secretKey: master-key
+    ## Upgrade configuration
+    ##
+    ## Usage guide:
+    ## 1. Set upgrade.enabled to true
+    ## 2. Set image tag to the version you had prior to the chart update
+    ## 3. Set action to "export" and deploy the chart
+    ##   - Wait for the export job to complete
+    ##   - Verify the dump created: `kubectl logs job meilisearch-upgrade-export`
+    ## 4. Set action to "import" and deploy the chart
+    ##   - Verify the dump imported: `kubectl logs deployment meilisearch`
+    ##   - The existing database is automatically backed up during import to `data.ms.old`
+    ## 5. Set upgrade.enabled to false and deploy the chart. The upgrade procees is finished!
+    ##
+    upgrade:
+      ## Whether upgrade process is in progress
+      enabled: false
+      ## Action
+      ##
+      action: "export"
+      ## PVC used to store dumps required for upgrade
+      ##
+      pvc:
+        size: "1Gi"
+        storageClass: ""
+      ## Affinity configuration for the export job
+      ##
+      affinity: {}
     extraEnv: []
   stash:
     enabled: false

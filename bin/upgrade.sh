@@ -3,6 +3,28 @@ set -euo pipefail
 
 CONFIG_FILE="$(dirname "${BASH_SOURCE[0]}")/.homeserver"
 
+show_help() {
+  cat << EOF
+Usage: $(basename "$0") [OPTIONS] [HELM_ARGS...]
+
+Upgrade the homeserver Helm chart with optional custom parameters.
+
+OPTIONS:
+  -h, --help     Show this help message and exit
+
+HELM_ARGS:
+  Any additional arguments are passed directly to 'helm upgrade'.
+
+EXAMPLES:
+  # Standard upgrade
+  $(basename "$0")
+
+  # Upgrade with additional Helm values
+  $(basename "$0") --set services.meilisearch.upgrade.enabled=true
+
+EOF
+}
+
 ask_for_input() {
   local prompt="$1"
 
@@ -15,6 +37,21 @@ ask_for_input() {
     echo "$user_input"
   fi
 }
+
+# Parse command line arguments
+helm_args=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    *)
+      helm_args+=("$1")
+      shift
+      ;;
+  esac
+done
 
 config_updated=0
 
@@ -49,7 +86,8 @@ fi
 helm upgrade --install "$RELEASE_NAME" . \
   "${f_values[@]}" \
   --namespace "$NAMESPACE" \
-  --create-namespace
+  --create-namespace \
+  "${helm_args[@]}"
 
 if [ $config_updated -eq 1 ]; then
   echo ""

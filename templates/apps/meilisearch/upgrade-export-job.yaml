@@ -1,0 +1,128 @@
+{{- $service := .Values.services.meilisearch }}
+{{- if and $service.enabled $service.upgrade.enabled (eq $service.upgrade.action "export") }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: meilisearch-upgrade-export
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: meilisearch-upgrade-export
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+        app.kubernetes.io/name: meilisearch-upgrade-export
+      annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      affinity: {{- include "homeserver.common.pod.affinity" (dict "service" $service "customAffinity" $service.upgrade.affinity "context" $) | nindent 8 }}
+      securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "context" $) | nindent 8 }}
+      containers:
+        - name: export
+          image: docker.io/curlimages/curl:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: MEILI_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.masterKey.secretName | quote }}
+                  key: {{ $service.masterKey.secretKey | quote }}
+                  optional: false
+            - name: MEILISEARCH_URL
+              value: {{ include "homeserver.common.utils.serviceUrl" ( dict "service" $service "context" $ ) | quote }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eux
+
+              echo "Starting MeiliSearch dump export..."
+              echo "Connecting to MeiliSearch instance at: ${MEILISEARCH_URL}"
+
+              if ! curl -s "${MEILISEARCH_URL}/health" > /dev/null; then
+                echo "ERROR: MeiliSearch service is not reachable at ${MEILISEARCH_URL}"
+                exit 1
+              fi
+
+              echo "Creating dump..."
+
+              TASK_UID=$(curl -s -X POST "${MEILISEARCH_URL}/dumps" \
+                -H "Authorization: Bearer ${MEILI_MASTER_KEY}" \
+                -H "Content-Type: application/json" | \
+                grep -o '"taskUid":[0-9]*' | cut -d: -f2)
+
+              if [ -z "$TASK_UID" ]; then
+                echo "ERROR: Failed to initiate a dump task"
+                exit 1
+              fi
+
+              echo "Dump task created with UID: $TASK_UID"
+
+              # Wait for dump to complete
+              echo "Waiting for dump to complete..."
+              while true; do
+                STATUS=$(curl -s "${MEILISEARCH_URL}/tasks/${TASK_UID}" \
+                  -H "Authorization: Bearer ${MEILI_MASTER_KEY}" | \
+                  grep -o '"status":"[^"]*"' | cut -d: -f2 | tr -d '"')
+
+                echo "Task status: $STATUS"
+
+                case "$STATUS" in
+                  "succeeded")
+                    echo "Dump created successfully!"
+                    break
+                    ;;
+                  "failed"|"canceled")
+                    echo "ERROR: Dump task failed with status: $STATUS"
+                    exit 1
+                    ;;
+                  "enqueued"|"processing")
+                    echo "Dump in progress..."
+                    sleep 5
+                    ;;
+                  *)
+                    echo "Unknown status: $STATUS"
+                    sleep 2
+                    ;;
+                esac
+              done
+
+              # Wait a moment for the file to be written
+              sleep 2
+
+              # Find any dump file and rename it to a fixed name
+              DUMP_FILE=$(find /upgrade-dump -name "*.dump" -type f | head -1)
+              if [ -n "$DUMP_FILE" ] && [ -f "$DUMP_FILE" ]; then
+                echo "Found dump file: $DUMP_FILE"
+
+                # Rename to fixed filename for import
+                mv "$DUMP_FILE" /upgrade-dump/upgrade.dump
+                echo "Renamed dump file to upgrade.dump for import"
+                ls -la /upgrade-dump/upgrade.dump
+              else
+                echo "ERROR: No dump files found in /upgrade-dump"
+                ls -la /upgrade-dump/
+                exit 1
+              fi
+
+              echo "Export job completed successfully"
+          volumeMounts:
+            - name: upgrade-dump
+              mountPath: /upgrade-dump
+              readOnly: false
+      volumes:
+        - name: upgrade-dump
+          persistentVolumeClaim:
+            claimName: meilisearch-upgrade-dump
+{{- end }}

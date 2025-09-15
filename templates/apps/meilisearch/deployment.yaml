@@ -1,5 +1,6 @@
 {{- $service := .Values.services.meilisearch }}
 {{- if $service.enabled }}
+{{- $upgrade := default dict $service.upgrade -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,6 +27,39 @@ spec:
       tolerations: {{- include "homeserver.common.pod.tolerations" (dict "service" $service "context" $) | nindent 8 }}
       securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "context" $) | nindent 8 }}
       initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "context" $) | nindent 8 }}
+        {{- if and $upgrade.enabled (eq $upgrade.action "import") }}
+        - name: backup-old-database
+          image: docker.io/busybox:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: {{ required "A valid UID required!" .Values.host.uid }}
+            runAsGroup: {{ required "A valid GID required!" .Values.host.gid }}
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eux
+              echo "Backing up old MeiliSearch database..."
+
+              if [ -d "/meili_data/data.ms" ]; then
+                rm -rf /meili_data/data.ms.old || true
+                mv /meili_data/data.ms /meili_data/data.ms.old
+                echo "Old database backed up to data.ms.old"
+              else
+                echo "Nothing to backup"
+              fi
+
+              echo "Database backup completed"
+          volumeMounts:
+            - name: data
+              mountPath: /meili_data
+        {{- end }}
       containers:
         - name: meilisearch
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
@@ -45,6 +79,14 @@ spec:
                   optional: false
             - name: MEILI_NO_ANALYTICS
               value: "true"
+            {{- if and $upgrade.enabled (eq $upgrade.action "export") }}
+            - name: MEILI_DUMP_DIR
+              value: "/upgrade-dump"
+            {{- end }}
+            {{- if and $upgrade.enabled (eq $upgrade.action "import") }}
+            - name: MEILI_IMPORT_DUMP
+              value: "/upgrade-dump/upgrade.dump"
+            {{- end }}
           ports:
             - name: http
               containerPort: 7700
@@ -56,9 +98,23 @@ spec:
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
             - name: data
               mountPath: /meili_data
+            {{- if and $upgrade.enabled $upgrade.action }}
+            - name: upgrade-dump
+              mountPath: /upgrade-dump
+              {{- if eq $upgrade.action "import" }}
+              readOnly: true
+              {{- else }}
+              readOnly: false
+              {{- end }}
+            {{- end }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
         - name: data
           hostPath:
             path: {{ $service.persistence.data | quote }}
             type: Directory
+        {{- if and $upgrade.enabled $upgrade.action }}
+        - name: upgrade-dump
+          persistentVolumeClaim:
+            claimName: meilisearch-upgrade-dump
+        {{- end }}
 {{- end }}

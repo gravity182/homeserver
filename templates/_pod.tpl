@@ -106,6 +106,9 @@ Usage:
 {{- if (hasKey . "service") -}}
 {{- $valueOverride = include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "affinity") | fromYaml -}}
 {{- end -}}
+{{- if (hasKey . "customAffinity") -}}
+{{- $valueOverride = .customAffinity -}}
+{{- end -}}
 {{- if (default $value $valueOverride) }}
 {{- include "homeserver.common.tplvalues.render" (dict "value" (default $value $valueOverride) "context" .context) }}
 {{- end }}

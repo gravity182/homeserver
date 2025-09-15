@@ -63,6 +63,8 @@
 - [Miniflux](#miniflux)
     - [Auth proxy header](#auth-proxy-header-2)
 - [Mealie](#mealie)
+- [MeiliSearch](#meilisearch)
+    - [Version Upgrades](#version-upgrades)
     - [Managing PostgreSQL](#managing-postgresql)
     - [Managing MongoDB](#managing-mongodb)
 
@@ -1463,6 +1465,53 @@ The user will be created automatically on the first login. The username of a cre
 [Mealie](https://github.com/mealie-recipes/mealie) is a cooking recipe manager and meal planner.
 
 See the official docs at <https://docs.mealie.io/documentation/getting-started/introduction/>.
+
+---
+
+## MeiliSearch
+
+Available at `meilisearch.<domain>.<tld>`.
+
+[MeiliSearch](https://github.com/meilisearch/meilisearch) is a lightning-fast search engine API that can be used by other services in your homeserver stack, such as LibreChat.
+
+### Version Upgrades
+
+MeiliSearch occasionally introduces database format changes that make newer versions incompatible with older database files. When this happens, you'll see errors like `"current db version is not compatible with Meilisearch bin version"` and the service will fail to start.
+
+This chart provides tools to easily handle version upgrades.
+
+Complete upgrade guide:
+1. **Export current data**:
+   ```bash
+   # Enable export mode
+   ./bin/upgrade.sh \
+     --set services.meilisearch.image.tag=<old_version> \
+     --set services.meilisearch.upgrade.enabled=true \
+     --set services.meilisearch.upgrade.action=export
+
+   # Monitor the export process
+   kubectl logs -f job/meilisearch-upgrade-export
+   ```
+
+   The export job connects to your running MeiliSearch instance and creates a dump file in a shared volume.
+
+2. **Upgrade with automatic import**:
+   ```bash
+   # Enable import mode
+   ./bin/upgrade.sh \
+     --set services.meilisearch.image.tag=<new_version> \
+     --set services.meilisearch.upgrade.enabled=true \
+     --set services.meilisearch.upgrade.action=import
+   ```
+
+   This deploys the new MeiliSearch version and automatically imports the dump file on startup using MeiliSearch's native `--import-dump` functionality. The old database directory is automatically backed up to `data.ms.old` before import.
+
+3. **Finalize**
+
+    Disable upgrade mode after successful import and restart the MeiliSearch
+   ```bash
+   ./bin/upgrade.sh --set services.meilisearch.upgrade.enabled=false
+   ```
 
 ---
 

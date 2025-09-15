@@ -1,0 +1,20 @@
+{{- $service := .Values.services.meilisearch }}
+{{- if and $service.enabled $service.upgrade.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: meilisearch-upgrade-dump
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: meilisearch-upgrade-dump
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $service.upgrade.pvc.size | default "10Gi" }}
+  {{- if $service.upgrade.pvc.storageClass }}
+  storageClassName: {{ $service.upgrade.pvc.storageClass | quote }}
+  {{- end }}
+{{- end }}

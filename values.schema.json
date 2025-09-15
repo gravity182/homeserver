@@ -2907,6 +2907,39 @@
               "required": [
                 "data"
               ]
+            },
+            "upgrade": {
+              "type": "object",
+              "description": "Upgrade configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable upgrade helpers (PVC and jobs)"
+                },
+                "action": {
+                  "type": "string",
+                  "enum": ["export", "import"],
+                  "description": "Upgrade action: 'export' to create dump, 'import' to restore from dump"
+                },
+                "pvc": {
+                  "type": "object",
+                  "description": "PVC configuration for upgrade dumps",
+                  "properties": {
+                    "size": {
+                      "type": "string",
+                      "description": "Size of PVC for upgrade dumps"
+                    },
+                    "storageClass": {
+                      "type": "string",
+                      "description": "Optional: specific storage class for upgrade PVC"
+                    }
+                  }
+                },
+                "affinity": {
+                  "$ref": "#/properties/affinity",
+                  "description": "Affinity configuration for the export job"
+                }
+              }
             }
           },
           "required": [
