@@ -9,6 +9,19 @@ on:
     # run “At 00:00 on Monday.”
     - cron: "0 0 * * 1"
   workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+    inputs:
+      dryRun:
+        description: Dry Run
+        default: false
+        required: false
+        type: boolean
+      logLevel:
+        description: Log Level
+        type: choice
+        default: info
+        options:
+          - debug
+          - info
 
 jobs:
   renovate:
@@ -41,7 +54,10 @@ jobs:
           # command: "renovate --verbose"
           token: ${{ secrets.RENOVATE_TOKEN }}
         env:
-          RENOVATE_PLATFORM: github
-          RENOVATE_AUTODISCOVER: "false"
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
+          RENOVATE_DRY_RUN: ${{ inputs.dryRun == true }}
+          RENOVATE_AUTODISCOVER: false
           RENOVATE_REPOSITORIES: "${{ github.repository }}"
-          LOG_LEVEL: info
+          RENOVATE_INTERNAL_CHECKS_FILTER: strict
+          RENOVATE_PLATFORM: github
+          RENOVATE_PLATFORM_COMMIT: true
