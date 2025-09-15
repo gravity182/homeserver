@@ -1067,13 +1067,11 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: lscr.io/linuxserver/lidarr
-      tag: "2.12.4"
-      pullPolicy: IfNotPresent
+      repository: ghcr.io/home-operations/lidarr
+      tag: "2.14"
+      pullPolicy: Always
     securityContext:
-      # the Linuxserver image uses s6-overlay,
-      # which has its own mechanism for switching to a non-root user via PUID/GUID
-      strict: false
+      strict: true
     resourcesPreset: "micro"
     ports:
       http: 8686

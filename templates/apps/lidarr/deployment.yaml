@@ -33,10 +33,6 @@ spec:
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
-            - name: PUID
-              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
-            - name: PGID
-              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
           ports:
             - name: http
               containerPort: 8686
@@ -50,7 +46,7 @@ spec:
               mountPath: /config
             - name: data
               mountPath: {{ $service.persistence.data | quote }}
-            {{- if .Values.services.slskd.enabled }}
+            {{- if .Values.services.soularr.enabled }}
             - name: slskd-downloads
               mountPath: /soulseek/downloaded
             {{- end }}
@@ -63,7 +59,7 @@ spec:
           hostPath:
             path: {{ $service.persistence.data | quote }}
             type: Directory
-        {{- if .Values.services.slskd.enabled }}
+        {{- if .Values.services.soularr.enabled }}
         - name: slskd-downloads
           hostPath:
             path: {{ .Values.services.slskd.persistence.downloads | quote }}

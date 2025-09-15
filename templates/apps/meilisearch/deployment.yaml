@@ -98,7 +98,7 @@ spec:
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
             - name: data
               mountPath: /meili_data
-            {{- if and $upgrade.enabled $upgrade.action }}
+            {{- if and $upgrade.enabled }}
             - name: upgrade-dump
               mountPath: /upgrade-dump
               {{- if eq $upgrade.action "import" }}
@@ -112,7 +112,7 @@ spec:
           hostPath:
             path: {{ $service.persistence.data | quote }}
             type: Directory
-        {{- if and $upgrade.enabled $upgrade.action }}
+        {{- if and $upgrade.enabled }}
         - name: upgrade-dump
           persistentVolumeClaim:
             claimName: meilisearch-upgrade-dump
