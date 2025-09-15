@@ -8,3 +8,4 @@
 *.yml linguist-detectable linguist-language=YAML
 *.yaml linguist-detectable linguist-language=YAML
 *.yaml.j2 linguist-detectable linguist-language=YAML
+*.tpl linguist-detectable linguist-language=GoTemplate
