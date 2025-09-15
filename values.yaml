@@ -1907,7 +1907,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/mealie-recipes/mealie
-      tag: v2.8.0
+      tag: v3.2.1
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
