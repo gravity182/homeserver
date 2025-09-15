@@ -1696,7 +1696,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/gotify/server
-      tag: "2.6"
+      tag: "2.7"
       pullPolicy: Always
     securityContext:
       strict: true
