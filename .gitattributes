@@ -8,4 +8,6 @@
 *.yml linguist-detectable linguist-language=YAML
 *.yaml linguist-detectable linguist-language=YAML
 *.yaml.j2 linguist-detectable linguist-language=YAML
-*.tpl linguist-detectable linguist-language=GoTemplate
+# otherwise detected as Smarty
+# see https://github.com/github-linguist/linguist/issues/6196
+*.tpl linguist-detectable linguist-language=YAML
