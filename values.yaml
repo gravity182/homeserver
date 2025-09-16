@@ -486,7 +486,7 @@ monitoring:
           max_look_back_period: 30s # Limit lookback to reduce storage load
       # Compactor configuration with backoff for retention operations
       compactor:
-        working_directory: /tmp/loki/compactor
+        working_directory: /var/loki/compactor
         compaction_interval: 10m
         retention_enabled: true
         retention_delete_delay: 2h
