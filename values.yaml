@@ -2107,7 +2107,15 @@ services:
     # - name: OPENROUTER_KEY
     #   secretName: librechat-endpoints-secret
     #   secretKey: librechat-openrouter-api-key
-    extraEnv: []
+    extraEnv:
+      # debug logging
+      - name: DEBUG_LOGGING
+        value: "true"
+      - name: DEBUG_CONSOLE
+        value: "true"
+      # json format is preffered if you the Loki/Grafana stack built-in to this chart
+      - name: CONSOLE_JSON
+        value: "false"
   meilisearch:
     enabled: false
     exposed: false
