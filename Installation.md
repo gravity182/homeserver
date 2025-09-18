@@ -63,6 +63,7 @@
 - [Miniflux](#miniflux)
     - [Auth proxy header](#auth-proxy-header-2)
 - [Mealie](#mealie)
+    - [OIDC](#oidc)
 - [MeiliSearch](#meilisearch)
     - [Version Upgrades](#version-upgrades)
     - [Managing PostgreSQL](#managing-postgresql)
@@ -1465,6 +1466,65 @@ The user will be created automatically on the first login. The username of a cre
 [Mealie](https://github.com/mealie-recipes/mealie) is a cooking recipe manager and meal planner.
 
 See the official docs at <https://docs.mealie.io/documentation/getting-started/introduction/>.
+
+### OIDC
+
+Mealie supports login/signup via OIDC. Read more in the docs:
+1. <https://docs.mealie.io/documentation/getting-started/authentication/oidc/>
+2. <https://docs.mealie.io/documentation/getting-started/installation/backend-config/#openid-connect-oidc>
+
+Example configuration for this chart:
+```yaml
+mealie:
+  enabled: true
+  allowSignup: false
+  extraEnv:
+    ## OIDC Configuration
+    ## https://docs.mealie.io/documentation/getting-started/installation/backend-config/#openid-connect-oidc
+    ##
+    - name: ALLOW_PASSWORD_LOGIN
+      value: "false"
+    - name: OIDC_AUTH_ENABLED
+      value: "true"
+    - name: OIDC_SIGNUP_ENABLED
+      value: "true"
+    ## You must create an Application/Provider in the Authentik console
+    - name: OIDC_CONFIGURATION_URL
+      value: "https://authentik.example.com/application/o/mealie/.well-known/openid-configuration"
+    - name: OIDC_AUTO_REDIRECT
+      value: "true"
+    - name: OIDC_PROVIDER_NAME
+      value: Authentik
+    - name: OIDC_REMEMBER_ME
+      value: "true"
+    # This is the claim which Mealie will use to look up an existing user by
+    - name: OIDC_USER_CLAIM
+      value: preferred_username
+    # This is the claim which Mealie will use for the users Full Name
+    - name: OIDC_NAME_CLAIM
+      value: name
+    ## Scopes override - include the `groups` scope
+    ##
+    - name: OIDC_SCOPES_OVERRIDE
+      value: "openid profile email groups"
+    ## Groups must be created in Authentik and required users are added.
+    ##
+    ## A user will be successfully authenticated if they are part of either OIDC_USER_GROUP or OIDC_ADMIN_GROUP.
+    ##
+    - name: OIDC_GROUPS_CLAIM
+      value: groups
+    - name: OIDC_USER_GROUP
+      value: mealie_member
+    - name: OIDC_ADMIN_GROUP
+      value: mealie_admin
+  extraEnvSecrets:
+    - name: OIDC_CLIENT_ID
+      secretName: mealie-oidc-secret
+      secretKey: client-id
+    - name: OIDC_CLIENT_SECRET
+      secretName: mealie-oidc-secret
+      secretKey: client-secret
+```
 
 ---
 

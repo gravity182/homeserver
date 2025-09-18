@@ -39,10 +39,10 @@ spec:
               value: {{ required "A valid GID required!" .Values.host.gid | quote }}
             - name: DB_ENGINE
               value: sqlite
-            - name: ALLOW_SIGNUP
-              value: "false"
             - name: BASE_URL
               value: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" $service "context" $ ) }}
+            - name: ALLOW_SIGNUP
+              value: {{ $service.allowSignup | quote }}
             - name: TOKEN_TIME
               value: {{ $service.tokenTimeHours | quote }}
             - name: API_DOCS

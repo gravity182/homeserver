@@ -1471,7 +1471,7 @@
                   "default": "api-key"
                 }
               },
-              "required": ["name"]
+              "required": [ "name" ]
             },
             "config": {
               "type": "object",
@@ -1487,17 +1487,17 @@
                       "hostPath": {
                         "type": "string",
                         "description": "Absolute path to directory on the host",
-                        "examples": ["/data/library/music", "/data/library/movies"]
+                        "examples": [ "/data/library/music", "/data/library/movies" ]
                       },
                       "containerPath": {
                         "type": "string",
                         "description": "Path inside the container (what Soulseek users see)",
-                        "examples": ["/shares/music", "/shares/movies"]
+                        "examples": [ "/shares/music", "/shares/movies" ]
                       }
                     },
-                    "required": ["hostPath", "containerPath"]
+                    "required": [ "hostPath", "containerPath" ]
                   },
-                  "default": []
+                  "default": [ ]
                 },
                 "apiKeySecret": {
                   "type": "object",
@@ -1513,7 +1513,7 @@
                       "default": "api-key"
                     }
                   },
-                  "required": ["name"]
+                  "required": [ "name" ]
                 },
                 "credentialsSecret": {
                   "type": "object",
@@ -1534,7 +1534,7 @@
                       "default": "password"
                     }
                   },
-                  "required": ["name"]
+                  "required": [ "name" ]
                 }
               }
             }
@@ -1590,7 +1590,7 @@
                       "default": "api-key"
                     }
                   },
-                  "required": ["name"]
+                  "required": [ "name" ]
                 }
               }
             },
@@ -1612,7 +1612,7 @@
                       "default": "api-key"
                     }
                   },
-                  "required": ["name"]
+                  "required": [ "name" ]
                 }
               }
             }
@@ -2773,6 +2773,10 @@
         },
         {
           "properties": {
+            "allowSignup": {
+              "type": "boolean",
+              "description": "Allow user sign-up without token"
+            },
             "tokenTimeHours": {
               "type": "integer",
               "description": "Token time hours"
@@ -2792,6 +2796,7 @@
             }
           },
           "required": [
+            "allowSignup",
             "tokenTimeHours",
             "persistence"
           ]
@@ -2918,7 +2923,7 @@
                 },
                 "action": {
                   "type": "string",
-                  "enum": ["export", "import"],
+                  "enum": [ "export", "import" ],
                   "description": "Upgrade action: 'export' to create dump, 'import' to restore from dump"
                 },
                 "pvc": {

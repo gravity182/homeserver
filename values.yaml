@@ -2034,10 +2034,18 @@ services:
       - mealie
       - recipes
       - recipe
+    ## Allow user sign-up without token
+    ##
+    allowSignup: false
     tokenTimeHours: 4320
     persistence:
       data: /opt/mealie/data
-    extraEnv: []
+    extraEnv:
+      ## Log Level
+      ## critical, error, warning, info, debug
+      ##
+      - name: LOG_LEVEL
+        value: "info"
   librechat:
     enabled: false
     exposed: true
