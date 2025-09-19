@@ -677,6 +677,7 @@ monitoring:
       # [] means all namespaces
       namespaces:
         - '{{ include "homeserver.common.names.namespace" . }}'
+        - '{{ include "homeserver.authentik.names.namespace" . }}'
         - '{{ include "homeserver.monitoring.names.namespace" . }}'
         - kube-system
 
@@ -751,6 +752,7 @@ monitoring:
       # [] means all namespaces
       namespaces:
         - '{{ include "homeserver.common.names.namespace" . }}'
+        - '{{ include "homeserver.authentik.names.namespace" . }}'
         - '{{ include "homeserver.monitoring.names.namespace" . }}'
         - kube-system
 
@@ -763,6 +765,7 @@ monitoring:
       # [] means all namespaces
       namespaces:
         - '{{ include "homeserver.common.names.namespace" . }}'
+        - '{{ include "homeserver.authentik.names.namespace" . }}'
         - '{{ include "homeserver.monitoring.names.namespace" . }}'
         - kube-system
 
