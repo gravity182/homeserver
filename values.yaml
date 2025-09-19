@@ -1545,7 +1545,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/miniflux/miniflux
-      tag: "2.2.12"
+      tag: "2.2.13"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
