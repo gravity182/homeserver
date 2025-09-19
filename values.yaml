@@ -450,12 +450,14 @@ monitoring:
         # Discover and add log levels during ingestion, if not present already
         discover_log_levels: true
         volume_enabled: true
-        retention_period: 672h # 28 days
+        ## Retention period
+        ##
+        retention_period: 2160h # 90 days
         # Lookback limit to prevent querying too far back
         #
         # To avoid querying of data beyond the retention period,
         # max_query_lookback must be set to a value less than or equal retention_period
-        max_query_lookback: 672h # 28 days
+        max_query_lookback: 2160h # 90 days
         # Rate limiting to prevent storage spam
         ingestion_rate_mb: 32 # Max 32MB per second ingestion rate per user
         ingestion_burst_size_mb: 64 # Allow bursts up to 64MB
@@ -484,7 +486,8 @@ monitoring:
         # Engine configuration
         engine:
           max_look_back_period: 30s # Limit lookback to reduce storage load
-      # Compactor configuration with backoff for retention operations
+      ## Compactor configuration (retention)
+      ##
       compactor:
         working_directory: /var/loki/compactor
         compaction_interval: 10m
