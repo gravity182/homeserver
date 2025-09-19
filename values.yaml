@@ -1662,7 +1662,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/browserless/chromium
-      tag: v2.34.1
+      tag: v2.35.0
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
