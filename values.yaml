@@ -711,21 +711,7 @@ monitoring:
       # extra discovery.relabel rules
       # see https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.relabel/
       extraDiscoveryRules: |-
-        // drop loki gateway logs (unnecessary spam)
-        rule {
-          action        = "drop"
-          source_labels = ["app", "component"]
-          separator     = "/"
-          regex         = "loki/gateway"
-        }
-        // drop loki canary logs (unnecessary spam)
-        rule {
-          action        = "drop"
-          source_labels = ["app", "component"]
-          separator     = "/"
-          regex         = "loki/canary"
-        }
-        // add more useful labels
+        // add more labels
         rule {
           action        = "replace"
           source_labels = ["__meta_kubernetes_pod_node_name"]
