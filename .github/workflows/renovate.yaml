@@ -6,8 +6,8 @@ on:
     # Adjust this cron schedule as needed for your desired frequency.
     # For example, '0 0 * * *' would run once a day at midnight UTC.
     #
-    # run “At 00:00 on Monday.”
-    - cron: "0 0 * * 1"
+    # run “At 00:00 everyday”
+    - cron: "0 0 * * *"
   workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
     inputs:
       dryRun:
