@@ -1129,7 +1129,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/radarr
-      tag: "5"
+      tag: "6"
       pullPolicy: Always
     securityContext:
       strict: true
