@@ -2209,7 +2209,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/thomiceli/opengist
-      tag: "1.10"
+      tag: "1.11"
       pullPolicy: Always
     securityContext:
       strict: false
