@@ -2228,3 +2228,22 @@ services:
     extraEnv:
       - name: OG_LOG_LEVEL
         value: "warn"
+  isponsorblocktv:
+    enabled: false
+    exposed: false
+    name: isponsorblocktv
+    replicaCount: 1
+    critical: false
+    image:
+      repository: ghcr.io/dmunozv04/isponsorblocktv
+      tag: main
+      pullPolicy: Always
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports: {}
+    ingress: []
+    persistence:
+      data: /opt/isponsorblocktv/
+    vpn: {}
+    extraEnv: []

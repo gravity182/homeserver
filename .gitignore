@@ -10,6 +10,8 @@
 
 /files/homepage/*
 !/files/homepage/default/
+/files/isponsorblocktv/*
+!/files/isponsorblocktv/default/
 /files/kometa/*
 !/files/kometa/default/
 /files/librechat/*

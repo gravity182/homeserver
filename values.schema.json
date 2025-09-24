@@ -531,6 +531,10 @@
           "description": "Huginn configuration\nhttps://github.com/huginn/huginn",
           "$ref": "#/$defs/huginnService"
         },
+        "isponsorblocktv": {
+          "description": "iSponsorBlockTV configuration\nhttps://github.com/dmunozv04/iSponsorBlockTV",
+          "$ref": "#/$defs/isponsorblocktv"
+        },
         "playwright": {
           "description": "Playwright configuration\nhttps://github.com/browserless/browserless",
           "$ref": "#/$defs/playwrightService"
@@ -614,6 +618,7 @@
         "stirlingpdf",
         "miniflux",
         "huginn",
+        "isponsorblocktv",
         "playwright",
         "changedetectionio",
         "archivebox",
@@ -2949,6 +2954,35 @@
           },
           "required": [
             "masterKey",
+            "persistence"
+          ]
+        }
+      ]
+    },
+    "isponsorblocktv": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        {
+          "$ref": "#/$defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "required": [
             "persistence"
           ]
         }
