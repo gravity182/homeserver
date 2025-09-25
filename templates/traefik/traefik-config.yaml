@@ -32,6 +32,9 @@ spec:
           insecure: false
           trustedIPs: {{- (index .Values "x-traefik").forwardedHeaders.trustedIPs | toYaml | nindent 12 }}
     providers:
+      ## We need the CRD provider for Traefik's CRD resources, such as Middleware, TLS Options, etc.
+      ## https://doc.traefik.io/traefik/providers/kubernetes-crd/#list-of-resources
+      ##
       kubernetesCRD:
         enabled: true
       kubernetesIngress:

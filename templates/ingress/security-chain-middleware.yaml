@@ -11,7 +11,11 @@ spec:
     middlewares:
       - name: https-only
       - name: rate-limit
+      {{- if eq .Values.authProvider "authentik" }}
       - name: forwardauth-authentik
+      {{- else if eq .Values.authProvider "authelia" }}
+      - name: forwardauth-authelia
+      {{- end }}
       - name: security-headers
 ---
 apiVersion: traefik.io/v1alpha1
