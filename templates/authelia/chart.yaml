@@ -1,25 +1,27 @@
-{{- if eq .Values.authProvider "authentik" }}
+{{- if eq .Values.authProvider "authelia" }}
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ include "homeserver.authentik.names.namespace" . }}
+  name: {{ include "homeserver.authelia.names.namespace" . }}
 ---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
-  name: authentik
+  name: authelia
   namespace: {{ include "homeserver.common.names.namespace" $ }}
 spec:
-  repo: https://charts.goauthentik.io
-  chart: authentik
-  version: 2025.6.4
-  targetNamespace: {{ include "homeserver.authentik.names.namespace" . }}
+  repo: https://charts.authelia.com
+  chart: authelia
+  version: 0.10.46
+  targetNamespace: {{ include "homeserver.authelia.names.namespace" . }}
   createNamespace: false
   set:
-    # Authentik is already exposed via Gateway API in this Chart
-    server.ingress.enabled: "false"
     # Set correct permissions for the pods
+    # pod.securityContext.fsGroup: {{ .Values.host.gid }}
+    # pod.securityContext.runAsUser: {{ .Values.host.uid }}
+    # pod.securityContext.runAsGroup: {{ .Values.host.gid }}
+    # Set correct permissions for PostgreSQL pods
     postgresql.volumePermissions.enabled: "true"
     postgresql.primary.podSecurityContext.fsGroup: {{ .Values.host.gid }}
     postgresql.primary.containerSecurityContext.runAsUser: {{ .Values.host.uid }}
@@ -31,6 +33,13 @@ spec:
     postgresql.backup.cronjob.containerSecurityContext.runAsUser: {{ .Values.host.uid }}
     postgresql.backup.cronjob.containerSecurityContext.runAsGroup: {{ .Values.host.gid }}
     postgresql.backup.cronjob.timezone: {{ .Values.host.tz | quote }}
+    # Set correct permissions for Redis pods
+    redis.master.podSecurityContext.fsGroup: {{ .Values.host.gid }}
+    redis.master.containerSecurityContext.runAsUser: {{ .Values.host.uid }}
+    redis.master.containerSecurityContext.runAsGroup: {{ .Values.host.gid }}
+    redis.replica.podSecurityContext.fsGroup: {{ .Values.host.gid }}
+    redis.replica.containerSecurityContext.runAsUser: {{ .Values.host.uid }}
+    redis.replica.containerSecurityContext.runAsGroup: {{ .Values.host.gid }}
   valuesContent: |
-{{- include "homeserver.common.tplvalues.render" (dict "value" (omit .Values.authentik "namespace") "context" .) | nindent 4 }}
+{{- include "homeserver.common.tplvalues.render" (dict "value" (omit .Values.authelia "namespace") "context" .) | nindent 4 }}
 {{- end }}

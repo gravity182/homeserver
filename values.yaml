@@ -29,7 +29,7 @@ cert-manager:
     logging:
       verbosity: 2
       format: text
-    # DO NOT disable this option, otherwise cert-manager won't be able to create a cert for Gateway API
+    # DO NOT disable this option, otherwise cert-manager won't be able to create a certificate
     enableGatewayAPI: true
 ## Additional configuration for cert-manager tailored to this chart
 ##
@@ -71,6 +71,9 @@ x-cert-manager:
             apiTokenSecretRef:
               name: cloudflare-api-key-secret
               key: api-key
+## Authentication provider to use
+##
+authProvider: authentik
 ## Authentik chart configuration
 ## See available values at https://artifacthub.io/packages/helm/goauthentik/authentik#values
 ##
@@ -154,6 +157,256 @@ authentik:
   # redis bitnami subchart
   redis:
     enabled: true
+x-authelia:
+  ## Namespace to deploy Authelia resources to
+  ##
+  namespace: authelia
+## Authelia chart configuration
+## See available values at https://github.com/authelia/chartrepo/blob/master/charts/authelia/values.yaml
+##
+## The chart is currently considered beta status, and as such is subject to breaking changes.
+##
+authelia:
+  ## Pod configuration
+  ##
+  pod:
+    kind: DaemonSet
+    replicas: 1
+    annotations: {}
+    labels: {}
+    resources: {}
+    # securityContext:
+    #   container:
+    #     runAsNonRoot: true
+    #     runAsUser: 1000
+    #     runAsGroup: 1000
+    #     privileged: false
+    #     readOnlyRootFilesystem: false
+    #     allowPrivilegeEscalation: false
+    #   pod:
+    #     fsGroup: 1000
+    env:
+      - name: TZ
+        value: "{{ .Values.host.tz }}"
+      ## Enable template functions
+      ## See https://www.authelia.com/reference/guides/templating/
+      ##
+      - name: AUTHELIA_SESSION_SECRET_FILE
+        value: /etc/secrets/session-secret
+      - name: AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE
+        value: /etc/secrets/storage-encryption-key
+      - name: AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE
+        value: /etc/secrets/reset-password-jwt-secret
+      - name: AUTHELIA_SESSION_REDIS_PASSWORD_FILE
+        value: /etc/redis-secrets/password
+      - name: AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE
+        value: /etc/postgres-secrets/user-password
+    extraVolumeMounts:
+      - name: authelia-secrets
+        mountPath: /etc/secrets
+        readOnly: true
+      - name: authelia-redis-credentials
+        mountPath: /etc/redis-secrets
+        readOnly: true
+      - name: authelia-postgresql-credentials
+        mountPath: /etc/postgres-secrets
+        readOnly: true
+      - name: users-database
+        mountPath: /config/users_database.yml
+        subPath: users_database.yml
+        readOnly: false
+    extraVolumes:
+      - name: authelia-secrets
+        secret:
+          secretName: authelia-secrets
+      - name: authelia-redis-credentials
+        secret:
+          secretName: authelia-redis-credentials
+      - name: authelia-postgresql-credentials
+        secret:
+          secretName: authelia-postgresql-credentials
+      - name: users-database
+        configMap:
+          name: users-database
+  ## Ingress configuration.
+  ##
+  ## Disabled to control manually
+  ##
+  ingress:
+    enabled: false
+    traefikCRD:
+      enabled: false
+    gatewayAPI:
+      enabled: false
+  ## Configuration file
+  ##
+  configMap:
+    key: "configuration.yaml"
+    theme: auto
+    log:
+      level: info
+      format: text
+    telemetry:
+      metrics:
+        enabled: false
+    ## Enable templating in the configuration file
+    ##
+    filters:
+      disabled: false
+    server:
+      endpoints:
+        authz:
+          ## Required for Traefik ForwardAuth middleware
+          ##
+          forward-auth:
+            implementation: "ForwardAuth"
+            authn_strategies:
+              - name: "HeaderProxyAuthorization"
+                schemes:
+                  - "Basic"
+              - name: "CookieSession"
+    identity_validation:
+      reset_password:
+        secret:
+          disabled: true
+    authentication_backend:
+      password_reset:
+        disable: false
+      password_change:
+        disable: false
+      refresh_interval: "5 minutes"
+      file:
+        enabled: true
+        path: "/config/users_database.yml"
+        watch: false
+        search:
+          email: true
+          case_insensitive: false
+        password:
+          algorithm: argon2
+          argon2:
+            variant: argon2id
+            iterations: 3
+            memory: 65536
+            parallelism: 4
+            key_length: 32
+            salt_length: 16
+    access_control:
+      default_policy: deny
+      rules:
+        # Admin access to Authelia admin panel
+        - domain:
+            - "authelia.{{ .Values.ingress.domain }}"
+          policy: one_factor
+          subject:
+            - "group:admins"
+        # Require group 'users' for all services
+        - domain:
+            - "{{ .Values.ingress.domain }}"
+            - '{{ printf "*.%s" .Values.ingress.domain }}'
+          policy: one_factor
+          subject:
+            - "group:users"
+    session:
+      ## The name of the session cookie.
+      ##
+      name: authelia_session
+      same_site: lax
+      expiration: "1 hour"
+      inactivity: "5 minutes"
+      remember_me: "1 month"
+      encryption_key:
+        # disable secret generation, we'll provide our own
+        disabled: true
+      cookies:
+        - name: authelia_session
+          domain: "{{ .Values.ingress.domain }}"
+      redis:
+        enabled: true
+        ## Deploy the Redis bitnami chart
+        ##
+        deploy: true
+        host: 'authelia-redis-headless.{{ include "homeserver.authelia.names.namespace" . }}.svc.cluster.local'
+        port: 6379
+        database_index: 0
+        password:
+          # disable secret generation, we'll provide our own
+          disabled: true
+    storage:
+      encryption_key:
+        # disable secret generation, we'll provide our own
+        disabled: true
+      postgres:
+        enabled: true
+        ## Deploy the PostgreSQL bitnami chart
+        ##
+        deploy: true
+        address: 'tcp://authelia-postgresql.{{ include "homeserver.authelia.names.namespace" . }}.svc.cluster.local:5432'
+        database: authelia
+        schema: public
+        username: authelia
+        password:
+          # disable secret generation, we'll provide our own
+          disabled: true
+    notifier:
+      disable_startup_check: false
+      filesystem:
+        enabled: true
+        filename: /config/notification.txt
+      smtp:
+        enabled: false
+  ## Persistence configuration
+  ##
+  persistence: {}
+  ## Service configuration
+  ##
+  service:
+    annotations: {}
+    labels: {}
+  ## PostgreSQL subchart configuration
+  ## See https://artifacthub.io/packages/helm/bitnami/postgresql
+  ##
+  postgresql:
+    enabled: true
+    auth:
+      username: authelia
+      database: authelia
+      existingSecret: authelia-postgresql-credentials
+      secretKeys:
+        adminPasswordKey: admin-password
+        userPasswordKey: user-password
+      usePasswordFiles: true
+    backup:
+      enabled: true
+      cronjob:
+        schedule: "0 5 * * *"
+        concurrencyPolicy: Replace
+        storage:
+          enabled: false
+          mountPath: /backup/pgdump
+        extraVolumes:
+          - name: backup-dir
+            hostPath:
+              path: /opt/authelia/postgresql/backup
+              type: Directory
+        extraVolumeMounts:
+          - name: backup-dir
+            mountPath: /backup/pgdump
+  ## Redis subchart configuration
+  ## See https://artifacthub.io/packages/helm/bitnami/redis
+  ##
+  redis:
+    enabled: true
+    auth:
+      enabled: true
+      existingSecret: authelia-redis-credentials
+      existingSecretPasswordKey: password
+      usePasswordFiles: true
+    master:
+      resources: {}
+    replica:
+      replicaCount: 3
+      resources: {}
 ## Ingress configuration
 ##
 ingress:
@@ -1533,8 +1786,7 @@ services:
     langs: "en_GB,en_US,ru_RU"
     persistence:
       config: /opt/stirlingpdf/config
-    extraEnv:
-      []
+    extraEnv: []
       ## see the full list of supported env vars
       ## https://github.com/Stirling-Tools/Stirling-PDF?tab=readme-ov-file#customisation
       ##

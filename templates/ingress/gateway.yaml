@@ -9,6 +9,10 @@ metadata:
     {{- include "homeserver.cert-manager.ingress.annotations" . | nindent 4 }}
 spec:
   gatewayClassName: traefik
+  ## cert-manager requires a non-empty `hostname` on each listener it processes.
+  ## Two listeners are required for cert-manager to issue a single certificate
+  ## covering both the root domain and wildcard subdomains.
+  ##
   listeners:
     - name: https
       protocol: HTTPS

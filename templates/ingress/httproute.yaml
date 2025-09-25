@@ -20,6 +20,7 @@ spec:
   parentRefs:
     - name: gateway
       sectionName: https
+      kind: 'Gateway'
       namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
   hostnames:
   {{- range $host := $service.ingress }}
@@ -54,6 +55,7 @@ spec:
   parentRefs:
     - name: gateway
       sectionName: https-root
+      kind: 'Gateway'
       namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
   hostnames:
     - {{ $.Values.ingress.domain | quote }}

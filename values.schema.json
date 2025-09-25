@@ -90,6 +90,12 @@
         "cluster-issuer"
       ]
     },
+    "authProvider": {
+      "type": "string",
+      "description": "Authentication provider to use",
+      "enum": [ "authentik", "authelia" ],
+      "default": "authentik"
+    },
     "authentik": {
       "type": "object",
       "description": "Authentik subchart configuration",
@@ -209,6 +215,25 @@
         "serviceAccount",
         "postgresql",
         "redis"
+      ]
+    },
+    "authelia": {
+      "description": "Authelia chart configuration",
+      "additionalProperties": false,
+      "$ref": "https://raw.githubusercontent.com/authelia/chartrepo/refs/heads/master/charts/authelia/values.schema.json"
+    },
+    "x-authelia": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "description": "Namespace to deploy Authelia resources to",
+          "default": "authelia"
+        }
+      },
+      "required": [
+        "namespace"
       ]
     },
     "ingress": {
@@ -640,7 +665,6 @@
     "host",
     "cert-manager",
     "x-cert-manager",
-    "authentik",
     "ingress",
     "vpn",
     "enableServiceLinks",
