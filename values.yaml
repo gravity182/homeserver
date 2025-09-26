@@ -52,7 +52,7 @@ x-cert-manager:
     ##
     ## Cloudflare is used by default with implication that you've transferred your domain to Cloudflare.
     ##
-    ## The only thing you must do is to create a Cloudflare API token:
+    ## Configuring the Cloudflare solver is super easy:
     ## 1. Go to the Cloudflare Dashboard: User Profile > API Tokens > API Tokens.
     ## 2. Specify the permissions for the token as follows:
     ##    Permissions:

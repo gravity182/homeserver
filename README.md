@@ -46,6 +46,7 @@ All services are optional and can be enabled/disabled anytime. Detailed list:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/authentik.png"> [Authentik](https://github.com/goauthentik/authentik) - SSO (Single-Sign On) Authentication. Protects your homeserver from unathenticated access. Allows you to sign in only once and use any of the services without the hassle of remembering a credentials for each service
 - Security:
     - <img width="15" height="15" src="https://github.com/cert-manager/cert-manager/blob/master/logo/logo-small.png?raw=true"> [cert-manager](https://github.com/cert-manager/cert-manager) - Automatically provision, manage, and renew TLS certificates
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/authelia.png"> [Authelia](https://github.com/authelia/authelia) - Open-source authentication and authorization server providing 2FA and single sign-on (SSO) for your applications
 - Backups:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/backrest-light.png"> [Backrest](https://github.com/garethgeorge/backrest) - a web-accessible backup solution built on top of restic
 
@@ -54,8 +55,8 @@ All services are optional and can be enabled/disabled anytime. Detailed list:
 ## Features
 
 Chart features:
-- Great chart customization - important service settings are controlled through Helm values
-- SSO authentication powered by [Authentik](https://github.com/goauthentik/authentik)
+- Chart customization - important service settings are controlled through Helm values
+- SSO authentication powered by [Authentik](https://github.com/goauthentik/authentik) or [Authelia](https://github.com/authelia/authelia)
 - Automatic TLS certificates provisioning powered by [cert-manager](https://github.com/cert-manager/cert-manager)
 - Scheduled server backups powered by [Backrest](https://github.com/garethgeorge/backrest)
 - VPN support - every service can route its traffic through a WireGuard VPN. This is especially important for such services as qBitTorrent for smooth Linux ISO downloading

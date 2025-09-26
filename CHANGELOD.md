@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## \[5.4.0] - 2025-09-26
 
 New services:
-- [Authelia](https://www.authelia.com/): an open-source authentication and authorization server providing 2FA and single sign-on (SSO) for your applications via a web portal
+- [Authelia](https://www.authelia.com/): an open-source authentication and authorization server providing 2FA and single sign-on (SSO) for your applications
     - Allows selection between Authentik and Authelia via the `authProvider` global setting
     - Authentik is still the default, Authelia is optional
 
