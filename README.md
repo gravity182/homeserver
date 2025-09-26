@@ -6,56 +6,58 @@ This repo will get you your own home server with a lot of useful self-hosted sof
 
 All services are optional and can be enabled/disabled anytime. Detailed list:
 - Media:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/radarr.png"> [Radarr](https://github.com/Radarr/Radarr) - Movies management
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sonarr.png"> [Sonarr](https://github.com/Sonarr/Sonarr) - TV Series management
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/lidarr.png"> [Lidarr](https://github.com/Lidarr/Lidarr) - Music management
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/whisparr.png"> [Whisparr](https://github.com/Whisparr/Whisparr) - Adult videos management
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/prowlarr.png"> [Prowlarr](https://github.com/Prowlarr/Prowlarr) - Indexers management. Allows you to sync your torrent/usenet indexers across all of the *arr stack
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/bazarr.png"> [Bazarr](https://github.com/morpheus65535/bazarr) - Companion application to Radarr and Sonarr. It manages and downloads subtitles based on your requirements
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/plex.png"> [Plex](https://www.plex.tv/) - Media server for watching downloaded movies and series from any of your devices (PC, Android, iOS, iPad, TV)
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/jellyfin.png"> [Jellyfin](https://github.com/jellyfin/jellyfin) - Open-source alternative to Plex
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/jellyseerr.png"> [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) - Media request platform, which you can share with your friends for automatic movie/series downloading. Companion application to Radarr/Sonarr and Plex/Jellyfin
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/autobrr.png"> [Autobrr](https://github.com/autobrr/autobrr) - Download automation for torrents and Usenet. Monitors indexers' IRC channels and grabs a release as soon as it's announced
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/radarr.svg"> [Radarr](https://github.com/Radarr/Radarr) - Movies management
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/sonarr.svg"> [Sonarr](https://github.com/Sonarr/Sonarr) - TV Series management
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/lidarr.svg"> [Lidarr](https://github.com/Lidarr/Lidarr) - Music management
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/whisparr.svg"> [Whisparr](https://github.com/Whisparr/Whisparr) - Adult videos management
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/prowlarr.svg"> [Prowlarr](https://github.com/Prowlarr/Prowlarr) - Indexers management. Allows you to sync your torrent/usenet indexers across all of the *arr stack
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/bazarr.svg"> [Bazarr](https://github.com/morpheus65535/bazarr) - Companion application to Radarr and Sonarr. It manages and downloads subtitles based on your requirements
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/plex.svg"> [Plex](https://www.plex.tv/) - Media server for watching downloaded movies and series from any of your devices (PC, Android, iOS, iPad, TV)
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyfin.svg"> [Jellyfin](https://github.com/jellyfin/jellyfin) - Open-source alternative to Plex
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyseerr.svg"> [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) - Media request platform, which you can share with your friends for automatic movie/series downloading. Companion application to Radarr/Sonarr and Plex/Jellyfin
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/autobrr.svg"> [Autobrr](https://github.com/autobrr/autobrr) - Download automation for torrents and Usenet. Monitors indexers' IRC channels and grabs a release as soon as it's announced
 - Downloaders:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/qbittorrent.png"> [qBittorrent](https://github.com/qbittorrent/qBittorrent) - Torrent downloader
-    - <img width="15" height="15" src="https://github.com/StuffAnThings/qbit_manage/blob/master/qbm_logo.png"> [qBit_manage](https://github.com/StuffAnThings/qbit_manage) - Manage qBittorrent automatically: tag, categorize, remove orphaned data, remove unregistered torrents, and much much more
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/sabnzbd.png"> [SABnzbd](https://github.com/sabnzbd/sabnzbd) - Usenet downloader
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/qbittorrent.svg"> [qBittorrent](https://github.com/qbittorrent/qBittorrent) - Torrent downloader
+    - <img width="15" height="15" src="https://github.com/StuffAnThings/qbit_manage/blob/master/icons/qbm_logo.png?raw=true"> [qBit_manage](https://github.com/StuffAnThings/qbit_manage) - Manage qBittorrent automatically: tag, categorize, remove orphaned data, remove unregistered torrents, and much much more
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/sabnzbd.svg"> [SABnzbd](https://github.com/sabnzbd/sabnzbd) - Usenet downloader
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/pinchflat.png"> [Pinchflat](https://github.com/kieraneglin/pinchflat) - YouTube downloader based on yt-dlp
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/slskd.png"> [slskd](https://github.com/slskd/slskd) - Soulseek client for music sharing and discovery
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/slskd.svg"> [slskd](https://github.com/slskd/slskd) - Soulseek client for music sharing and discovery
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/soularr.png"> [Soularr](https://github.com/mrusse08/soularr) - Soulseek integration with Lidarr for automated music downloads
 - Books:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/calibre-web.png"> [Calibre-Web Automated](https://github.com/crocodilestick/Calibre-Web-Automated) - Calibre-Web but automated
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/calibre-web.svg"> [Calibre-Web Automated](https://github.com/crocodilestick/Calibre-Web-Automated) - Calibre-Web but automated
     - 📚 [Calibre-Web-Automated-Book-Downloader](https://github.com/calibrain/calibre-web-automated-book-downloader) - A web interface for searching and downloading books from Anna's Archive
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/openbooks.png"> [Openbooks](https://github.com/evan-buss/openbooks) - A web interface for searching and downloading books from IRCHighWay
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/kavita.png"> [Kavita](https://github.com/Kareadita/Kavita) - Books reader
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/openbooks.svg"> [Openbooks](https://github.com/evan-buss/openbooks) - A web interface for searching and downloading books from IRCHighWay
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/kavita.svg"> [Kavita](https://github.com/Kareadita/Kavita) - Books reader
 - Utilities:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/miniflux-light.png"> [Miniflux](https://github.com/dysosmus/miniflux) - RSS feed reader
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/stirling-pdf.png"> [Stirling PDF](https://github.com/Stirling-Tools/Stirling-PDF) - PDF Manipulation Tool
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/the-lounge.png"> [The Lounge](https://github.com/thelounge/thelounge) - IRC Client
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/miniflux-light.svg"> [Miniflux](https://github.com/dysosmus/miniflux) - RSS feed reader
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/stirling-pdf.svg"> [Stirling PDF](https://github.com/Stirling-Tools/Stirling-PDF) - PDF Manipulation Tool
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/the-lounge.svg"> [The Lounge](https://github.com/thelounge/thelounge) - IRC Client
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/convertx.png"> [Convertx](https://github.com/C4illin/ConvertX) - File conversion
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/mealie.png"> [Mealie](https://github.com/mealie-recipes/mealie) - Cooking recipe manager
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/librechat.png"> [Librechat](https://github.com/danny-avila/LibreChat) - Self-hosted ChatGPT clone, supporting multiple local & remote AI providers (Ollama, OpenRouter, OpenAI, Groq, and others)
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/meilisearch.png"> [MeiliSearch](https://github.com/meilisearch/meilisearch) - A lightning-fast search engine API
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/isponsorblocktv.png"> [iSponsorBlockTV](https://github.com/dmunozv04/iSponsorBlockTV) - Skip sponsored segments, intros, outros, and other annoying parts on YouTube TV
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/mealie.svg"> [Mealie](https://github.com/mealie-recipes/mealie) - Cooking recipe manager
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/librechat.svg"> [Librechat](https://github.com/danny-avila/LibreChat) - Self-hosted ChatGPT clone, supporting multiple local & remote AI providers (Ollama, OpenRouter, OpenAI, Groq, and others)
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/meilisearch.svg"> [MeiliSearch](https://github.com/meilisearch/meilisearch) - A lightning-fast search engine API
+    - <img width="15" height="15" src="https://github.com/ajayyy/SponsorBlock/blob/master/public/icons/LogoSponsorBlocker64px.png?raw=true"> [iSponsorBlockTV](https://github.com/dmunozv04/iSponsorBlockTV) - Skip sponsored segments, intros, outros, and other annoying parts on YouTube TV
 - Notification:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/apprise.png"> [Apprise](https://github.com/caronc/apprise-api) - Send notifications to many popular services like Telegram, Discord, Slack, Gotify, and others
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/gotify.png"> [Gotify](https://github.com/gotify/server) - Self-hosted push notification service
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/apprise.svg"> [Apprise](https://github.com/caronc/apprise-api) - Send notifications to many popular services like Telegram, Discord, Slack, Gotify, and others
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/gotify.svg"> [Gotify](https://github.com/gotify/server) - Self-hosted push notification service
 - Monitoring:
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/grafana.svg"> [Grafana](https://github.com/grafana/grafana) - Observability platform for monitoring and visualization
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/loki.svg"> [Loki](https://github.com/grafana/loki) - Log aggregation system for collecting and querying logs
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/myspeed.png"> [MySpeed](https://github.com/gnmyt/myspeed) - Speed test tracker. Monitors your download & upload speed over time
-- Authentication:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/authentik.png"> [Authentik](https://github.com/goauthentik/authentik) - SSO (Single-Sign On) Authentication. Protects your homeserver from unathenticated access. Allows you to sign in only once and use any of the services without the hassle of remembering a credentials for each service
 - Security:
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/authentik.svg"> [Authentik](https://github.com/goauthentik/authentik) - SSO (Single-Sign On) Authentication. Protects your homeserver from unathenticated access. Allows you to sign in only once and use any of the services without the hassle of remembering a credentials for each service
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/authelia.svg"> [Authelia](https://github.com/authelia/authelia) - Open-source authentication and authorization server providing 2FA and single sign-on (SSO) for your applications
     - <img width="15" height="15" src="https://github.com/cert-manager/cert-manager/blob/master/logo/logo-small.png?raw=true"> [cert-manager](https://github.com/cert-manager/cert-manager) - Automatically provision, manage, and renew TLS certificates
 - Backups:
-    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/backrest-light.png"> [Backrest](https://github.com/garethgeorge/backrest) - a web-accessible backup solution built on top of restic
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/backrest-light.svg"> [Backrest](https://github.com/garethgeorge/backrest) - a web-accessible backup solution built on top of restic
 
 ---
 
 ## Features
 
 Chart features:
-- Great chart customization - important service settings are controlled through Helm values
-- SSO authentication powered by [Authentik](https://github.com/goauthentik/authentik)
+- Chart customization - important service settings are controlled through Helm values
+- SSO authentication powered by [Authentik](https://github.com/goauthentik/authentik) or [Authelia](https://github.com/authelia/authelia)
 - Automatic TLS certificates provisioning powered by [cert-manager](https://github.com/cert-manager/cert-manager)
 - Scheduled server backups powered by [Backrest](https://github.com/garethgeorge/backrest)
 - VPN support - every service can route its traffic through a WireGuard VPN. This is especially important for such services as qBitTorrent for smooth Linux ISO downloading

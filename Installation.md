@@ -83,45 +83,136 @@ Prerequisites:
     - Zone Resources:
         - Include - All Zones
 
-Copy `values.template.yaml` to `values.yaml` and set the following *minimum required* parameters:
+It's recommended to create an override values file, since the default `values.yaml` file can be updated with repo updates and might conflict with your customizations.
+Create a `values.override.yaml` file and set the set the following *minimum required* parameters:
 ```yaml
 host:
-    tz: # REQUIRED; e.g. 'Europe/Berlin'
-    uid: # REQUIRED; obtain via `id -u`
-    gid: # REQUIRED; obtain via `id -g`
+    tz: ""  # REQUIRED; e.g. 'Europe/Berlin'
+    uid: 1000  # REQUIRED; obtain via `id -u`
+    gid: 1000  # REQUIRED; obtain via `id -g`
+authProvider: authentik  # REQUIRED; choose either 'authentik' or 'authelia'
 authentik:
-    namespaceOverride: authentik # REQUIRED; set a separate namespace where to install the Authentik chart
-    authentik:
-        secret_key: # REQUIRED; generate via `pwgen -s -B -n 50 1`
-        postgresql:
-            password: # REQUIRED; set the same value as in postgresql.auth.password
-    server:
-        ingress:
-            hosts:
-                - "" # REQUIRED; MUST be set to 'authentik.<domain>.<tld>', e.g. 'authentik.example.com'
-    authentik-remote-cluster:
-        namespaceOverride: authentik # REQUIRED; set a separate namespace where to install the Authentik chart
+  ## Namespace to deploy authentik resources to
+  ##
+  namespace: authentik
+  authentik:
+    enabled: true
+    secret_key: file:///secrets/authentik/secret-key
+    error_reporting:
+      enabled: false
     postgresql:
-        namespaceOverride: authentik # REQUIRED; set a separate namespace where to install the Authentik chart
-        auth:
-            password: # REQUIRED; generate via `pwgen -s -B -n 50 1`
-    # redis bitnami subchart
-    redis:
-        namespaceOverride: authentik # REQUIRED; set a separate namespace where to install the Authentik chart
+      user: authentik
+      password: file:///secrets/postgres/user-password
+  server:
+    metrics:
+      enabled: false
+    volumes:
+      - name: secret-key-creds
+        secret:
+          secretName: authentik-secret-key
+      - name: postgres-creds
+        secret:
+          secretName: authentik-postgres-credentials
+    volumeMounts:
+      - name: secret-key-creds
+        mountPath: /secrets/authentik
+        readOnly: true
+      - name: postgres-creds
+        mountPath: /secrets/postgres
+        readOnly: true
+  worker:
+    volumes:
+      - name: secret-key-creds
+        secret:
+          secretName: authentik-secret-key  # REQUIRED; secret containing `secret-key` password
+      - name: postgres-creds
+        secret:
+          secretName: authentik-postgres-credentials  # REQUIRED; secret containing admin and user PG passwords
+    volumeMounts:
+      - name: secret-key-creds
+        mountPath: /secrets/authentik
+        readOnly: true
+      - name: postgres-creds
+        mountPath: /secrets/postgres
+        readOnly: true
+  serviceAccount:
+    create: true
+  ## postgresql bitnami subchart
+  ## https://artifacthub.io/packages/helm/bitnami/postgresql#parameters
+  ##
+  postgresql:
+    enabled: true
+    auth:
+      username: authentik
+      database: authentik
+      existingSecret: authentik-postgres-credentials  # REQUIRED; secret containing admin and user PG passwords
+      secretKeys:
+        adminPasswordKey: admin-password
+        userPasswordKey: user-password
+      usePasswordFiles: true
+    backup:
+      enabled: true
+      cronjob:
+        schedule: "0 5 * * *"
+        concurrencyPolicy: Replace
+        storage:
+          # disable PVC, we'll save backups to a local dir
+          enabled: false
+          mountPath: /backup/pgdump
+        extraVolumes:
+          - name: backup-dir
+            hostPath:
+              path: /opt/authentik/postgresql/backup
+              type: Directory
+        extraVolumeMounts:
+          - name: backup-dir
+            mountPath: /backup/pgdump
+  ## redis bitnami subchart
+  ##
+  redis:
+    enabled: true
 cert-manager:
-  namespace: cert-manager # REQUIRED; set a separate namespace where to install the cert-manager chart
+  namespace: cert-manager  # REQUIRED; set a separate namespace where to install the cert-manager chart
 x-cert-manager:
+  ## ClusterIssuer configuration
+  ## This issuer will be used to automatically issue TLS certificates for Ingress/Gateway API
+  ##
   cluster-issuer:
+    ## ACME server URL
+    ## By default points to the Let's Encrypt's prod environment
+    ##
+    ## If you're having issues, you can switch to the staging environment to not hit the rate limits
+    ## Staging URL: https://acme-staging-v02.api.letsencrypt.org/directory
+    ##
+    ## DO NOT change this option unless you know what you're doing
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: # REQUIRED; e.g. 'example@gmail.com'
-    solvers: # solvers as supported by cert-manager
+    # Your email to register an account with Let's Encrypt
+    email: ""  # REQUIRED; e.g. 'example@gmail.com'
+    ## Solvers configuration
+    ##
+    ## Cloudflare is used by default with implication that you've transferred your domain to Cloudflare.
+    ##
+    ## Configuring the Cloudflare solver is super easy:
+    ## 1. Go to the Cloudflare Dashboard: User Profile > API Tokens > API Tokens.
+    ## 2. Specify the permissions for the token as follows:
+    ##    Permissions:
+    ##      Zone - DNS - Edit
+    ##      Zone - Zone - Read
+    ##    Zone Resources:
+    ##      Include - All Zones
+    ## 3. Create a secret in the `cert-manager` namespace with the name `cloudflare-api-key-secret`
+    ##
+    ## If you want to use a different provider, please read docs on DNS01 validation and supported providers:
+    ## https://cert-manager.io/docs/configuration/acme/dns01/
+    ## NOTE: The only valid solver is a DNS01 solver, since only it can issue wildcard certs
+    solvers:
       - dns01:
           cloudflare:
             apiTokenSecretRef:
-              name: cloudflare-api-key-secret ## REQUIRED; name of the secret containing your Cloudflare API Key
+              name: cloudflare-api-key-secret
               key: api-key
 ingress:
-    domain: # REQUIRED; e.g. 'example.com' (without a scheme)
+    domain: "" # REQUIRED; e.g. 'example.com' (without a scheme)
 ```
 
 The user with the specified UID/GID must exist on the host machine and must be unprivileged. See the [File permissions](#file-permissions) section for details.
@@ -131,31 +222,33 @@ Finally, install the server:
 ./bin/install.sh
 ```
 
-The script will install this Helm chart with all the required subcharts (Authentik, cert-manager). Give it a couple of minutes to spin up and self-initialize.
+The script will install this Helm chart with all the required subcharts (Authentik, cert-manager). Grab a coffee and give it a couple of minutes to spin up and self-initialize.
 
 If you want to customize [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager#configuration) or [Authentik](https://artifacthub.io/packages/helm/goauthentik/authentik#values) before installation, please adjust `cert-manager`/`authentik` sections respectively. All values are passed as is to the respective subcharts.
 
-Once the script finishes its job, please see the [Post-Installation](#post-installation) section - we'll verify that cert-manager is working and configure Authentik. Do not skip this step - otherwise you'll have issues connecting to your home server.
+Once the script finishes its job, please see the [Post-Installation](#post-installation) section - we'll verify that cert-manager is working and configure Authentik. DO NOT skip this step - otherwise you'll have issues connecting to your home server.
 
-Having verified that cert-manager and Authentik are functioning properly, you can proceed to enabling individual services.
+Having verified that cert-manager and Authentik are functioning properly, you can proceed to explore the services.
 All services are optional. Just enable the ones you need.
 
 All sections in `values.yaml` should be self-explanatory as important variables are documented. The required parameters are marked with a `# REQUIRED` comment, the rest can be left default or adjusted to your liking. Make sure the directories used by a service (usually specified in the `persistence` subsection) do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
 
-This chart supplies with a helpful [JSON Schema](./values.schema.json) for `values.yaml`.
+This chart supplies with a helpful [JSON Schema](./values.schema.json) for your `values.yaml`.
 If you have a supported editor like VS Code with the [RedHat's YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml), you'll see autosuggestions and field descriptions right in your editor.
-Moreover, this also allows Helm to [validate the values](https://helm.sh/docs/topics/charts/#schema-files) before deployment.
+Moreover, this also allows Helm to [validate the values](https://helm.sh/docs/topics/charts/#schema-files) before deployment. This protects you from deploying a malfunctioning chart due to a typo or misconfiguration.
 
-Finally, give a read to the [Chart customization](#chart-customization) section to learn how to customize your setup and the [Server Backups](#server-backups--backrest) section to learn how to make scheduled backups of your server.
+Finally, give a read to the following important sections:
+1. [Chart customization](#chart-customization) - learn how to customize your setup
+2. [Server Backups](#server-backups--backrest) - learn how to make scheduled backups
+3. [File permissions](#file-permissions) - learn how file permissions are handled
+4. [Rootless & read-only containers](#rootless--read-only-containers) - learn about security hardening
+
+If you're a newbie to the homelab world, it's especially worth to give this document a read from start to finish. It has detailed instructions for core services like [Plex](#plex), [Radarr](#radarr)/[Sonarr](#sonarr), [Jellyseerr](#jellyseerr), and [qBittorrent](#qbittorrent).
 
 This document covers most of the services used in this chart and provides some useful notes on each of them.
-Return to this document if you're having problems. Open an issue in this GitHub repo if your problem is not covered here.
+Return to this document if you're having problems. Open an issue on GitHub if your problem is not covered here.
 
-If you're a newbie, it's especially worth to give this document a read from start to finish. It has detailed instructions for core services like [Plex](#plex), [Radarr](#radarr)/[Sonarr](#sonarr), [Jellyseerr](#jellyseerr), and [qBittorrent](#qbittorrent).
-
-Have fun!
-
----
+**Have fun!**
 
 ## Post-installation
 
@@ -219,7 +312,7 @@ Great. Now your ingress paths are protected.
 
 ### Cert-manager
 
-Usually cert-manager should start doing its job right away, given that you specified a correct email and a Cloudflare API key.
+Usually cert-manager should start doing its job right away, given that you correctly set up your DNS01 solver.
 
 Let's check that the certificate has been issued correctly:
 ```sh
@@ -273,7 +366,7 @@ Status:
   Revision:                1
 ```
 
-if no certificates found, wait a few more minutes until cert-manager finishes its job. If output is still empty, `Status.Conditions.Message` is not `Certificate is up to date and has not expired`, or there are errors in the events, then something went wrong. Check the cert-manager's logs:
+if no certificates found, wait a few more minutes until cert-manager finishes its job. If output is still empty, `Status.Conditions.Message` is not `Certificate is up to date and has not expired`, or there are errors in the events, check the logs:
 ```sh
 kubectl -n cert-manager logs -l app=certmanager
 ```
@@ -305,26 +398,26 @@ Certificate chain
 ...
 ```
 
-If you see a certificate issued for your domain, then everything works properly. No need to do anything. Otherwise check the cert-manager's logs.
+If you see a certificate issued for your domain, then everything works properly. Otherwise check the cert-manager's logs.
 
-Great. Your root domain and sub-domains are secure now. The TLS certificate will be renewed automatically before expiration.
+Great. Your root domain and sub-domains are secure now. The TLS certificate will be renewed automatically in advance before expiration.
 
-If you'd like to learn more about this topic, refer to the [cert-manager docs](https://cert-manager.io/docs/).
+If you'd like to learn more about cert-manager, refer to the official [documentation](https://cert-manager.io/docs/).
 
 ---
 
 ### Traefik
 
-If you put your homeserver behind another Reverse Proxy such as Cloudflare, you'll need to configure Traefik to trust this proxy, otherwise the `X-Forwarded-*` headers will be discarded.
+If you put your homeserver behind a Reverse Proxy such as Cloudflare, you'll need to configure Traefik to trust this proxy, otherwise the `X-Forwarded-*` headers will be discarded.
 
-This affects Authentik, limiting its possibility to apply geo-policies and trace real client IPs.
+This mainly affects Authentik, limiting its possibility to apply geo-policies and save real client IPs.
 Moreover, this also affects the possibility of Traefik to apply IP-based middlewares such as rate-limiting.
 
-By default Traefik does not trust any IPs that pass these headers.
+By default Traefik does not trust any IPs.
 
 Fortunately, this chart already fixes that for you given that you're using Cloudflare as a DNS provider.
 
-You can verify that `X-Forwarded` headers are passed by logging in into Authentik and looking at your sessions in the Dashboard - you should see you real IP.
+You can verify `X-Forwarded` headers are passed by logging in into Authentik and looking at your sessions in the Dashboard - you should see you real IP.
 
 ---
 
@@ -341,9 +434,10 @@ services:
         # ---
         # MANDATORY SECTION
         # ---
-        # whether the service is enabled at all
+        # whether the service is enabled
         enabled: true
         # whether the service is exposed publicly through the ingress
+        # requires `ingress` property to be set
         exposed: true
         # service name; controls the names of deployed k8s resources
         name: homepage
@@ -472,105 +566,7 @@ services:
                   echo "Hello"
 ```
 
-Some services depend on a database. In this case your service definition will look like this:
-
-```yaml
-services:
-    librechat:
-        # service definition
-        # ...
-        db:
-            # ---
-            # MANDATORY SECTION
-            # ---
-            # database name
-            # it's a name internal to postgres/mongo, not a k8s resource
-            dbName: librechat
-            # a secret containing some required sensitive values
-            secretName: librechat-db-secret
-            # ports used by the respective k8s service
-            ports:
-                mongo: 27017
-            # controls paths to persistence dirs on the *host* if any
-            persistence:
-                data: /opt/librechat/mongo/8
-            # controls security context
-            securityContext:
-                strict: false
-            # resources preset
-            # available values are 'none', '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
-            # when set to 'none', resources management is not used for this service
-            resourcesPreset: "micro"
-            # ---
-            # OPTIONAL section
-            # these values are not required to define,
-            # but can be used to override global/default ones
-            #
-            # vpn is not supported
-            # ---
-            automountServiceAccountToken: true
-            enableServiceLinks: true
-            livenessProbe: {}
-            readinessProbe: {}
-            startupProbe: {}
-            extraLabels: {}
-            extraVolumeMounts: {}
-            extraVolumes: {}
-            extraEnvFromCM:
-            extraEnvFromSecret:
-            extraEnvSecrets: {}
-            extraEnv: {}
-```
-
-Moreover, a database definition contains the periodic backup settings (cronjob):
-
-```yaml
-services:
-    librechat:
-        # service definition
-        # ...
-        db:
-            # database definition
-            # ...
-            # periodic backup settings (cronjob)
-            backup:
-                # ---
-                # MANDATORY SECTION
-                # ---
-                # path to the directory on the *host* where to save backups
-                dir: /opt/librechat/mongo/8/backup
-                # backup schedule
-                # use https://crontab.guru for validation
-                scheduleCron: "0 5 * * 0"
-                # how long to keep old backups (in days)
-                retentionDays: 180
-                # controls security context
-                securityContext:
-                    strict: false
-                # resources preset
-                # available values are 'none', '2xnano', 'xnano', 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
-                # when set to 'none', resources management is not used for this service
-                resourcesPreset: "micro"
-                # ---
-                # OPTIONAL section
-                # these values are not required to define,
-                # but can be used to override global/default ones
-                #
-                # vpn is not supported
-                # probes are not supported
-                # ---
-                automountServiceAccountToken: true
-                enableServiceLinks: true
-                extraLabels: {}
-                extraVolumeMounts: {}
-                extraVolumes: {}
-                extraEnvFromCM:
-                extraEnvFromSecret:
-                extraEnvSecrets: {}
-                extraEnv: {}
-```
-
-If you feel like there could be even more customization, please open an issue in this GitHub repo.
+If you require more customizations, please open an issue on GitHub.
 
 ### VPN
 
@@ -601,17 +597,17 @@ Endpoint = <SERVER_IP_WITH_PORT>
 ```
 
 Note the `PostUp` and `PreDown` keys - they are **absolutely mandatory** to have.
-Otherwise your services won't be able to speak with each other when necessary. For instance, Miniflux won't be able to communicate with its Postgres db instance hosted as a separate deployment/service.
-Just copy these two lines as is to your config and you're good to go. Make sure to put them into the `[Interface]` section.
+Otherwise your services won't be able to speak with each other. For instance, Miniflux won't be able to communicate with its Postgres db instance hosted as a separate service.
+Just copy these two lines above to your config as-is, put them into the `[Interface]` section, and you're good to go.
 
-After creating a secret, set the `values.yaml` as follows:
+After creating a secret, set the values as follows:
 ```yaml
 vpn:
     secretRef: wireguard-conf-secret  # the secret's name
     secretKey: wg0.conf  # key inside the secret containing a wg conf
 ```
 
-Finally, set `services.<service_name>.vpn` as follows to enable VPN for the specified service:
+Finally, enable VPN for the specified service:
 ```yaml
 services:
   <service_name>:
@@ -619,7 +615,7 @@ services:
       enabled: true
 ```
 
-That's all. Now this service's traffic will be routed to a VPN.
+That's it. Now this service's traffic will be routed through a VPN.
 
 ---
 

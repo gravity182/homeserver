@@ -82,6 +82,9 @@ f_values=( -f values.yaml )
 if [ -f "values.extend.yaml" ]; then
   f_values+=( -f values.extend.yaml )
 fi
+if [ -f "values.override.yaml" ]; then
+  f_values+=( -f values.override.yaml )
+fi
 
 helm upgrade --install "$RELEASE_NAME" . \
   "${f_values[@]}" \
