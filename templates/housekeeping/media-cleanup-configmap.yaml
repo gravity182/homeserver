@@ -49,7 +49,7 @@ data:
         # Get all files recursively
         all_files = get_all_files(path)
         if not all_files:
-            logging.info(f"Empty directory - removing: '{path}'")
+            logging.info(f"Removing '{path}', reason=empty_directory, metadata_files=[]")
             if not dry_run:
                 shutil.rmtree(path)
             return
@@ -57,7 +57,7 @@ data:
         metadata_files = [f for f in all_files if is_metadata_file(os.path.basename(f))]
         if len(metadata_files) == len(all_files):
             metadata_files_relative = [os.path.relpath(f, path) for f in metadata_files]
-            logging.info(f"Directory contains only metadata files - removing: '{path}', metadata_files={metadata_files_relative}")
+            logging.info(f"Removing '{path}', reason=metadata_only, metadata_files={metadata_files_relative}")
             if not dry_run:
                 shutil.rmtree(path)
 
