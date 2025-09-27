@@ -13,7 +13,7 @@ metadata:
 spec:
   repo: https://charts.goauthentik.io
   chart: authentik
-  version: 2025.6.4
+  version: 2025.8.3
   targetNamespace: {{ include "homeserver.authentik.names.namespace" . }}
   createNamespace: false
   set:
