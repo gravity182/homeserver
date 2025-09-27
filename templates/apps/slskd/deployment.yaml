@@ -37,19 +37,23 @@ spec:
               # Copy config template
               cp -fL /tmp/config/slskd.yml /app/slskd.yml
 
-              # Substitute API key if provided
-              if [ -n "$SLSKD_API_KEY" ] && [ "$SLSKD_API_KEY" != "" ]; then
-                sed -i "s/__SLSKD_API_KEY__/$SLSKD_API_KEY/g" /app/slskd.yml
-                echo "API key substituted in slskd config"
+              # Substitute API keys if provided
+              {{- range $apiKey := $service.config.apiKeys }}
+              if [ -n "$SLSKD_API_KEY_{{ upper $apiKey.name }}" ] && [ "$SLSKD_API_KEY_{{ upper $apiKey.name }}" != "" ]; then
+                sed -i "s/__SLSKD_API_KEY_{{ upper $apiKey.name }}__/$SLSKD_API_KEY_{{ upper $apiKey.name }}/g" /app/slskd.yml
+                echo "API key '{{ $apiKey.name }}' substituted in slskd config"
               fi
+              {{- end }}
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
           env:
-            {{- if and $service.config.apiKeySecret $service.config.apiKeySecret.name (ne $service.config.apiKeySecret.name "") }}
-            - name: SLSKD_API_KEY
+            {{- range $apiKey := $service.config.apiKeys }}
+            {{- if and $apiKey.secretRef.name (ne $apiKey.secretRef.name "") }}
+            - name: SLSKD_API_KEY_{{ upper $apiKey.name }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ $service.config.apiKeySecret.name | quote }}
-                  key: {{ $service.config.apiKeySecret.key | quote }}
+                  name: {{ $apiKey.secretRef.name | quote }}
+                  key: {{ $apiKey.secretRef.key | quote }}
+            {{- end }}
             {{- end }}
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
@@ -67,6 +71,22 @@ spec:
           env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
             - name: SLSKD_REMOTE_CONFIGURATION
               value: "true"
+            {{- if eq $service.config.auth.enabled false }}
+            - name: SLSKD_NO_AUTH
+              value: "true"
+            {{- end }}
+            {{- if and (eq $service.config.auth.enabled true) $service.config.auth.secret.name (ne $service.config.auth.secret.name "") }}
+            - name: SLSKD_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.config.auth.secret.name | quote }}
+                  key: {{ $service.config.auth.secret.usernameKey | quote }}
+            - name: SLSKD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $service.config.auth.secret.name | quote }}
+                  key: {{ $service.config.auth.secret.passwordKey | quote }}
+            {{- end }}
             {{- if and $service.config.credentialsSecret $service.config.credentialsSecret.name (ne $service.config.credentialsSecret.name "") }}
             - name: SLSKD_SLSK_USERNAME
               valueFrom:

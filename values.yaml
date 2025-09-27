@@ -1483,16 +1483,33 @@ services:
       ## - hostPath: "/data/library/ebooks"
       ##   containerPath: "/shares/books"
       shares: []
-      ## API key secret for Soularr integration (optional)
-      ## If not provided, slskd will use default JWT authentication
-      ## Create secret: kubectl create secret generic slskd-api-key --from-literal=api-key=your-secret-key
-      apiKeySecret:
-        name: "" # OPTIONAL - Secret name containing API key for Soularr integration
-        key: "api-key" # Key within the secret
+      ## API keys for service integrations
+      ## Each entry creates an API key with the specified name
+      ##
+      ## Example:
+      ## apiKeys:
+      ## - name: "soularr"
+      ##   secretRef:
+      ##     name: "soularr-api-key"
+      ##     key: "api-key"
+      ##   cidr: "10.0.0.0/8"
+      ## - name: "radarr"
+      ##   secretRef:
+      ##     name: "radarr-api-key"
+      ##     key: "api-key"
+      apiKeys: []
+      ## Web UI authentication
+      ##
+      auth:
+        enabled: true
+        secret:
+          name: "" # Name of the secret containing Web UI username and password
+          usernameKey: "username" # Key for username within the secret
+          passwordKey: "password" # Key for password within the secret
       ## Soulseek network credentials secret (optional)
       ## Create secret: kubectl create secret generic slskd-credentials --from-literal=username=your-username --from-literal=password=your-password
       credentialsSecret:
-        name: "" # OPTIONAL - Secret name containing Soulseek username and password
+        name: "" # OPTIONAL - Secret name containing Soulseek network username and password
         usernameKey: "username" # Key for username within the secret
         passwordKey: "password" # Key for password within the secret
     extraEnv: []

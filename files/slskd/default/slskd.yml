@@ -1,22 +1,12 @@
 {{- with .Values.services.slskd.config }}
-soulseek:
-  username: ""
-  password: ""
-
 web:
   port: 5030
   authentication:
-    disabled: false
-    username: slskd
-    password: slskd
-    jwt:
-      key: ~
-      ttl: 604800000
     api_keys:
-      {{- if .apiKeySecret }}
-      soularr:
-        key: __SLSKD_API_KEY__
-        cidr: 0.0.0.0/0,::/0
+      {{- range $apiKey := .apiKeys }}
+      {{ $apiKey.name }}:
+        key: __SLSKD_API_KEY_{{ upper $apiKey.name }}__
+        cidr: {{ $apiKey.cidr | default "0.0.0.0/0,::/0" }}
       {{- end }}
 
 incoming:

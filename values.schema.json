@@ -1486,22 +1486,6 @@
                 "downloads"
               ]
             },
-            "apiKeySecret": {
-              "type": "object",
-              "description": "API key secret for Soularr integration (optional)",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "description": "Name of the secret containing the API key"
-                },
-                "key": {
-                  "type": "string",
-                  "description": "Key within the secret containing the API key",
-                  "default": "api-key"
-                }
-              },
-              "required": [ "name" ]
-            },
             "config": {
               "type": "object",
               "description": "slskd configuration",
@@ -1528,25 +1512,44 @@
                   },
                   "default": [ ]
                 },
-                "apiKeySecret": {
-                  "type": "object",
-                  "description": "API key secret for Soularr integration (optional)",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "description": "Name of the secret containing the API key"
+                "apiKeys": {
+                  "type": "array",
+                  "description": "API keys for multiple service integrations (optional)",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Name identifier for the API key (e.g., soularr, radarr, lidarr)"
+                      },
+                      "secretRef": {
+                        "type": "object",
+                        "description": "Reference to the Kubernetes secret containing the API key",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Name of the secret containing the API key"
+                          },
+                          "key": {
+                            "type": "string",
+                            "description": "Key within the secret containing the API key"
+                          }
+                        },
+                        "required": [ "name", "key" ]
+                      },
+                      "cidr": {
+                        "type": "string",
+                        "description": "CIDR restrictions for the API key (optional)",
+                        "default": "0.0.0.0/0,::/0"
+                      }
                     },
-                    "key": {
-                      "type": "string",
-                      "description": "Key within the secret containing the API key",
-                      "default": "api-key"
-                    }
+                    "required": [ "name", "secretRef" ]
                   },
-                  "required": [ "name" ]
+                  "default": [ ]
                 },
                 "credentialsSecret": {
                   "type": "object",
-                  "description": "Soulseek credentials secret (optional)",
+                  "description": "Soulseek network credentials secret (optional)",
                   "properties": {
                     "name": {
                       "type": "string",
