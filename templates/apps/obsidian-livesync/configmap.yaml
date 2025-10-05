@@ -1,0 +1,13 @@
+{{- $service := .Values.services.obsidianLivesync }}
+{{- if and $service.enabled $service.configuration }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+data:
+  custom.ini: |-
+{{ include "homeserver.common.tplvalues.render" (dict "value" $service.configuration "context" $) | indent 4 }}
+{{- end }}

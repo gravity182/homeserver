@@ -66,6 +66,12 @@
     - [OIDC](#oidc)
 - [MeiliSearch](#meilisearch)
     - [Version Upgrades](#version-upgrades)
+- [Obsidian LiveSync (CouchDB)](#obsidian-livesync-couchdb)
+    - [Deploy Requirements](#deploy-requirements)
+        - [1. Admin Credentials Secret](#1-admin-credentials-secret)
+        - [2. Cookie Auth Secret](#2-cookie-auth-secret)
+    - [Configuration Customization](#configuration-customization)
+    - [Setup](#setup-4)
     - [Managing PostgreSQL](#managing-postgresql)
     - [Managing MongoDB](#managing-mongodb)
 
@@ -1568,6 +1574,91 @@ Complete upgrade guide:
    ```bash
    ./bin/upgrade.sh --set services.meilisearch.upgrade.enabled=false
    ```
+
+---
+
+## Obsidian LiveSync (CouchDB)
+
+*CouchDB Fauxton* (web interface) is available at `https://obsidian-livesync.<domain>.<tld>/_utils/`.
+
+[Obsidian LiveSync](https://github.com/vrtmrz/obsidian-livesync) is a community plugin for Obsidian that enables real-time synchronization of your notes across multiple devices using CouchDB as the backend. This chart provides a pre-configured CouchDB instance optimized for Obsidian LiveSync with security hardening and seamless startup.
+
+The CouchDB configuration has been fine-tuned with:
+- Single-node setup optimized for personal use
+- CORS configuration for Obsidian's Livesync plugin compatibility
+- 50MB document size limit to handle large attachments
+- Health check compatibility for Kubernetes
+
+### Deploy Requirements
+
+Before deploying the service, you must create two secrets:
+
+#### 1. Admin Credentials Secret
+
+Create a secret containing the CouchDB admin username and password:
+```bash
+kubectl create secret generic obsidian-livesync-admin-credentials \
+  --from-literal=username='admin' \
+  --from-literal=password='your-secure-admin-password'
+```
+
+#### 2. Cookie Auth Secret
+
+Create a secret containing the CouchDB cookie authentication secret:
+```bash
+kubectl create secret generic obsidian-livesync-cookie-secret \
+  --from-literal=secret='your-secure-random-string'
+```
+
+### Configuration Customization
+
+The CouchDB configuration can be customized via the `configuration` key in your values file. The default configuration is already optimized, but you can modify it for specific needs:
+
+```yaml
+services:
+  obsidianLivesync:
+    enabled: true
+    configuration: |
+      [couchdb]
+      single_node = true
+      max_document_size = 50000000
+
+      [httpd]
+      WWW-Authenticate = Basic realm="couchdb"
+      enable_cors = true
+
+      [chttpd]
+      require_valid_user = true
+      max_http_request_size = 4294967296
+      enable_cors = true
+
+      [chttpd_auth]
+      require_valid_user = true
+      require_valid_user_except_for_up = true
+
+      [cors]
+      credentials = true
+      origins = app://obsidian.md,capacitor://localhost,http://localhost
+```
+
+### Setup
+
+1. **Access CouchDB Fauxton** (web interface) at `https://obsidian-livesync.<domain>.<tld>/_utils/`
+   - Login with your admin credentials
+   - Verify the instance is running correctly
+2. **Create a database**
+3. **Install Obsidian LiveSync plugin**:
+   - Open Obsidian → Settings → Community plugins
+   - Search for "LiveSync" and install the plugin
+4. **Configure the plugin**:
+   - Go to plugin settings → Remote Database configuration
+   - Set the following:
+     - URI: `https://obsidian-livesync.<domain>.<tld>`
+     - Username: Your admin username
+     - Password: Your admin password
+     - Database name: Your database name
+   - Test the connection and create the database
+   - Enable LiveSync
 
 ---
 

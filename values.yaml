@@ -2438,6 +2438,67 @@ services:
       ##
       affinity: {}
     extraEnv: []
+  obsidianLivesync:
+    enabled: false
+    exposed: true
+    name: obsidian-livesync
+    replicaCount: 1
+    critical: true
+    image:
+      repository: couchdb
+      tag: "3.5"
+      pullPolicy: IfNotPresent
+    securityContext:
+      strict: true
+    resourcesPreset: "micro"
+    ports:
+      http: 5984
+    ingress:
+      - obsidian-livesync
+    persistence:
+      data: /opt/obsidian-livesync/data
+      etc-local-d: /opt/obsidian-livesync/etc/local.d
+    ## Admin credentials must be provided via the referenced secret
+    ## usernameKey/passwordKey identify the keys within the secret data
+    ##
+    adminCredentials:
+      secretName: obsidian-livesync-admin-credentials
+      usernameKey: username
+      passwordKey: password
+    ## Optional secret holding the CouchDB cookie auth secret (COUCHDB_SECRET)
+    ##
+    cookieAuthSecret:
+      secretName: obsidian-livesync-cookie-secret
+      secretKey: secret
+    ## Custom CouchDB configuration
+    ## See https://docs.couchdb.org/en/stable/config/intro.html
+    ##
+    configuration: |
+      [couchdb]
+      single_node = true
+      max_document_size = 50000000
+
+      [httpd]
+      WWW-Authenticate = Basic realm="couchdb"
+
+      [chttpd]
+      bind_address = 0.0.0.0
+      port = 5984
+      ;; Allow only the listed options to be changed via the HTTP Config API.
+      ;; Other options require modifying this config directly.
+      config_whitelist = [{chttpd,config_whitelist}, {log,level}, {etc,etc}]
+      require_valid_user = false
+      require_valid_user_except_for_up = true
+      max_http_request_size = 4294967296 ; 4 GB
+      enable_cors = true
+
+      [chttpd_auth]
+
+      [cors]
+      credentials = true
+      origins = app://obsidian.md,capacitor://localhost,http://localhost
+    vpn: {}
+    extraEnv: []
   stash:
     enabled: false
     exposed: true

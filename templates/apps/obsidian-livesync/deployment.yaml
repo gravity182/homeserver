@@ -1,0 +1,92 @@
+{{- $service := .Values.services.obsidianLivesync }}
+{{- if $service.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+  namespace: {{ include "homeserver.common.names.namespace" $ | quote }}
+  labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+  annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 4 }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ $service.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {{- include "homeserver.common.labels.matchLabels" ( dict "service" $service "context" $ ) | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "homeserver.common.labels.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+      annotations: {{- include "homeserver.common.annotations.standard" ( dict "service" $service "context" $ ) | nindent 8 }}
+        checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/apps/obsidian-livesync/configmap.yaml" "context" $ ) }}
+    spec:
+      automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "service" $service "context" $) }}
+      enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "service" $service "context" $) }}
+      priorityClassName: {{ include "homeserver.common.pod.priorityClass" (dict "service" $service "context" $) | quote }}
+      affinity: {{- include "homeserver.common.pod.affinity" (dict "service" $service "context" $) | nindent 8 }}
+      tolerations: {{- include "homeserver.common.pod.tolerations" (dict "service" $service "context" $) | nindent 8 }}
+      securityContext: {{- include "homeserver.common.pod.securityContext" (dict "service" $service "context" $) | nindent 8 }}
+      initContainers: {{- include "homeserver.common.pod.initContainers" (dict "service" $service "context" $) | nindent 8 }}
+      containers:
+        - name: obsidian-livesync
+          image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
+          imagePullPolicy: {{ $service.image.pullPolicy }}
+          securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
+          envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
+          env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
+            {{- with $service.adminCredentials }}
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName | quote }}
+                  key: {{ .usernameKey | quote }}
+                  optional: false
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName | quote }}
+                  key: {{ .passwordKey | quote }}
+                  optional: false
+            {{- end }}
+            {{- with $service.cookieAuthSecret }}
+            - name: COUCHDB_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName | quote }}
+                  key: {{ .secretKey | quote }}
+                  optional: false
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 5984
+              protocol: TCP
+          resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 12 }}
+          livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/_up" "context" $) | nindent 12 }}
+          readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/_up" "context" $) | nindent 12 }}
+          startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/_up" "context" $) | nindent 12 }}
+          volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
+            - name: data
+              mountPath: /opt/couchdb/data
+            - name: etc-local-d
+              mountPath: /opt/couchdb/etc/local.d
+            {{- if $service.configuration }}
+            - name: config
+              mountPath: /opt/couchdb/etc/local.d/01-config.ini
+              subPath: custom.ini
+              readOnly: true
+            {{- end }}
+      volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
+        - name: data
+          hostPath:
+            path: {{ $service.persistence.data | quote }}
+            type: Directory
+        - name: etc-local-d
+          hostPath:
+            path: {{ (index $service.persistence "etc-local-d") | quote }}
+            type: Directory
+        {{- if $service.configuration }}
+        - name: config
+          configMap:
+            name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
+        {{- end }}
+{{- end }}

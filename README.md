@@ -36,6 +36,7 @@ All services are optional and can be enabled/disabled anytime. Detailed list:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/mealie.svg"> [Mealie](https://github.com/mealie-recipes/mealie) - Cooking recipe manager
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/librechat.svg"> [Librechat](https://github.com/danny-avila/LibreChat) - Self-hosted ChatGPT clone, supporting multiple local & remote AI providers (Ollama, OpenRouter, OpenAI, Groq, and others)
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/meilisearch.svg"> [MeiliSearch](https://github.com/meilisearch/meilisearch) - A lightning-fast search engine API
+    - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/couchdb.svg"> [CouchDB](https://github.com/apache/couchdb) - CouchDB instance tailored for usage by the Obsidian [Livesync plugin](https://github.com/vrtmrz/obsidian-livesync)
     - <img width="15" height="15" src="https://github.com/ajayyy/SponsorBlock/blob/master/public/icons/LogoSponsorBlocker64px.png?raw=true"> [iSponsorBlockTV](https://github.com/dmunozv04/iSponsorBlockTV) - Skip sponsored segments, intros, outros, and other annoying parts on YouTube TV
 - Notification:
     - <img width="15" height="15" src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/apprise.svg"> [Apprise](https://github.com/caronc/apprise-api) - Send notifications to many popular services like Telegram, Discord, Slack, Gotify, and others

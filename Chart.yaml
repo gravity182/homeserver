@@ -1,6 +1,6 @@
 apiVersion: v2
 name: Homeserver
-version: 5.4.0
+version: 5.5.0
 kubeVersion: ">= 1.29.0"
 description: Self-hosted media server
 type: application
@@ -52,6 +52,10 @@ keywords:
   - slskd
   - soularr
   - soulseek
+  - obsidian
+  - livesync
+  - couchdb
+  - notes
   - traefik
   - authentik
   - sso

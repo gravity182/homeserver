@@ -1,5 +1,7 @@
+.ansible
 .github
 .vscode
+.claude
 .idea
 .git
 .gitignore
@@ -12,6 +14,9 @@
 README.md
 CHANGELOG.md
 Installation.md
+CLAUDE*.md
+AGENTS.md
+*.env
 LICENSE
 .homeserver
 

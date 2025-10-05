@@ -615,6 +615,10 @@
         "meilisearch": {
           "description": "MeiliSearch configuration\nhttps://github.com/meilisearch/meilisearch",
           "$ref": "#/$defs/meilisearchService"
+        },
+        "obsidianLivesync": {
+          "description": "Obsidian LiveSync CouchDB configuration\nhttps://github.com/vrtmrz/obsidian-livesync",
+          "$ref": "#/$defs/obsidianLivesyncService"
         }
       },
       "required": [
@@ -657,7 +661,8 @@
         "pinchflat",
         "mealie",
         "librechat",
-        "meilisearch"
+        "meilisearch",
+        "obsidianLivesync"
       ]
     }
   },
@@ -2982,6 +2987,81 @@
           "required": [
             "masterKey",
             "persistence"
+          ]
+        }
+      ]
+    },
+    "obsidianLivesyncService": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        {
+          "$ref": "#/$defs/serviceCommon"
+        },
+        {
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "description": "Data directory"
+                }
+              },
+              "required": [
+                "data"
+              ]
+            },
+            "adminCredentials": {
+              "type": "object",
+              "description": "Admin credentials",
+              "properties": {
+                "secretName": {
+                  "type": "string",
+                  "description": "Secret name"
+                },
+                "usernameKey": {
+                  "type": "string",
+                  "description": "Admin username key"
+                },
+                "passwordKey": {
+                  "type": "string",
+                  "description": "Admin password key"
+                }
+              },
+              "required": [
+                "secretName",
+                "usernameKey",
+                "passwordKey"
+              ]
+            },
+            "cookieAuthSecret": {
+              "type": "object",
+              "description": "Cookie authentication secret",
+              "properties": {
+                "secretName": {
+                  "type": "string",
+                  "description": "Secret name"
+                },
+                "secretKey": {
+                  "type": "string",
+                  "description": "Secret key"
+                }
+              },
+              "required": [
+                "secretName",
+                "secretKey"
+              ]
+            },
+            "configuration": {
+              "type": "string",
+              "description": "Custom CouchDB configuration in INI format"
+            }
+          },
+          "required": [
+            "persistence",
+            "adminCredentials"
           ]
         }
       ]
