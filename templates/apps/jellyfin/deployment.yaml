@@ -41,6 +41,12 @@ spec:
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
+            - name: JELLYFIN_DATA_DIR
+              value: /config
+            - name: JELLYFIN_CONFIG_DIR
+              value: /config
+            - name: JELLYFIN_CACHE_DIR
+              value: /cache
             - name: JELLYFIN_PublishedServerUrl
               value: {{ include "homeserver.common.utils.ingressUrl" ( dict "service" $service "context" $ ) | quote }}
           ports:
