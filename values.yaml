@@ -630,6 +630,8 @@ monitoring:
       auth_enabled: false
       commonConfig:
         replication_factor: 1
+      analytics:
+        reporting_enabled: false
       storage:
         type: s3
         bucketNames:
@@ -864,6 +866,11 @@ monitoring:
   ##
   grafana:
     grafana.ini:
+      analytics:
+        reporting_enabled: false
+        feedback_links_enabled: false
+        check_for_updates: false
+        check_for_plugin_updates: false
       server:
         root_url: '{{ printf "https://grafana.%s" .Values.ingress.domain }}'
       auth:
