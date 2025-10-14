@@ -72,8 +72,8 @@
         - [2. Cookie Auth Secret](#2-cookie-auth-secret)
     - [Configuration Customization](#configuration-customization)
     - [Setup](#setup-4)
-    - [Managing PostgreSQL](#managing-postgresql)
-    - [Managing MongoDB](#managing-mongodb)
+- [Managing PostgreSQL](#managing-postgresql)
+- [Managing MongoDB](#managing-mongodb)
 
 ## Installation
 
@@ -1662,7 +1662,7 @@ services:
 
 ---
 
-### Managing PostgreSQL
+## Managing PostgreSQL
 
 Sometimes you'll might want to perform manual actions with a PostgreSQL database.
 
@@ -1695,7 +1695,7 @@ pg_restore --clean --create -U $POSTGRES_USER -d $POSTGRES_DATABASE /tmp/backup.
 
 ---
 
-### Managing MongoDB
+## Managing MongoDB
 
 Sometimes you'll might want to perform manual actions with a MongoDB database.
 

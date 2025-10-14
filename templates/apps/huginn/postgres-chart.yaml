@@ -9,8 +9,12 @@ spec:
   chart: oci://registry-1.docker.io/bitnamicharts/postgresql
   version: 16.7.4
   set:
+    global.security.allowInsecureImages: "true"
+    # Use Bitnami legacy images for some time
+    image.repository: bitnamilegacy/postgresql
     # Set correct permissions for the pods
     volumePermissions.enabled: "true"
+    volumePermissions.image.repository: bitnamilegacy/os-shell
     primary.podSecurityContext.fsGroup: {{ .Values.host.gid }}
     primary.containerSecurityContext.runAsUser: {{ .Values.host.uid }}
     primary.containerSecurityContext.runAsGroup: {{ .Values.host.gid }}
