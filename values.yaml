@@ -863,6 +863,35 @@ monitoring:
   ## See available values https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
   ##
   grafana:
+    grafana.ini:
+      server:
+        root_url: '{{ printf "https://grafana.%s" .Values.ingress.domain }}'
+      auth:
+        disable_login_form: false
+        disable_signout_menu: false
+      ## Auth via Authentik
+      ## See https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/generic-oauth/
+      ## Make sure to pass client ID and client secret via env vars below
+      ##
+      auth.generic_oauth:
+        enabled: false
+        name: Authentik
+        scopes: "openid profile email groups"
+        auth_url: https://auth.example.com/application/o/authorize/
+        token_url: https://auth.example.com/application/o/token/
+        api_url: https://auth.example.com/application/o/userinfo/
+        login_attribute_path: preferred_username
+        email_attribute_path: email
+        role_attribute_path: contains(groups[*], 'grafana_admin') && 'Admin' || 'Viewer'
+    envValueFrom: {}
+      # GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+      #   secretKeyRef:
+      #     name: grafana-authentik-oauth-client-secret
+      #     key: client-id
+      # GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+      #   secretKeyRef:
+      #     name: grafana-authentik-oauth-client-secret
+      #     key: client-secret
     persistence:
       type: pvc
       enabled: true
