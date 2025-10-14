@@ -3044,7 +3044,7 @@ services:
     critical: true
     image:
       repository: getmeili/meilisearch
-      tag: v1.22.3
+      tag: v1.23.0
       pullPolicy: Always
     securityContext:
       strict: true
