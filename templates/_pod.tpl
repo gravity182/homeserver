@@ -42,7 +42,7 @@ Usage:
 {{- end }}
 {{- end }}
 {{- if (default dict .service.vpn).enabled -}}
-{{ include "homeserver.common.vpn.sidecar" .context }}
+{{ include "homeserver.common.vpn.sidecar" (dict "service" .service "context" .context) }}
 {{- end -}}
 {{- end -}}
 
@@ -57,7 +57,7 @@ Usage:
   emptyDir: {}
 {{- if (hasKey . "service") -}}
 {{- if (default dict .service.vpn).enabled }}
-{{ include "homeserver.common.vpn.volumes" .context }}
+{{ include "homeserver.common.vpn.volumes" (dict "service" .service "context" .context) }}
 {{- end }}
 {{- $extraVolumes := include "homeserver.common.utils.getExtraVolumes" (dict "service" .service) -}}
 {{- if $extraVolumes }}

@@ -1,7 +1,44 @@
 {{/*
-VPN sidecar
+Get VPN secret reference.
+
 Usage:
-{{ include "homeserver.common.vpn.sidecar" . }}
+{{ include "homeserver.common.vpn.secretRef" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.common.vpn.secretRef" -}}
+{{- $serviceSecretRef := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "vpn.secretRef") -}}
+{{- $serviceSecretKey := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "vpn.secretKey") -}}
+{{- if and $serviceSecretRef $serviceSecretKey -}}
+  {{- $serviceSecretRef -}}
+{{- else if or $serviceSecretRef $serviceSecretKey -}}
+  {{- printf "Service '%s': vpn.secretRef and vpn.secretKey must be both defined" .service.name | fail -}}
+{{- else -}}
+  {{- required "A valid .Values.vpn.secretRef required!" .context.Values.vpn.secretRef -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get VPN secret key.
+
+Usage:
+{{ include "homeserver.common.vpn.secretKey" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.common.vpn.secretKey" -}}
+{{- $serviceSecretRef := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "vpn.secretRef") -}}
+{{- $serviceSecretKey := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "vpn.secretKey") -}}
+{{- if and $serviceSecretRef $serviceSecretKey -}}
+  {{- $serviceSecretKey -}}
+{{- else if or $serviceSecretRef $serviceSecretKey -}}
+  {{- printf "Service '%s': vpn.secretRef and vpn.secretKey must be both defined" .service.name | fail -}}
+{{- else -}}
+  {{- required "A valid .Values.vpn.secretKey required!" .context.Values.vpn.secretKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+VPN sidecar.
+
+Usage:
+{{ include "homeserver.common.vpn.sidecar" (dict "service" $service "context" $) }}
 */}}
 {{- define "homeserver.common.vpn.sidecar" }}
 - name: wireguard
@@ -17,42 +54,43 @@ Usage:
     seccompProfile:
       type: "RuntimeDefault"
     capabilities:
-      add: 
+      add:
         - "NET_ADMIN"
-        {{- if .Values.vpn.sysModule }}
+        {{- if .context.Values.vpn.sysModule }}
         - "SYS_MODULE"
         {{- end }}
   resources: {{- include "homeserver.common.resources.preset" (dict "type" "2xnano") | nindent 4 }}
   env:
     - name: PUID
-      value: {{ required "A valid UID required!" .Values.host.uid | quote }}
+      value: {{ required "A valid UID required!" .context.Values.host.uid | quote }}
     - name: PGID
-      value: {{ required "A valid GID required!" .Values.host.gid | quote }}
+      value: {{ required "A valid GID required!" .context.Values.host.gid | quote }}
     - name: TZ
-      value: {{ required "A valid timezone required!" .Values.host.tz | quote }}
+      value: {{ required "A valid timezone required!" .context.Values.host.tz | quote }}
   volumeMounts:
     - name: wireguard-conf
       mountPath: /config/wg_confs/wg0.conf
-      subPath: {{ .Values.vpn.secretKey }}
+      subPath: {{ include "homeserver.common.vpn.secretKey" (dict "service" .service "context" .context) }}
       readOnly: true
-    {{- if .Values.vpn.sysModule }}
+    {{- if .context.Values.vpn.sysModule }}
     - name: lib-modules
       mountPath: /lib/modules
     {{- end }}
 {{- end }}
 
 {{/*
-VPN volumes
+VPN volumes.
+
 Usage:
-{{ include "homeserver.common.vpn.volumes" . }}
+{{ include "homeserver.common.vpn.volumes" (dict "service" $service "context" $) }}
 */}}
 {{- define "homeserver.common.vpn.volumes" }}
 - name: wireguard-conf
   secret:
     defaultMode: 0600
-    secretName: {{ .Values.vpn.secretRef }}
+    secretName: {{ include "homeserver.common.vpn.secretRef" (dict "service" .service "context" .context) }}
     optional: false
-{{- if .Values.vpn.sysModule }}
+{{- if .context.Values.vpn.sysModule }}
 - name: lib-modules
   hostPath:
     path: /lib/modules
@@ -61,7 +99,8 @@ Usage:
 {{- end }}
 
 {{/*
-VPN sysctls
+VPN sysctls.
+
 Usage:
 {{ include "homeserver.common.vpn.securityContext.sysctls" . }}
 */}}

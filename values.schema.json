@@ -884,12 +884,22 @@
         },
         "vpn": {
           "type": "object",
-          "description": "VPN configuration",
+          "description": "VPN configuration.\nAllows per-service override.",
           "properties": {
             "enabled": {
               "type": "boolean",
               "description": "Enable VPN",
               "default": false
+            },
+            "secretRef": {
+              "type": "string",
+              "description": "Name of the secret containing the WireGuard configuration.",
+              "examples": [ "wireguard-conf" ]
+            },
+            "secretKey": {
+              "type": "string",
+              "description": "Key inside the secret.",
+              "examples": [ "wg0.conf" ]
             }
           }
         },
