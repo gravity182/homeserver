@@ -52,12 +52,16 @@ Usage:
     - name: CHOWN_GID
       value: {{ required "A valid GID required!" .context.Values.host.gid | toString | quote }}
   securityContext:
-    seLinuxOptions: {}
-    privileged: false
-    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    runAsNonRoot: false
     runAsUser: 0
     seccompProfile:
-      type: "RuntimeDefault"
+      type: RuntimeDefault
+    capabilities:
+      add:
+        - CHOWN
+      drop:
+        - ALL
   volumeMounts:
   {{- range $volume := .volumes }}
     - name: {{ kebabcase $volume | quote }}
