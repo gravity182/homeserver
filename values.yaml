@@ -615,6 +615,7 @@ monitoring:
       extraArgs:
         - "-log.level=info"
         - "-config.expand-env=true"
+        - "-log-config-reverse-order"
       extraEnv:
         - name: S3_ACCESS_KEY
           valueFrom:
@@ -628,16 +629,21 @@ monitoring:
               key: S3_SECRET_KEY
     loki:
       auth_enabled: false
+      ## https://grafana.com/docs/loki/latest/configure/#common
       commonConfig:
         replication_factor: 1
       analytics:
         reporting_enabled: false
+      ## Storage config to be shared between multiple modules
+      ## https://grafana.com/docs/loki/latest/configure/#common
       storage:
         type: s3
         bucketNames:
           chunks: homeserver-loki-chunks
           ruler: homeserver-loki-ruler
           admin: homeserver-loki-admin
+        ## S3 Storage Config
+        ## https://grafana.com/docs/loki/latest/configure/#s3_storage_config
         s3:
           endpoint: https://storage.yandexcloud.net
           accessKeyId: ${S3_ACCESS_KEY}
@@ -651,7 +657,8 @@ monitoring:
           max_idle_connections: 50
           max_idle_connections_per_host: 25
           max_connections_per_host: 50
-      # Storage configuration for object storage
+      ## Storage configuration for object storage
+      ## https://grafana.com/docs/loki/latest/configure/#storage_config
       storage_config:
         tsdb_shipper:
           active_index_directory: /var/loki/index
@@ -679,17 +686,28 @@ monitoring:
               period: 24h
       pattern_ingester:
         enabled: true
+      ## Ingester config
+      ## https://grafana.com/docs/loki/latest/configure/#ingester
+      ##
       ingester:
+        # algorithm to use for compressing chunk
+        # snappy is a best practice choice for most use cases
+        # read https://grafana.com/docs/loki/latest/configure/bp-configure/#use-snappy-compression-algorithm
         chunk_encoding: snappy
-        # Chunk store configuration with backoff for storage operations
-        chunk_retain_period: 5m
+        # target _compressed_ size in bytes for chunks
+        # read https://grafana.com/docs/loki/latest/configure/bp-configure/#use-chunk_target_size
+        chunk_target_size: 1572864 # 1.5MB
+        # the maximum duration of a timeseries chunk in memory, regardless of activity
         max_chunk_age: 2h
-        chunk_idle_period: 30m
+        # flush on inactivity
+        # if you don't have much log volume, consider increasing this value to reduce tiny chunks
+        chunk_idle_period: 1h
+        # how long a closed chunk is kept in the ingester’s memory after it’s been flushed
+        chunk_retain_period: 5m
         # WAL configuration
         wal:
           enabled: true
           replay_memory_ceiling: 2147483648 # 2GB in bytes
-        # Lifecycler configuration with backoff settings
         lifecycler:
           # Address to advertise in consul
           address: 0.0.0.0
@@ -698,7 +716,7 @@ monitoring:
             replication_factor: 1
       tracing:
         enabled: true
-      # https://grafana.com/docs/loki/latest/configure/#limits_config
+      ## https://grafana.com/docs/loki/latest/configure/#limits_config
       limits_config:
         # Allow user to send structured metadata in push payload
         allow_structured_metadata: true
@@ -728,52 +746,52 @@ monitoring:
         # Chunk limits to prevent memory issues during storage failures
         max_chunks_per_query: 2000000 # 2M chunks max per query
         max_query_series: 10000 # Limit series per query
-        # Split queries by interval to reduce load (moved to limits_config in v2.5+)
+        # Split queries by interval to reduce load
         split_queries_by_interval: 15m
         # Cardinality limits to prevent explosion during failures
         cardinality_limit: 100000
         max_streams_matchers_per_query: 1000
+      ## https://grafana.com/docs/loki/latest/configure/#ruler
       ruler:
         enable: true
+      ## https://grafana.com/docs/loki/latest/configure/#querier
       querier:
         # Default is 4, if you have enough memory and CPU you can increase, reduce if OOMing
         max_concurrent: 4
         # Engine configuration
         engine:
           max_look_back_period: 30s # Limit lookback to reduce storage load
-      ## Compactor configuration (retention)
+      ## Compactor configuration
+      ## https://grafana.com/docs/loki/latest/configure/#compactor
       ##
       compactor:
         working_directory: /var/loki/compactor
-        compaction_interval: 10m
+        compaction_interval: 2h
         retention_enabled: true
         retention_delete_delay: 2h
-        retention_delete_worker_count: 150
+        retention_delete_worker_count: 10
+        # A separate cadence for applying retention only.
+        # By default it’s 0s, meaning retention is applied on every compaction_interval.
+        # Use this when you want compaction to run frequently but retention scans less often
+        apply_retention_interval: 12h
         # Required: delete request store must be configured when retention is enabled
         delete_request_store: s3
-        # Add backoff for compactor operations
-        apply_retention_interval: 30m
-        # Comprehensive backoff configuration for storage operations
         retention_backoff_config:
-          min_period: 500ms # Start with 500ms backoff
-          max_period: 300s # Max 5 minutes backoff
-          max_retries: 5 # Only retry 5 times before giving up
-      # Frontend configuration with query timeouts
+          min_period: 500ms
+          max_period: 300s
+          max_retries: 5
       frontend:
         # Response compression
         compress_responses: true
         # Max outstanding requests per tenant
         max_outstanding_per_tenant: 100
-      # Server configuration with timeouts
       server:
         # Timeout configurations to handle storage failures gracefully
         http_server_read_timeout: 300s
         http_server_write_timeout: 300s
         http_server_idle_timeout: 120s
-        # gRPC server configuration
         grpc_server_max_recv_msg_size: 4194304 # 4MB
         grpc_server_max_send_msg_size: 4194304 # 4MB
-        # Graceful shutdown timeout
         graceful_shutdown_timeout: 30s
 
     deploymentMode: SingleBinary
@@ -790,6 +808,7 @@ monitoring:
       extraArgs:
         - "-log.level=info"
         - "-config.expand-env=true"
+        - "-log-config-reverse-order"
       extraEnv:
         - name: S3_ACCESS_KEY
           valueFrom:
@@ -801,23 +820,6 @@ monitoring:
             secretKeyRef:
               name: loki-s3-credentials
               key: S3_SECRET_KEY
-      # Liveness and readiness probes with longer timeouts during storage issues
-      livenessProbe:
-        httpGet:
-          path: /ready
-          port: http
-        initialDelaySeconds: 45
-        periodSeconds: 10
-        timeoutSeconds: 10
-        failureThreshold: 6 # Allow more failures during storage issues
-      readinessProbe:
-        httpGet:
-          path: /ready
-          port: http
-        initialDelaySeconds: 30
-        periodSeconds: 5
-        timeoutSeconds: 5
-        failureThreshold: 3
 
     chunksCache:
       enabled: true
@@ -901,6 +903,8 @@ monitoring:
       #     key: client-secret
     persistence:
       type: pvc
+      enabled: true
+    initChownData:
       enabled: true
 
     ## Grafana admin credentials
