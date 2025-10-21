@@ -2143,7 +2143,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/kareadita/kavita
-      tag: "0.8.7"
+      tag: "0.8.8"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
