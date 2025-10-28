@@ -1271,7 +1271,7 @@ services:
       critical: false
       image:
         repository: ghcr.io/jellyfin/jellyfin
-        tag: "10"
+        tag: "2025102005"
         pullPolicy: Always
       securityContext:
         strict: true
