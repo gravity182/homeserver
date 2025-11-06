@@ -1727,7 +1727,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/slskd/slskd
-      tag: 0.23.2
+      tag: 0.24.0
       pullPolicy: Always
     securityContext:
       strict: true
