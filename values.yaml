@@ -2273,7 +2273,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/c4illin/convertx
-      tag: v0.15.1
+      tag: v0.16.0
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
