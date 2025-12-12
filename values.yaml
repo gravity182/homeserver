@@ -2355,7 +2355,7 @@ services:
     critical: true
     image:
       repository: ghcr.io/danny-avila/librechat
-      tag: v0.8.0
+      tag: v0.8.1
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
