@@ -42,8 +42,7 @@ spec:
                   cp -rfL /tmp/config/* /config/
               resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 16 }}
               volumeMounts:
-                - name: config
-                  mountPath: /config
+                {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 16 }}
                 - name: kometa-config
                   mountPath: /tmp/config
             {{- if (default dict $service.jmxdOverlays).enabled }}
@@ -68,8 +67,7 @@ spec:
                   value: {{ $service.jmxdOverlays.commitHash | quote }}
               resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 16 }}
               volumeMounts:
-                - name: config
-                  mountPath: /config
+                {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 16 }}
                 - name: empty-dir
                   mountPath: /tmp/jmxd
                   subPath: jmxd
@@ -84,14 +82,9 @@ spec:
               env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 16 }}
               resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 16 }}
               volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 16 }}
-                - name: config
-                  mountPath: /config
+                {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 16 }}
           volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 12 }}
             - name: kometa-config
               configMap:
                 name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
-            - name: config
-              hostPath:
-                path: {{ $service.persistence.config | quote }}
-                type: Directory
 {{- end }}

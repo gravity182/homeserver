@@ -1,10 +1,10 @@
-{{- $jellyfinServices := list }}
+{{- $instances := list }}
 {{- if kindIs "slice" .Values.services.jellyfin }}
-  {{- $jellyfinServices = .Values.services.jellyfin }}
+  {{- $instances = .Values.services.jellyfin }}
 {{- else }}
-  {{- $jellyfinServices = list .Values.services.jellyfin }}
+  {{- $instances = list .Values.services.jellyfin }}
 {{- end }}
-{{- range $service := $jellyfinServices }}
+{{- range $service := $instances }}
 {{- if $service.enabled }}
 {{- $kind := "app" }}
 ---
@@ -44,7 +44,9 @@ spec:
             - name: JELLYFIN_DATA_DIR
               value: /config
             - name: JELLYFIN_CONFIG_DIR
-              value: /config
+              value: /config/.jellyfin
+            - name: JELLYFIN_LOG_DIR
+              value: /config/log
             - name: JELLYFIN_CACHE_DIR
               value: /cache
             - name: JELLYFIN_PublishedServerUrl
@@ -61,24 +63,9 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: config
-              mountPath: /config
-            - name: cache
-              mountPath: /cache
-            - name: library
-              mountPath: {{ $service.persistence.library | quote }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "cache" "mountPath" "/cache") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "library" "mountPath" "/media") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: cache
-          hostPath:
-            path: {{ $service.persistence.cache | quote }}
-            type: Directory
-        - name: library
-          hostPath:
-            path: {{ $service.persistence.library | quote }}
-            type: Directory
 {{- end }}
 {{- end }}

@@ -23,7 +23,9 @@ spec:
           labels: {{- include "homeserver.common.labels.standard" ( dict "context" $ ) | nindent 12 }}
             app.kubernetes.io/name: media-cleanup
           annotations: {{- include "homeserver.common.annotations.standard" ( dict "context" $ ) | nindent 12 }}
+            checksum/config: {{ include "homeserver.common.utils.checksumTemplate" ( dict "path" "/housekeeping/media-cleanup-configmap.yaml" "context" $ ) }}
         spec:
+          {{- $mediaCleanupService := (dict "name" "media-cleanup" "persistence" .Values.housekeeping.mediaCleanup.persistence) }}
           restartPolicy: OnFailure
           automountServiceAccountToken: {{ include "homeserver.common.pod.automountServiceAccountToken" (dict "context" $) }}
           enableServiceLinks: {{ include "homeserver.common.pod.enableServiceLinks" (dict "context" $) }}
@@ -41,28 +43,22 @@ spec:
                 - name: LOG_LEVEL
                   value: {{ .Values.housekeeping.mediaCleanup.logLevel | default "info" | quote }}
                 - name: MEDIA_ROOT_DIRS
-                  value: {{ .Values.housekeeping.mediaCleanup.paths | toJson | quote }}
+                  value: {{ $dirs := list }}{{ range .Values.housekeeping.mediaCleanup.paths }}{{ $mountName := .name }}{{ $mountPath := printf "/mnt/%s" $mountName }}{{ $dir := dict "mountPath" $mountPath "maxDepth" (default 1 .maxDepth) }}{{ $dirs = append $dirs $dir }}{{ end }}{{ $dirs | mustToJson | quote }}
                 - name: METADATA_PATTERNS
                   value: {{ .Values.housekeeping.mediaCleanup.metadataFileGlobs | toJson | quote }}
                 - name: DRY_RUN
                   value: {{ .Values.housekeeping.mediaCleanup.dryRun | default false | quote }}
               securityContext: {{- include "homeserver.common.securityContext.strict" . | nindent 16 }}
               resources: {{- include "homeserver.common.resources.preset" (dict "type" "micro") | nindent 16 }}
-              volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "context" $) | nindent 16 }}
+              volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $mediaCleanupService "context" $) | nindent 16 }}
                 - name: cleanup-script
                   mountPath: /scripts
-                {{- range $index, $path := .Values.housekeeping.mediaCleanup.paths }}
-                - name: media-path-{{ $index }}
-                  mountPath: {{ $path.path | quote }}
+                  readOnly: true
+                {{- range .Values.housekeeping.mediaCleanup.paths }}
+                {{- include "homeserver.common.persistence.volumeMount" (dict "service" $mediaCleanupService "name" .name "mountPath" (printf "/mnt/%s" .name)) | nindent 16 }}
                 {{- end }}
-          volumes: {{- include "homeserver.common.pod.volumes" (dict "context" $) | nindent 12 }}
+          volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $mediaCleanupService "context" $) | nindent 12 }}
             - name: cleanup-script
               configMap:
                 name: media-cleanup-script
-            {{- range $index, $path := .Values.housekeeping.mediaCleanup.paths }}
-            - name: media-path-{{ $index }}
-              hostPath:
-                path: {{ $path.path | quote }}
-                type: Directory
-            {{- end }}
 {{- end }}

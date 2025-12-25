@@ -43,8 +43,7 @@ spec:
                 && echo "yt-dlp-configs initialized!"
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
-            - name: config
-              mountPath: /config
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
             - name: yt-dlp-configs
               mountPath: /tmp/yt-dlp-configs
               readOnly: true
@@ -64,8 +63,7 @@ spec:
                 && echo "user-scripts initialized!"
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
-            - name: config
-              mountPath: /config
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
             - name: user-scripts
               mountPath: /tmp/user-scripts
               readOnly: true
@@ -91,10 +89,8 @@ spec:
             - name: empty-dir
               mountPath: /etc/elixir_tzdata_data
               subPath: etc-elixir-tzdata
-            - name: config
-              mountPath: /config
-            - name: data
-              mountPath: /downloads
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/downloads") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
         - name: yt-dlp-configs
           configMap:
@@ -103,12 +99,4 @@ spec:
           configMap:
             name: {{ printf "%s-%s" (include "homeserver.common.names.name" ( dict "service" $service )) "user-scripts" | quote }}
             defaultMode: 0755
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
 {{- end }}

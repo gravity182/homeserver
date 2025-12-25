@@ -65,10 +65,8 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/_up" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/_up" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: data
-              mountPath: /opt/couchdb/data
-            - name: etc-local-d
-              mountPath: /opt/couchdb/etc/local.d
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/opt/couchdb/data") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "etc-local-d" "mountPath" "/opt/couchdb/etc/local.d") | nindent 12 }}
             {{- if $service.configuration }}
             - name: config
               mountPath: /opt/couchdb/etc/local.d/01-config.ini
@@ -76,14 +74,6 @@ spec:
               readOnly: true
             {{- end }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
-        - name: etc-local-d
-          hostPath:
-            path: {{ (index $service.persistence "etc-local-d") | quote }}
-            type: Directory
         {{- if $service.configuration }}
         - name: config
           configMap:

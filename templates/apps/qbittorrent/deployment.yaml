@@ -63,16 +63,16 @@ spec:
             - name: QBT_WEBUI_PORT
               value: "8080"
             - name: QBT_TORRENTING_PORT
-              value: "6881"
+              value: {{ $service.ports.p2p | quote }}
           ports:
             - name: http
               containerPort: 8080
               protocol: TCP
             - name: p2p
-              containerPort: 6881
+              containerPort: {{ $service.ports.p2p }}
               protocol: TCP
             - name: p2pudp
-              containerPort: 6881
+              containerPort: {{ $service.ports.p2p }}
               protocol: UDP
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 12 }}
           livenessProbe: {{- include "homeserver.common.container.livenessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
@@ -83,21 +83,11 @@ spec:
             - name: vuetorrent
               mountPath: /vuetorrent
             {{- end }}
-            - name: config
-              mountPath: /config
-            - name: data
-              mountPath: {{ $service.persistence.data | quote }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/data/torrents") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
           {{- if $service.vuetorrent.enabled }}
         - name: vuetorrent
           emptyDir: {}
           {{- end }}
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
 {{- end }}

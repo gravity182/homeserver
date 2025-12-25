@@ -13,17 +13,23 @@
         "tz": {
           "type": "string",
           "description": "Host timezone",
-          "examples": [ "Europe/Berlin" ]
+          "examples": [
+            "Europe/Berlin"
+          ]
         },
         "uid": {
           "type": "integer",
           "description": "Host user's ID\nObtainable via `id -u`",
-          "examples": [ 1000 ]
+          "examples": [
+            1000
+          ]
         },
         "gid": {
           "type": "integer",
           "description": "Host user's group ID\nObtainable via `id -g`",
-          "examples": [ 1000 ]
+          "examples": [
+            1000
+          ]
         }
       },
       "required": [
@@ -50,12 +56,16 @@
               "type": "string",
               "description": "ACME server",
               "default": "https://acme-v02.api.letsencrypt.org/directory",
-              "examples": [ "https://acme-v02.api.letsencrypt.org/directory" ]
+              "examples": [
+                "https://acme-v02.api.letsencrypt.org/directory"
+              ]
             },
             "email": {
               "type": "string",
               "description": "ACME email",
-              "examples": [ "example@gmail.com" ]
+              "examples": [
+                "example@gmail.com"
+              ]
             },
             "solvers": {
               "type": "array",
@@ -93,7 +103,10 @@
     "authProvider": {
       "type": "string",
       "description": "Authentication provider to use",
-      "enum": [ "authentik", "authelia" ],
+      "enum": [
+        "authentik",
+        "authelia"
+      ],
       "default": "authentik"
     },
     "authentik": {
@@ -244,13 +257,17 @@
         "domain": {
           "type": "string",
           "description": "Your domain without a scheme",
-          "examples": [ "example.com" ]
+          "examples": [
+            "example.com"
+          ]
         },
         "rootService": {
           "type": "string",
           "description": "The service to serve on the root domain",
           "default": "homepage",
-          "examples": [ "homepage" ]
+          "examples": [
+            "homepage"
+          ]
         },
         "extraAnnotations": {
           "type": "object",
@@ -277,13 +294,17 @@
           "type": "string",
           "description": "Name of the secret containing the WireGuard configuration",
           "default": "wireguard-conf-linuxserver",
-          "examples": [ "wireguard-conf-linuxserver" ]
+          "examples": [
+            "wireguard-conf-linuxserver"
+          ]
         },
         "secretKey": {
           "type": "string",
           "description": "Key inside the secret",
           "default": "wg0.conf",
-          "examples": [ "wg0.conf" ]
+          "examples": [
+            "wg0.conf"
+          ]
         }
       },
       "required": [
@@ -300,7 +321,14 @@
         "mediaCleanup": {
           "type": "object",
           "description": "Media cleanup job configuration\nThis job will remove empty directories that possibly only contain metadata files",
-          "required": [ "enabled", "scheduleCron", "dryRun", "paths", "metadataFileGlobs" ],
+          "required": [
+            "enabled",
+            "scheduleCron",
+            "dryRun",
+            "persistence",
+            "paths",
+            "metadataFileGlobs"
+          ],
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -317,16 +345,39 @@
               "description": "Whether to run in dry-run mode (only report which folders would be deleted)",
               "default": false
             },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence volumes for media directories",
+              "required": ["volumes", "mounts"],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "List of volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "additionalProperties": {
+                    "$ref": "#/$defs/mountDefinition"
+                  }
+                }
+              }
+            },
             "paths": {
               "type": "array",
-              "description": "List of media directories to watch",
+              "description": "List of mounts to scan for cleanup",
               "items": {
                 "type": "object",
-                "required": [ "path" ],
+                "required": [
+                  "name"
+                ],
                 "properties": {
-                  "path": {
+                  "name": {
                     "type": "string",
-                    "description": "Path to the media directory"
+                    "description": "Mount name (references persistence.mounts[name])"
                   },
                   "maxDepth": {
                     "type": "integer",
@@ -358,7 +409,9 @@
           }
         }
       },
-      "required": [ "mediaCleanup" ]
+      "required": [
+        "mediaCleanup"
+      ]
     },
     "enableServiceLinks": {
       "type": "boolean",
@@ -857,12 +910,18 @@
             "tag": {
               "type": "string",
               "description": "Image tag",
-              "examples": [ "latest" ]
+              "examples": [
+                "latest"
+              ]
             },
             "pullPolicy": {
               "type": "string",
               "description": "Image pull policy",
-              "enum": [ "Always", "IfNotPresent", "Never" ]
+              "enum": [
+                "Always",
+                "IfNotPresent",
+                "Never"
+              ]
             }
           },
           "required": [
@@ -894,12 +953,16 @@
             "secretRef": {
               "type": "string",
               "description": "Name of the secret containing the WireGuard configuration.",
-              "examples": [ "wireguard-conf" ]
+              "examples": [
+                "wireguard-conf"
+              ]
             },
             "secretKey": {
               "type": "string",
               "description": "Key inside the secret.",
-              "examples": [ "wg0.conf" ]
+              "examples": [
+                "wg0.conf"
+              ]
             }
           }
         },
@@ -932,8 +995,21 @@
         "resourcesPreset": {
           "type": "string",
           "description": "Resources preset.\nSet 'none' to disable resource limits for the service",
-          "enum": [ "none", "2xnano", "xnano", "nano", "micro", "small", "medium", "large", "xlarge", "2xlarge" ],
-          "examples": [ "medium" ]
+          "enum": [
+            "none",
+            "2xnano",
+            "xnano",
+            "nano",
+            "micro",
+            "small",
+            "medium",
+            "large",
+            "xlarge",
+            "2xlarge"
+          ],
+          "examples": [
+            "medium"
+          ]
         },
         "automountServiceAccountToken": {
           "type": "boolean",
@@ -1066,28 +1142,48 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory",
-                  "default": "/opt/backrest/config"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory",
-                  "default": "/opt/backrest/data"
-                },
-                "cache": {
-                  "type": "string",
-                  "description": "Cache directory",
-                  "default": "/opt/backrest/cache"
-                }
-              },
               "required": [
-                "config",
-                "data",
-                "cache"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "userdata": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Userdata directory (backup target)"
+                    },
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    },
+                    "cache": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Cache directory"
+                    }
+                  },
+                  "required": [
+                    "userdata",
+                    "config",
+                    "data",
+                    "cache"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1104,10 +1200,8 @@
           "$ref": "#/$defs/serviceCommon"
         },
         {
-          "properties": {
-          },
-          "required": [
-          ]
+          "properties": { },
+          "required": [ ]
         }
       ]
     },
@@ -1127,20 +1221,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "library": {
-                  "type": "string",
-                  "description": "Library directory"
-                }
-              },
               "required": [
-                "config",
-                "library"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "library": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Library directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "library"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1162,25 +1274,43 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "cache": {
-                  "type": "string",
-                  "description": "Cache directory"
-                },
-                "library": {
-                  "type": "string",
-                  "description": "Library directory"
-                }
-              },
               "required": [
-                "config",
-                "cache",
-                "library"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "cache": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Cache directory"
+                    },
+                    "library": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Library directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "cache",
+                    "library"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1201,15 +1331,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1246,20 +1394,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "config",
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1281,20 +1447,44 @@
             "scheduleCron": {
               "type": "string",
               "description": "Script schedule cron",
-              "examples": [ "0 */1 * * *" ]
+              "examples": [
+                "0 */1 * * *"
+              ]
             },
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "qbittorrent-data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "qBittorrent data directory (must point to the same volume as qbittorrent data mount)"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1316,20 +1506,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "config",
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1350,15 +1558,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1379,20 +1605,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "config",
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1413,20 +1657,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "config",
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1447,20 +1709,42 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "config",
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    },
+                    "soulseek-downloads": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Soulseek downloads directory (must point to the same volume as slskd downloads mount)"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1481,25 +1765,43 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "incomplete": {
-                  "type": "string",
-                  "description": "Incomplete downloads directory"
-                },
-                "downloads": {
-                  "type": "string",
-                  "description": "Finished downloads directory"
-                }
-              },
               "required": [
-                "config",
-                "incomplete",
-                "downloads"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "incomplete": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Incomplete downloads directory"
+                    },
+                    "downloads": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Finished downloads directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "incomplete",
+                    "downloads"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             },
             "config": {
               "type": "object",
@@ -1510,20 +1812,19 @@
                   "description": "Configure host directories to share with other Soulseek users",
                   "items": {
                     "type": "object",
-                    "description": "Share configuration mapping host path to container path",
                     "properties": {
-                      "hostPath": {
-                        "type": "string",
-                        "description": "Absolute path to directory on the host",
-                        "examples": [ "/data/library/music", "/data/library/movies" ]
-                      },
                       "containerPath": {
                         "type": "string",
-                        "description": "Path inside the container (what Soulseek users see)",
-                        "examples": [ "/shares/music", "/shares/movies" ]
+                        "description": "Path inside the container (exposed to Soulseek users)",
+                        "examples": [
+                          "/shares/music",
+                          "/shares/movies"
+                        ]
                       }
                     },
-                    "required": [ "hostPath", "containerPath" ]
+                    "required": [
+                      "containerPath"
+                    ]
                   },
                   "default": [ ]
                 },
@@ -1550,7 +1851,10 @@
                             "description": "Key within the secret containing the API key"
                           }
                         },
-                        "required": [ "name", "key" ]
+                        "required": [
+                          "name",
+                          "key"
+                        ]
                       },
                       "cidr": {
                         "type": "string",
@@ -1558,7 +1862,10 @@
                         "default": "0.0.0.0/0,::/0"
                       }
                     },
-                    "required": [ "name", "secretRef" ]
+                    "required": [
+                      "name",
+                      "secretRef"
+                    ]
                   },
                   "default": [ ]
                 },
@@ -1581,7 +1888,9 @@
                       "default": "password"
                     }
                   },
-                  "required": [ "name" ]
+                  "required": [
+                    "name"
+                  ]
                 }
               }
             }
@@ -1609,15 +1918,37 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "soulseek-downloads": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Soulseek downloads directory (must point to the same volume as slskd downloads mount)"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             },
             "lidarr": {
               "type": "object",
@@ -1637,7 +1968,9 @@
                       "default": "api-key"
                     }
                   },
-                  "required": [ "name" ]
+                  "required": [
+                    "name"
+                  ]
                 }
               }
             },
@@ -1659,7 +1992,9 @@
                       "default": "api-key"
                     }
                   },
-                  "required": [ "name" ]
+                  "required": [
+                    "name"
+                  ]
                 }
               }
             }
@@ -1683,20 +2018,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "config",
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1717,20 +2070,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "config",
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1751,15 +2122,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1826,15 +2215,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -1864,13 +2271,17 @@
                   "type": "boolean",
                   "description": "Enable Jmxd overlays",
                   "default": false,
-                  "examples": [ true ]
+                  "examples": [
+                    true
+                  ]
                 },
                 "commitHash": {
                   "type": "string",
                   "description": "Commit hash",
                   "default": "75a1c1f83d62d4b7d334d2dffa90e6865649ee39",
-                  "examples": [ "75a1c1f83d62d4b7d334d2dffa90e6865649ee39" ]
+                  "examples": [
+                    "75a1c1f83d62d4b7d334d2dffa90e6865649ee39"
+                  ]
                 }
               },
               "required": [
@@ -2003,15 +2414,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2033,15 +2462,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2062,15 +2509,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2103,14 +2568,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": { "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2256,15 +2740,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2315,15 +2817,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2389,7 +2909,8 @@
               "type": "boolean",
               "description": "Save warc"
             },
-            "savePdf": { "type": "boolean",
+            "savePdf": {
+              "type": "boolean",
               "description": "Save pdf"
             },
             "saveScreenshot": {
@@ -2431,15 +2952,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2497,15 +3036,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2562,15 +3119,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2594,15 +3169,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                }
-              },
               "required": [
-                "config"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2623,20 +3216,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "library": {
-                  "type": "string",
-                  "description": "Library directory"
-                }
-              },
               "required": [
-                "config",
-                "library"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "library": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Library directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "library"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2657,25 +3268,43 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "ingest": {
-                  "type": "string",
-                  "description": "Ingest directory"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "config",
-                "ingest",
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "ingest": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Ingest directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "ingest",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2734,11 +3363,43 @@
             "noBrowserDownloads": {
               "type": "boolean",
               "description": "No browser downloads"
+            },
+            "persistence": {
+              "type": "object",
+              "description": "Persistence configuration",
+              "required": [
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "calibre-ingest": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Calibre ingest directory (must point to the same volume as calibre ingest mount)"
+                    }
+                  },
+                  "required": [
+                    "calibre-ingest"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
             "ircname",
-            "noBrowserDownloads"
+            "noBrowserDownloads",
+            "persistence"
           ]
         }
       ]
@@ -2759,15 +3420,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2789,20 +3468,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "config": {
-                  "type": "string",
-                  "description": "Config directory"
-                },
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "config",
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "config": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    },
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "config",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2831,15 +3528,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -2890,15 +3605,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "clientImages": {
-                  "type": "string",
-                  "description": "Client images directory"
-                }
-              },
               "required": [
-                "clientImages"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "client-images": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Client images directory"
+                    }
+                  },
+                  "required": [
+                    "client-images"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             },
             "mongodb": {
               "type": "object",
@@ -2950,15 +3683,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             },
             "upgrade": {
               "type": "object",
@@ -2970,7 +3721,10 @@
                 },
                 "action": {
                   "type": "string",
-                  "enum": [ "export", "import" ],
+                  "enum": [
+                    "export",
+                    "import"
+                  ],
                   "description": "Upgrade action: 'export' to create dump, 'import' to restore from dump"
                 },
                 "pvc": {
@@ -3013,15 +3767,38 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    },
+                    "etc-local-d": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Config directory"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "etc-local-d"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             },
             "adminCredentials": {
               "type": "object",
@@ -3088,15 +3865,33 @@
             "persistence": {
               "type": "object",
               "description": "Persistence configuration",
-              "properties": {
-                "data": {
-                  "type": "string",
-                  "description": "Data directory"
-                }
-              },
               "required": [
-                "data"
-              ]
+                "volumes",
+                "mounts"
+              ],
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "description": "Volume definitions",
+                  "items": {
+                    "$ref": "#/$defs/volumeDefinition"
+                  }
+                },
+                "mounts": {
+                  "type": "object",
+                  "description": "Volume mount mappings",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/$defs/mountDefinition",
+                      "description": "Data directory"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             }
           },
           "required": [
@@ -3104,6 +3899,209 @@
           ]
         }
       ]
+    },
+    "volumeDefinition": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Volume name",
+          "examples": [
+            "config"
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "hostPath"
+          ],
+          "properties": {
+            "hostPath": {
+              "type": "object",
+              "required": [
+                "path"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Directory path",
+                  "examples": [
+                    "/opt/radarr/config"
+                  ]
+                },
+                "type": {
+                  "type": "string",
+                  "description": "hostPath type",
+                  "enum": [
+                    "DirectoryOrCreate",
+                    "Directory",
+                    "FileOrCreate",
+                    "File",
+                    "Socket",
+                    "CharDevice",
+                    "BlockDevice"
+                  ],
+                  "default": "DirectoryOrCreate"
+                }
+              }
+            }
+          }
+        },
+        {
+          "required": [
+            "pvc"
+          ],
+          "properties": {
+            "pvc": {
+              "type": "object",
+              "properties": {
+                "existingClaim": {
+                  "type": "string",
+                  "description": "Use an existing PVC",
+                  "examples": [
+                    "my-existing-pvc"
+                  ]
+                },
+                "size": {
+                  "type": "string",
+                  "description": "PVC size (e.g., 10Gi)",
+                  "examples": [
+                    "10Gi"
+                  ]
+                },
+                "storageClassName": {
+                  "type": "string",
+                  "description": "Storage class name",
+                  "examples": [
+                    "local-path"
+                  ]
+                },
+                "volumeMode": {
+                  "type": "string",
+                  "description": "Volume mode",
+                  "enum": [
+                    "Filesystem",
+                    "Block"
+                  ],
+                  "default": "Filesystem"
+                },
+                "accessModes": {
+                  "type": "array",
+                  "description": "Access modes",
+                  "default": [
+                    "ReadWriteOnce"
+                  ],
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "ReadWriteOnce",
+                      "ReadOnlyMany",
+                      "ReadWriteMany",
+                      "ReadWriteOncePod"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "required": [
+            "nfs"
+          ],
+          "properties": {
+            "nfs": {
+              "type": "object",
+              "required": [
+                "server",
+                "path"
+              ],
+              "properties": {
+                "server": {
+                  "type": "string",
+                  "description": "NFS server address",
+                  "examples": [
+                    "192.168.1.100"
+                  ]
+                },
+                "path": {
+                  "type": "string",
+                  "description": "NFS export path",
+                  "examples": [
+                    "/volume1/media"
+                  ]
+                },
+                "readOnly": {
+                  "type": "boolean",
+                  "description": "Mount as read-only",
+                  "default": false
+                }
+              }
+            }
+          }
+        },
+        {
+          "required": [
+            "emptyDir"
+          ],
+          "properties": {
+            "emptyDir": {
+              "type": "object",
+              "description": "EmptyDir volume configuration (ephemeral storage that gets deleted when pod is removed)",
+              "additionalProperties": false,
+              "properties": {
+                "medium": {
+                  "type": "string",
+                  "description": "Storage medium type: \"\" (default/disk-backed), \"Memory\" (tmpfs/RAM), or \"HugePages-<size>\" (e.g., HugePages-2Mi)",
+                  "default": "",
+                  "examples": [
+                    "",
+                    "Memory",
+                    "HugePages-2Mi",
+                    "HugePages-1Gi"
+                  ],
+                  "pattern": "^(|Memory|HugePages-.+)$"
+                },
+                "sizeLimit": {
+                  "type": "string",
+                  "description": "Maximum size for the emptyDir volume (e.g., \"1Gi\", \"500Mi\")",
+                  "examples": [
+                    "1Gi",
+                    "500Mi",
+                    "100Mi"
+                  ],
+                  "pattern": "^[0-9]+(\\.[0-9]+)?(Ki|Mi|Gi|Ti|Pi|Ei|k|M|G|T|P|E)?$"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "mountDefinition": {
+      "type": "object",
+      "required": [
+        "volume"
+      ],
+      "properties": {
+        "volume": {
+          "type": "string",
+          "description": "Reference to volume name"
+        },
+        "subPath": {
+          "type": "string",
+          "description": "Optional subpath within the volume"
+        },
+        "readOnly": {
+          "type": "boolean",
+          "description": "Mount as read-only",
+          "default": false
+        }
+      }
     }
   }
 }

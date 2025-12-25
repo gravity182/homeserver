@@ -40,8 +40,7 @@ spec:
               value: {{ include "homeserver.common.utils.allowedHosts" ( dict "service" $service "context" $ ) | quote }}
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
-            - name: config
-              mountPath: /config
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
         - name: add-scripts
           image: {{ include "homeserver.common.initContainer.image.utility" . | quote }}
           imagePullPolicy: IfNotPresent
@@ -55,8 +54,7 @@ spec:
                   && chmod -R a=,ug+rx,u+w /config/scripts
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "nano") | nindent 12 }}
           volumeMounts:
-            - name: config
-              mountPath: /config
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
             - name: scripts
               mountPath: /tmp/scripts
       containers:
@@ -75,20 +73,10 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.tcpSocket" (dict "service" $service "port" "8080" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.tcpSocket" (dict "service" $service "port" "8080" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: config
-              mountPath: /config
-            - name: data
-              mountPath: {{ $service.persistence.data | quote }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/data") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
         - name: scripts
           configMap:
             name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
 {{- end }}

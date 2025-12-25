@@ -50,11 +50,7 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: ingest
-              mountPath: /books/books # see https://github.com/evan-buss/openbooks/issues/60
+            # see https://github.com/evan-buss/openbooks/issues/60
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "calibre-ingest" "mountPath" "/books/books") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: ingest
-          hostPath:
-            path: {{ .Values.services.calibre.persistence.ingest | quote }}
-            type: Directory
 {{- end }}

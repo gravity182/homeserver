@@ -132,16 +132,11 @@ spec:
             - name: empty-dir
               mountPath: /app/api/logs
               subPath: app-api-logs-dir
-            - name: client-images
-              mountPath: /app/client/public/images
             - name: config
               mountPath: /config
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "client-images" "mountPath" "/app/client/public/images") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
         - name: config
           configMap:
             name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
-        - name: client-images
-          hostPath:
-            path: {{ $service.persistence.clientImages | quote }}
-            type: Directory
 {{- end }}
