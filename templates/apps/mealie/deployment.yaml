@@ -56,11 +56,6 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: data
-              mountPath: /app/data
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/app/data") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
 {{- end }}

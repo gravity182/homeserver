@@ -51,23 +51,13 @@ spec:
             {{- end }}
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: config
-              mountPath: /data
             - name: soularr-config
               mountPath: /data/config.ini
               subPath: config.ini
-            - name: downloads
-              mountPath: /soulseek/downloaded
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/data") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "soulseek-downloads" "mountPath" "/soulseek/downloaded") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
         - name: soularr-config
           configMap:
             name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: downloads
-          hostPath:
-            path: {{ .Values.services.slskd.persistence.downloads | quote }}
-            type: Directory
 {{- end }}

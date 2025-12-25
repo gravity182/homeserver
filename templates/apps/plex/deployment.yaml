@@ -44,17 +44,7 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/identity" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/identity" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: config
-              mountPath: /config
-            - name: library
-              mountPath: {{ $service.persistence.library | quote }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "library" "mountPath" "/data") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: library
-          hostPath:
-            path: {{ $service.persistence.library | quote }}
-            type: Directory
 {{- end }}

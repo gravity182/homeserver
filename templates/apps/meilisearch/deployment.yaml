@@ -57,8 +57,7 @@ spec:
 
               echo "Database backup completed"
           volumeMounts:
-            - name: data
-              mountPath: /meili_data
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/meili_data") | nindent 12 }}
         {{- end }}
       containers:
         - name: meilisearch
@@ -96,8 +95,7 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/health" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/health" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: data
-              mountPath: /meili_data
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/meili_data") | nindent 12 }}
             {{- if and $upgrade.enabled }}
             - name: upgrade-dump
               mountPath: /upgrade-dump
@@ -108,10 +106,6 @@ spec:
               {{- end }}
             {{- end }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
         {{- if and $upgrade.enabled }}
         - name: upgrade-dump
           persistentVolumeClaim:

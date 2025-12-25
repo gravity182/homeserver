@@ -35,8 +35,7 @@ spec:
           env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
           resources: {{- include "homeserver.common.container.resources" (dict "service" $service "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: data
-              mountPath: /app/data
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/app/data") | nindent 12 }}
             - name: isponsorblocktv-config
               mountPath: /app/data/config.json
               subPath: config.json
@@ -44,8 +43,4 @@ spec:
         - name: isponsorblocktv-config
           configMap:
             name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
 {{- end }}

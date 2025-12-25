@@ -56,9 +56,19 @@ Usage:
 - name: empty-dir
   emptyDir: {}
 {{- if (hasKey . "service") -}}
+{{- $service := .service -}}
+{{- /* VPN volumes */ -}}
 {{- if (default dict .service.vpn).enabled }}
 {{ include "homeserver.common.vpn.volumes" (dict "service" .service "context" .context) }}
 {{- end }}
+{{- /* Persistence volumes */ -}}
+{{- if and $service.persistence (hasKey $service.persistence "volumes") }}
+{{- range $service.persistence.volumes }}
+- name: {{ .name | quote }}
+  {{- include "homeserver.common.persistence.volume" (dict "service" $service "volume" .) | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- /* Extra volumes */ -}}
 {{- $extraVolumes := include "homeserver.common.utils.getExtraVolumes" (dict "service" .service) -}}
 {{- if $extraVolumes }}
 {{ include "homeserver.common.tplvalues.render" (dict "value" $extraVolumes "context" .context) }}
@@ -121,10 +131,10 @@ Usage:
 {{ include "homeserver.common.pod.tolerations" (dict "context" $) }}
 */}}
 {{- define "homeserver.common.pod.tolerations" -}}
-{{- $value := default list .context.Values.tolerations -}}
-{{- $valueOverride := list -}}
+{{- $value := default (list) .context.Values.tolerations -}}
+{{- $valueOverride := (list) -}}
 {{- if (hasKey . "service") -}}
-{{- $valueOverride = include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "tolerations") | fromYaml -}}
+{{- $valueOverride = include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "tolerations") | fromYamlArray -}}
 {{- end -}}
 {{- if (default $value $valueOverride) }}
 {{ include "homeserver.common.tplvalues.render" (dict "value" (default $value $valueOverride) "context" .context) }}

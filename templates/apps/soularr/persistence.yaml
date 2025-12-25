@@ -1,0 +1,9 @@
+{{- $service := .Values.services.soularr }}
+{{- if $service.enabled }}
+  {{- range $volume := $service.persistence.volumes }}
+    {{- if hasKey $volume "pvc" }}
+---
+{{ include "homeserver.persistence.pvcManifest" (dict "service" $service "volume" $volume "context" $) }}
+    {{- end }}
+  {{- end }}
+{{- end }}

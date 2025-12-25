@@ -114,37 +114,11 @@ spec:
             - name: empty-dir
               mountPath: /.net/slskd
               subPath: net-slskd-dir
-            - name: config
-              mountPath: /app
-            - name: downloads
-              mountPath: /soulseek/downloaded
-            - name: incomplete
-              mountPath: /soulseek/incomplete
-            {{- range $index, $share := $service.config.shares }}
-            - name: {{ printf "share-%d" $index | quote }}
-              mountPath: {{ required "containerPath is required for each share" $share.containerPath | quote }}
-              readOnly: true
-            {{- end }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/app") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "downloads" "mountPath" "/soulseek/downloaded") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "incomplete" "mountPath" "/soulseek/incomplete") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
         - name: slskd-config
           configMap:
             name: {{ include "homeserver.common.names.name" ( dict "service" $service ) | quote }}
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: downloads
-          hostPath:
-            path: {{ $service.persistence.downloads | quote }}
-            type: Directory
-        - name: incomplete
-          hostPath:
-            path: {{ $service.persistence.incomplete | quote }}
-            type: Directory
-        {{- range $index, $share := $service.config.shares }}
-        - name: {{ printf "share-%d" $index | quote }}
-          hostPath:
-            path: {{ required "hostPath is required for each share" $share.hostPath | quote }}
-            type: Directory
-        {{- end }}
 {{- end }}

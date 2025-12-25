@@ -1,0 +1,17 @@
+{{- $instances := list }}
+{{- if kindIs "slice" .Values.services.jellyfin }}
+  {{- $instances = .Values.services.jellyfin }}
+{{- else }}
+  {{- $instances = list .Values.services.jellyfin }}
+{{- end }}
+{{- range $instances }}
+{{- $service := . }}
+{{- if $service.enabled }}
+  {{- range $volume := $service.persistence.volumes }}
+    {{- if hasKey $volume "pvc" }}
+---
+{{ include "homeserver.persistence.pvcManifest" (dict "service" $service "volume" $volume "context" $) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

@@ -40,8 +40,7 @@ spec:
           securityContext: {{- include "homeserver.common.securityContext.strict" . | nindent 12 }}
           resources: {{- include "homeserver.common.resources.preset" (dict "type" "micro") | nindent 12 }}
           volumeMounts:
-            - name: config
-              mountPath: /config
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
       containers:
         - name: stash
           image: {{ printf "%s:%s" $service.image.repository $service.image.tag | quote }}
@@ -80,41 +79,11 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/healthz" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/healthz" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: config
-              mountPath: /config
-            - name: data
-              mountPath: /data
-            - name: metadata
-              mountPath: /metadata
-            - name: cache
-              mountPath: /cache
-            - name: blobs
-              mountPath: /blobs
-            - name: generated
-              mountPath: /generated
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/data") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "metadata" "mountPath" "/metadata") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "cache" "mountPath" "/cache") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "blobs" "mountPath" "/blobs") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "generated" "mountPath" "/generated") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
-        - name: metadata
-          hostPath:
-            path: {{ $service.persistence.metadata | quote }}
-            type: Directory
-        - name: cache
-          hostPath:
-            path: {{ $service.persistence.cache | quote }}
-            type: Directory
-        - name: blobs
-          hostPath:
-            path: {{ $service.persistence.blobs | quote }}
-            type: Directory
-        - name: generated
-          hostPath:
-            path: {{ $service.persistence.generated | quote }}
-            type: Directory
 {{- end }}

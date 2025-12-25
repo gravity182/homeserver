@@ -42,27 +42,10 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: config
-              mountPath: /config
-            - name: data
-              mountPath: {{ $service.persistence.data | quote }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/data") | nindent 12 }}
             {{- if .Values.services.soularr.enabled }}
-            - name: slskd-downloads
-              mountPath: /soulseek/downloaded
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "soulseek-downloads" "mountPath" "/soulseek/downloaded") | nindent 12 }}
             {{- end }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
-        {{- if .Values.services.soularr.enabled }}
-        - name: slskd-downloads
-          hostPath:
-            path: {{ .Values.services.slskd.persistence.downloads | quote }}
-            type: Directory
-        {{- end }}
 {{- end }}
