@@ -2521,7 +2521,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/caronc/apprise
-      tag: "1.2"
+      tag: "1.3"
       pullPolicy: Always
     securityContext:
       # incompatible with read-only file system
