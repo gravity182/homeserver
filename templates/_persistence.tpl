@@ -145,7 +145,7 @@ metadata:
   annotations: {{- include "homeserver.common.annotations.standard" (dict "context" .context) | nindent 4 }}
     # CRITICAL: Prevent Helm from deleting PVC when service is disabled or chart is uninstalled
     # This protects against accidental data loss
-  helm.sh/resource-policy: keep
+    helm.sh/resource-policy: keep
 spec:
   accessModes:
   {{- if $pvc.accessModes }}
