@@ -1038,7 +1038,6 @@ monitoring:
         - app
         - component
         - container
-        - container_image
         - container_init
         - node_name
         - namespace
@@ -1048,6 +1047,7 @@ monitoring:
       # high-cardinality labels should go here
       structuredMetadata:
         pod: pod
+        container_image: container_image
       # filter namespaces
       # you can add your other namespaces to scrape
       # [] means all namespaces
