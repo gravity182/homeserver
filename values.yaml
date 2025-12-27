@@ -3187,7 +3187,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/hotio/stash
-      tag: release-0.28.1
+      tag: release-0.30.1
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
