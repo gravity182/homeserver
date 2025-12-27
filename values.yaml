@@ -1827,7 +1827,8 @@ services:
     ports: {}
     ingress: []
     ## script runs continuously with this interval (in seconds)
-    scriptInterval: 300
+    ## default is hourly
+    scriptInterval: 3600
     vpn: {}
     # Persistence config
     #
