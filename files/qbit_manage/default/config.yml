@@ -152,7 +152,7 @@ share_limits:
     # Ratio of 0 will delete the movie immediately
     max_ratio: 0.0
     # <OPTIONAL> cleanup <bool>: WARNING!! Setting this as true Will remove and delete contents of any torrents that satisfies the share limits (max time OR max ratio)
-    cleanup: true
+    cleanup: false
     # <OPTIONAL> add_group_to_tag <bool>: This adds your grouping as a tag with a prefix defined in settings . Default is true
     # Example: A grouping defined as noHL will have a tag set to ~share_limit.noHL (if using the default prefix)
     add_group_to_tag: false
