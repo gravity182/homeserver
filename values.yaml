@@ -1124,7 +1124,7 @@ services:
     critical: false
     image:
       repository: garethgeorge/backrest
-      tag: v1.10
+      tag: v1.10@sha256:1308397161321b3c5aeca8acc6bf26eccb990df385f2532d3ce0eaa8b483dedf
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -1194,7 +1194,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/gethomepage/homepage
-      tag: v1.6.0
+      tag: v1.6.0@sha256:4ab33a0b91f382c07c6734c6102b16594e8d386347f0704460172fcd16f11443
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -1280,7 +1280,7 @@ services:
     critical: true
     image:
       repository: ghcr.io/home-operations/plex
-      tag: rolling
+      tag: rolling@sha256:9ad8a3506e1d8ebda873a668603c1a2c10e6887969564561be669efd65ae8871
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1326,7 +1326,7 @@ services:
       critical: false
       image:
         repository: ghcr.io/jellyfin/jellyfin
-        tag: "10"
+        tag: "10@sha256:cd7e4cb71812dd76988a725da615e37c6d0d24c200be904ad5d183e51f1dc6ed"
         pullPolicy: Always
       securityContext:
         strict: true
@@ -1367,7 +1367,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/autobrr/autobrr
-      tag: v1.68
+      tag: v1.68@sha256:0d61a307f3569853fe876dd8a4baf3a3065ff4cde342d13e33aa108db6129f3f
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1405,7 +1405,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/qbittorrent
-      tag: "5.1.4"
+      tag: "5.1.4@sha256:25fc7caf22101f85276ede9b1f76a46b7a93971bb6b70b6c58d14d6ab7f51415"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -1460,7 +1460,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/stuffanthings/qbit_manage
-      tag: v4.6.5
+      tag: v4.6.5@sha256:4f36632a138b4e5aeab3b765b7f389087bfb140c80dbbec1343eca74dc351245
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -1505,7 +1505,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/sabnzbd
-      tag: "4"
+      tag: "4@sha256:da57e01cdebc547852b6df85c8df8c0e4d87792742c7608c5590dc653b184e8c"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1549,7 +1549,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/prowlarr
-      tag: "2"
+      tag: "2@sha256:4394dff2311238bf5c31e006872122ed4e5f6bf042d33528d80acd44a09c57f7"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1584,7 +1584,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/radarr
-      tag: "6"
+      tag: "6@sha256:10f94c85f605d42e5e78de928f24758b5750a4e99eee8d0ef9ff150f7a2df033"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1629,7 +1629,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/sonarr
-      tag: "4"
+      tag: "4@sha256:3597fd572f4599c67abbeb8afd3cb85bce8a9e389f0779b7ea1273781544d15c"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1673,7 +1673,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/lidarr
-      tag: "2.14"
+      tag: "2.14@sha256:c611fcd98569310ae072e66793ee985480298d95363930f9ea5e27795b5d4256"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1727,7 +1727,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/slskd/slskd
-      tag: 0.24.1
+      tag: 0.24.1@sha256:e3635858d9614a2fb811601afca706dbf97a6838b849905c27294cbce71be268
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1819,7 +1819,7 @@ services:
     critical: false
     image:
       repository: mrusse08/soularr
-      tag: latest
+      tag: latest@sha256:15bcdf0bcbce937f39c1c93ba8384fc1508e849bff943b56e4bc79a076af9ea2
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1873,7 +1873,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/hotio/whisparr
-      tag: v3
+      tag: v3@sha256:7e3044103a9c4af5944fcb598c581ecd685e8907de290aef9cdebe02b3d7d9fc
       pullPolicy: Always
     securityContext:
       # the Hotio image uses s6-overlay,
@@ -1918,7 +1918,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/bazarr
-      tag: "1"
+      tag: "1@sha256:2f1c32cb1420b2e56f60cfdf7823737eb501fdb2c13669429d23ab3a02e9ad90"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1963,7 +1963,7 @@ services:
     critical: false
     image:
       repository: fallenbagel/jellyseerr
-      tag: "2.7.3"
+      tag: "2.7.3@sha256:4538137bc5af902dece165f2bf73776d9cf4eafb6dd714670724af8f3eb77764"
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -1999,7 +1999,7 @@ services:
       # up to date fork of FlareSolverr
       # uses nodriver method instead of obsolete undetected-chromedriver
       repository: 21hsmw/flaresolverr
-      tag: nodriver
+      tag: nodriver@sha256:dca8cda5852b04e6142752fc044c9845eb536353ea6f8b7bb58b4ff9419538fa
       pullPolicy: Always
     securityContext:
       # throws exception if strict, hard to debug
@@ -2027,7 +2027,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/sarperavci/cloudflarebypassforscraping
-      tag: latest
+      tag: latest@sha256:fe540cace0be8ce09d22a8b22299cf2d562d65d72149f545dc7fc382ca342410
       pullPolicy: Always
     securityContext:
       strict: false
@@ -2045,7 +2045,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/tautulli
-      tag: "2"
+      tag: "2@sha256:2a092f86a51f5718111097b0fced33eaa876b5904a543b7504f92357a4f75635"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -2080,7 +2080,7 @@ services:
     critical: false
     image:
       repository: kometateam/kometa
-      tag: v2.2.2
+      tag: v2.2.2@sha256:32992226d1a505da3ed5d4e9c97bed8a6deb7aef36cd5ef8b1f519762607df45
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2143,7 +2143,7 @@ services:
     critical: false
     image:
       repository: thelounge/thelounge
-      tag: "4"
+      tag: "4@sha256:c2aa0916203b298ffaf3a36c4eb60ef73c1006448d430e218d37840472e84e50"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -2180,7 +2180,7 @@ services:
     critical: false
     image:
       repository: germannewsmaker/myspeed
-      tag: "1.0.9"
+      tag: "1.0.9@sha256:3a3e774b3f78d930a5a962d625b99bcb3d71730bfeb4a6b93e04fd38cfe7d9a9"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2215,7 +2215,7 @@ services:
     critical: false
     image:
       repository: frooodle/s-pdf
-      tag: "1.4.0-ultra-lite"
+      tag: "1.4.0-ultra-lite@sha256:fa578308b9cb739716c57a6df766a9f25b02833b4813dd592bc90bb02f5bebc2"
       pullPolicy: IfNotPresent
     securityContext:
       # unfortunately the image needs root access
@@ -2262,7 +2262,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/miniflux/miniflux
-      tag: "2.2.15"
+      tag: "2.2.15@sha256:9a1f95a7a05b77040d19bb7be96194af4c222de02fb84165fb808f65700c064f"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2318,7 +2318,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/huginn/huginn
-      tag: 1e0c359a46b1e84eb8c658404212eaf693b30e61
+      tag: 1e0c359a46b1e84eb8c658404212eaf693b30e61@sha256:68e2c7082cd51d417e5ce76fe123810e9d52f4ab2018569df5b74b913ed3bc64
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -2379,7 +2379,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/browserless/chromium
-      tag: v2.37.0
+      tag: v2.37.0@sha256:615699913df92b5f0cdaa2873f92d70c87df43c14f6a54aabc53a418ba48fa86
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -2420,7 +2420,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/dgtlmoon/changedetection.io
-      tag: "0.51"
+      tag: "0.51@sha256:99cf11f04b5d1f1300b5b68f17dc22e76bdb5d6695d7e6590d2df92eca8fb339"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -2462,7 +2462,7 @@ services:
     critical: false
     image:
       repository: archivebox/archivebox
-      tag: "0.7"
+      tag: "0.7@sha256:fdf2936192aa1e909b0c3f286f60174efa24078555be4b6b90a07f2cef1d4909"
       pullPolicy: Always
     securityContext:
       # uses its own mechanism for switching to a non-root user via PUID/GUID
@@ -2522,7 +2522,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/caronc/apprise
-      tag: "1.3"
+      tag: "1.3@sha256:e365025a7bf1fed39ef66b5f22c9855d500ee7bdea27441365e5b95ea972e843"
       pullPolicy: Always
     securityContext:
       # incompatible with read-only file system
@@ -2564,7 +2564,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/gotify/server
-      tag: "2.7"
+      tag: "2.7@sha256:2ae0e4e689f183137c8247884382fcb174d5a72253ce1897e7e5267090093fc8"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -2608,7 +2608,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/kareadita/kavita
-      tag: "0.8.8"
+      tag: "0.8.8@sha256:22c42f3cc83fb98b98a6d6336200b615faf2cfd2db22dab363136744efda1bb0"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2651,7 +2651,7 @@ services:
     critical: false
     image:
       repository: aaronleopold/stump
-      tag: "0.0.12"
+      tag: "0.0.12@sha256:eb49d6cceb6628ed863e4aa6a66d7d79d483e1a24a5e51266f60e04ce322873c"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2694,7 +2694,7 @@ services:
     critical: false
     image:
       repository: crocodilestick/calibre-web-automated
-      tag: V3.1.4
+      tag: V3.1.4@sha256:577e846f104fd21453ef306eefb4a95dd95b3b9ddd2463a150944494284da0fd
       pullPolicy: IfNotPresent
     securityContext:
       # the image uses s6-overlay,
@@ -2748,7 +2748,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/calibrain/calibre-web-automated-book-downloader
-      tag: latest
+      tag: latest@sha256:3b2f9af9279507edb312f20199087d2ad3567f3eb304cbc31b99777ef21d6c5b
       pullPolicy: Always
     securityContext:
       # has its own mechanism for switching to a non-root user via UID/UID
@@ -2785,7 +2785,7 @@ services:
     critical: false
     image:
       repository: evanbuss/openbooks
-      tag: "4.5.0"
+      tag: "4.5.0@sha256:3f2e59a75b68950d57cfec5dc2b1b31d6c6b02706097c70b5438499b59fbdea2"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2825,7 +2825,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/c4illin/convertx
-      tag: v0.15.1
+      tag: v0.15.1@sha256:53f2c04ebe63fdfb4d812ee66b78a5db9360c729f3defe3dcc864256ff91a7cb
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2864,7 +2864,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/kieraneglin/pinchflat
-      tag: v2025.6.6
+      tag: v2025.6.6@sha256:4e975edf58f0861a5cbfe8fc6aac4851ff5a02dfc3f05ffeea4982e3084a5a4a
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -2910,7 +2910,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/mealie-recipes/mealie
-      tag: v3.4.0
+      tag: v3.4.0@sha256:545fb8af4287ad027e4f7eb8a0464fa2e21f157e88fda3d7a514ba1e6d3a86b0
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2955,7 +2955,7 @@ services:
     critical: true
     image:
       repository: ghcr.io/danny-avila/librechat
-      tag: v0.8.0
+      tag: v0.8.0@sha256:adcb326f43a971b53df0fbca5f4769c8e56fafbdf834c9dd8c7e4924788f0152
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -3045,7 +3045,7 @@ services:
     critical: true
     image:
       repository: getmeili/meilisearch
-      tag: v1.23.0
+      tag: v1.23.0@sha256:bac1af7afd5a19b72ec57a660cbb09704926b75ad709ad514ed2f7cf01675256
       pullPolicy: Always
     securityContext:
       strict: true
@@ -3109,7 +3109,7 @@ services:
     critical: true
     image:
       repository: couchdb
-      tag: "3.5"
+      tag: "3.5@sha256:a2c8839c86304962ae60df41c9aa51907925b7ca022b69acfcd45663a89daa77"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -3188,7 +3188,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/hotio/stash
-      tag: release-0.30.1
+      tag: release-0.30.1@sha256:96c439367b5df845ed3768a8b804101bd84c217d87052d227764ff129e7cc42f
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -3264,7 +3264,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/thomiceli/opengist
-      tag: "1.11"
+      tag: "1.11@sha256:86e7eb1f9fb2aa7b5d620fe452406de331c6e4d1c47b4d23d46b4b01e1ebf69d"
       pullPolicy: Always
     securityContext:
       strict: false
@@ -3305,7 +3305,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/dmunozv04/isponsorblocktv
-      tag: main
+      tag: main@sha256:35facec8ef8fc43ecc6a2123baa2dfb631896336e855c822e9fd60cbb5b9ead5
       pullPolicy: Always
     securityContext:
       strict: true
