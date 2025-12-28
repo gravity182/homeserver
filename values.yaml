@@ -1673,7 +1673,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/lidarr
-      tag: "3.1.1"
+      tag: "3.1.1@sha256:0982783dcc1ede8d45458ffc1d0d96607503035d743f6d18f9c2676a765d5dfe"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -3188,7 +3188,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/stash
-      tag: 0.30.1
+      tag: 0.30.1@sha256:c3d60a1f5e0a6a3ea257ceeb986e1fbecada5a940925b7ce03bd10a07ed8e1ad
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
