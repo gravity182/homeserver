@@ -50,7 +50,7 @@ directory:
   # <OPTIONAL> recycle_bin var: </your/path/here/>   # Path of the RecycleBin folder. Default location is set to remote_dir/.RecycleBin
   # <OPTIONAL> torrents_dir var: </your/path/here/>  # Path of the your qbittorrent torrents directory. Required for `save_torrents` attribute in recyclebin
   # <OPTIONAL> orphaned_dir var: </your/path/here/>  # Path of the the Orphaned Data folder. This is similar to RecycleBin, but only for orphaned data.
-  root_dir: "{{ .Values.services.qbittorrent.persistence.data }}"
+  root_dir: "/data/torrents"
 
 cat:
   # Category & Path Parameters
@@ -58,11 +58,11 @@ cat:
   # If you want to leave a save_path as uncategorized you can use the key 'Uncategorized' as the name of the category.
   # You can use Unix filename pattern matching as well when specifying the save_path
   # <Category Name> : <save_path>  # Path of your save directory.
-  movies: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "movies" }}'
-  tv: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "tv" }}'
-  music: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "music" }}'
-  books: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "books" }}'
-  xxx: '{{ printf "%s/%s" .Values.services.qbittorrent.persistence.data "xxx" }}'
+  movies: '{{ printf "%s/%s" "/data/torrents" "movies" }}'
+  tv: '{{ printf "%s/%s" "/data/torrents" "tv" }}'
+  music: '{{ printf "%s/%s" "/data/torrents" "music" }}'
+  books: '{{ printf "%s/%s" "/data/torrents" "books" }}'
+  xxx: '{{ printf "%s/%s" "/data/torrents" "xxx" }}'
 
 tracker:
   # Mandatory
@@ -152,7 +152,7 @@ share_limits:
     # Ratio of 0 will delete the movie immediately
     max_ratio: 0.0
     # <OPTIONAL> cleanup <bool>: WARNING!! Setting this as true Will remove and delete contents of any torrents that satisfies the share limits (max time OR max ratio)
-    cleanup: true
+    cleanup: false
     # <OPTIONAL> add_group_to_tag <bool>: This adds your grouping as a tag with a prefix defined in settings . Default is true
     # Example: A grouping defined as noHL will have a tag set to ~share_limit.noHL (if using the default prefix)
     add_group_to_tag: false

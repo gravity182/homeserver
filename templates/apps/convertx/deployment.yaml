@@ -49,11 +49,6 @@ spec:
             - name: empty-dir
               mountPath: /home/bun/.config
               subPath: bun-config
-            - name: data
-              mountPath: /app/data
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/app/data") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
 {{- end }}

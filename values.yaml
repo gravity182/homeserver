@@ -188,9 +188,9 @@ authelia:
     env:
       - name: TZ
         value: "{{ .Values.host.tz }}"
-      ## Enable template functions
-      ## See https://www.authelia.com/reference/guides/templating/
-      ##
+        ## Enable template functions
+        ## See https://www.authelia.com/reference/guides/templating/
+        ##
       - name: AUTHELIA_SESSION_SECRET_FILE
         value: /etc/secrets/session-secret
       - name: AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE
@@ -300,7 +300,7 @@ authelia:
           policy: one_factor
           subject:
             - "group:admins"
-        # Require group 'users' for all services
+            # Require group 'users' for all services
         - domain:
             - "{{ .Values.ingress.domain }}"
             - '{{ printf "*.%s" .Values.ingress.domain }}'
@@ -551,35 +551,51 @@ housekeeping:
   mediaCleanup:
     enabled: true
     # How often to run the cleanup job (cron)
-    # Every hour by default
+    # Every 10 min by default
     scheduleCron: "*/10 * * * *"
     # Whether to run in dry-run mode (only report which folders would be deleted)
     dryRun: false
     # Logging level (debug, info, warning, error, critical)
     logLevel: "info"
-    # List of the media directories on the host to watch
-    paths:
-      # Example:
-      # - path: /data/library/movies    # Required: path to the media directory
-      #   maxDepth: 2                   # Optional: maximum directory depth level to scan (default: 1)
-      #
-      # Explanation of maxDepth:
-      # - maxDepth = 0: Scans only the root directory itself.
-      #                 Good for uncategorized media: root dir -> media files without subdirs.
-      #                 For instance, /data/library/videos/*.mp4
-      # - maxDepth = 1: Scans immediate subdirectories.
-      #                 Good for Movies and TV shows: root dir -> movie dir.
-      #                 For instance, /data/library/movies/Avatar/*.mkv
-      # - maxDepth = 2: Scans one level deeper.
-      #                 Good for Music: root dir -> author dir -> album dir.
-      #                 For instance, /data/library/music/Eminem/Relapse/*.m4a
-      #
-      - path: /data/library/movies
-        maxDepth: 1
-      - path: /data/library/tv
-        maxDepth: 1
-      - path: /data/library/music
-        maxDepth: 2
+    # Persistence volumes for media directories
+    #
+    # Example:
+    # persistence:
+    #   volumes:
+    #     - name: movies
+    #       hostPath:
+    #         path: /data/library/movies
+    #         type: Directory
+    #     - name: tv
+    #       hostPath:
+    #         path: /data/library/tv
+    #         type: Directory
+    #   mounts:
+    #     movies:
+    #       volume: movies
+    #     tv:
+    #       volume: tv
+    persistence:
+      volumes: []
+      mounts: {}
+    # List of mounts to scan for cleanup
+    #
+    # Example:
+    # - name: movies                # Required: references persistence.mounts.movies
+    #   maxDepth: 1                 # Optional: maximum directory depth level to scan (default: 1)
+    #
+    # Explanation of maxDepth:
+    # - maxDepth = 0: Scans only the root directory itself.
+    #                 Good for uncategorized media: root dir -> media files without subdirs.
+    #                 For instance, mount /media/videos => /media/videos/*.mp4
+    # - maxDepth = 1: Scans immediate subdirectories.
+    #                 Good for Movies and TV shows: root dir -> movie dir.
+    #                 For instance, mount /media/movies => /media/movies/Avatar/*.mkv
+    # - maxDepth = 2: Scans one level deeper.
+    #                 Good for Music: root dir -> author dir -> album dir.
+    #                 For instance, mount /media/music => /media/music/Eminem/Relapse/*.m4a
+    #
+    paths: []
     # List of file globs considered as metadata files
     # See https://docs.python.org/3/library/fnmatch.html for more information about the glob patterns
     metadataFileGlobs:
@@ -793,7 +809,6 @@ monitoring:
         grpc_server_max_recv_msg_size: 4194304 # 4MB
         grpc_server_max_send_msg_size: 4194304 # 4MB
         graceful_shutdown_timeout: 30s
-
     deploymentMode: SingleBinary
     singleBinary:
       replicas: 1
@@ -820,7 +835,6 @@ monitoring:
             secretKeyRef:
               name: loki-s3-credentials
               key: S3_SECRET_KEY
-
     chunksCache:
       enabled: true
       # Amount of memory allocated to chunks-cache for object storage (in MB)
@@ -836,7 +850,6 @@ monitoring:
       allocatedMemory: 32
       # default is 500MB, with limited memory keep this smaller
       writebackSizeLimit: 10MB
-
     # Zero out replica counts of other deployment modes
     backend:
       replicas: 0
@@ -844,7 +857,6 @@ monitoring:
       replicas: 0
     write:
       replicas: 0
-
     ingester:
       replicas: 0
     querier:
@@ -893,31 +905,28 @@ monitoring:
         email_attribute_path: email
         role_attribute_path: contains(groups[*], 'grafana_admin') && 'Admin' || 'Viewer'
     envValueFrom: {}
-      # GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
-      #   secretKeyRef:
-      #     name: grafana-authentik-oauth-client-secret
-      #     key: client-id
-      # GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
-      #   secretKeyRef:
-      #     name: grafana-authentik-oauth-client-secret
-      #     key: client-secret
+    # GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+    #   secretKeyRef:
+    #     name: grafana-authentik-oauth-client-secret
+    #     key: client-id
+    # GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+    #   secretKeyRef:
+    #     name: grafana-authentik-oauth-client-secret
+    #     key: client-secret
     persistence:
       type: pvc
       enabled: true
     initChownData:
       enabled: true
-
     ## Grafana admin credentials
     admin:
       # Name of the existing secret
       existingSecret: grafana-admin-credentials
       userKey: username
       passwordKey: password
-
     service:
       enabled: true
       type: ClusterIP
-
     datasources:
       datasources.yaml:
         apiVersion: 1
@@ -945,12 +954,10 @@ monitoring:
     cluster:
       ## This a static label that will be attached to all collected logs
       name: homeserver
-
     destinations:
       - name: loki
         type: loki
         url: '{{ printf "http://loki-gateway.%s.svc.cluster.local/loki/api/v1/push" (include "homeserver.monitoring.names.namespace" .) }}'
-
     # --------
     # Features
     # --------
@@ -976,7 +983,6 @@ monitoring:
         - '{{ include "homeserver.authentik.names.namespace" . }}'
         - '{{ include "homeserver.monitoring.names.namespace" . }}'
         - kube-system
-
     # Gathers logs from the Kubernetes Nodes
     nodeLogs:
       enabled: true
@@ -988,7 +994,6 @@ monitoring:
         # The list of systemd units to keep scraped logs from, this can be a valid RE2 regex.
         # If empty, all units are scraped.
         units: []
-
     # Gathers logs from the Kubernetes Pods
     #
     # You can obtain the final Alloy config by going to the respective collector's pod
@@ -1033,7 +1038,6 @@ monitoring:
         - app
         - component
         - container
-        - container_image
         - container_init
         - node_name
         - namespace
@@ -1043,6 +1047,7 @@ monitoring:
       # high-cardinality labels should go here
       structuredMetadata:
         pod: pod
+        container_image: container_image
       # filter namespaces
       # you can add your other namespaces to scrape
       # [] means all namespaces
@@ -1051,7 +1056,6 @@ monitoring:
         - '{{ include "homeserver.authentik.names.namespace" . }}'
         - '{{ include "homeserver.monitoring.names.namespace" . }}'
         - kube-system
-
     # Gathers metrics related the the Kubernetes Cluster itself
     clusterMetrics:
       enabled: false
@@ -1064,7 +1068,6 @@ monitoring:
         - '{{ include "homeserver.authentik.names.namespace" . }}'
         - '{{ include "homeserver.monitoring.names.namespace" . }}'
         - kube-system
-
     # ----------
     # Collectors
     # ----------
@@ -1081,7 +1084,6 @@ monitoring:
         mounts:
           dockercontainers: false
           varlog: false
-
     # The Grafana Alloy instance that scrapes workload logs on each node.
     # It is deployed as a DaemonSet with one replica per node
     alloy-logs:
@@ -1096,7 +1098,6 @@ monitoring:
           varlog: true
         clustering:
           enabled: false
-
     # The Grafana Alloy instance that is responsible for scraping metrics from prometheus sources like cadvisor and kube-state-metrics
     # It is deployed as a StatefulSet
     alloy-metrics:
@@ -1107,13 +1108,11 @@ monitoring:
           limits: {}
         clustering:
           enabled: false
-
     # The Grafana Alloy instance that opens receiver ports to process data delivered directly to Alloy (HTTP, gRPC, Zipkin, etc)
     # For example, applications instrumented with OpenTelemetry SDKs
     # It is deployed as a Daemonset
     alloy-receiver:
       enabled: false
-
     alloy-profiles:
       enabled: false
 services:
@@ -1125,7 +1124,7 @@ services:
     critical: false
     image:
       repository: garethgeorge/backrest
-      tag: v1.9
+      tag: v1.10@sha256:1308397161321b3c5aeca8acc6bf26eccb990df385f2532d3ce0eaa8b483dedf
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -1135,11 +1134,46 @@ services:
     ingress:
       - backrest
       - backup
-    userdata: /opt
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: userdata
+    #   hostPath:
+    #     path: /opt
+    #     type: Directory
+    # - name: config
+    #   hostPath:
+    #     path: /opt/backrest/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /opt/backrest/data
+    #     type: DirectoryOrCreate
+    # - name: cache
+    #   hostPath:
+    #     path: /opt/backrest/cache
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   userdata:
+    #     volume: userdata
+    #   config:
+    #     volume: config
+    #   data:
+    #     volume: data
+    #   cache:
+    #     volume: cache
     persistence:
-      config: /opt/backrest/config
-      data: /opt/backrest/data
-      cache: /opt/backrest/cache
+      volumes: []
+      mounts:
+        userdata:
+          volume: ""
+        config:
+          volume: ""
+        data:
+          volume: ""
+        cache:
+          volume: ""
     vpn: {}
     extraEnv: []
     extraEnvSecrets:
@@ -1160,7 +1194,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/gethomepage/homepage
-      tag: v1.5.0
+      tag: v1.6.0@sha256:4ab33a0b91f382c07c6734c6102b16594e8d386347f0704460172fcd16f11443
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -1246,7 +1280,7 @@ services:
     critical: true
     image:
       repository: ghcr.io/home-operations/plex
-      tag: rolling
+      tag: rolling@sha256:9ad8a3506e1d8ebda873a668603c1a2c10e6887969564561be669efd65ae8871
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1259,9 +1293,30 @@ services:
     ingress:
       - plex
     claim: ""
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/plex/config
+    #     type: DirectoryOrCreate
+    # - name: library
+    #   hostPath:
+    #     path: /data/library
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   library:
+    #     volume: library
     persistence:
-      config: /opt/plex/config
-      library: /data/library
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        library:
+          volume: ""
     extraEnv: []
   jellyfin:
     - enabled: false
@@ -1271,7 +1326,7 @@ services:
       critical: false
       image:
         repository: ghcr.io/jellyfin/jellyfin
-        tag: "10"
+        tag: "10@sha256:cd7e4cb71812dd76988a725da615e37c6d0d24c200be904ad5d183e51f1dc6ed"
         pullPolicy: Always
       securityContext:
         strict: true
@@ -1283,9 +1338,26 @@ services:
         - jellyfin
       vpn: {}
       persistence:
-        config: /opt/jellyfin/config
-        cache: /opt/jellyfin/cache
-        library: /data/library
+        volumes:
+          - name: config
+            hostPath:
+              path: /opt/jellyfin/config
+              type: DirectoryOrCreate
+          - name: cache
+            hostPath:
+              path: /opt/jellyfin/cache
+              type: DirectoryOrCreate
+          - name: library
+            hostPath:
+              path: /data/library
+              type: DirectoryOrCreate
+        mounts:
+          config:
+            volume: config
+          cache:
+            volume: cache
+          library:
+            volume: library
       extraEnv: []
   autobrr:
     enabled: false
@@ -1295,7 +1367,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/autobrr/autobrr
-      tag: v1.67
+      tag: v1.68@sha256:0d61a307f3569853fe876dd8a4baf3a3065ff4cde342d13e33aa108db6129f3f
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1304,8 +1376,22 @@ services:
       http: 7474
     ingress:
       - autobrr
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/autobrr/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/autobrr/config
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     vpn: {}
     # see the full list of supported env vars
     # https://autobrr.com/installation/docker#environment-variables
@@ -1319,7 +1405,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/qbittorrent
-      tag: "5.1.2"
+      tag: "5.1.4@sha256:25fc7caf22101f85276ede9b1f76a46b7a93971bb6b70b6c58d14d6ab7f51415"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -1340,10 +1426,30 @@ services:
       enabled: true
       # must match the release version https://github.com/VueTorrent/VueTorrent/releases
       version: v2.24.2
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/qbittorrent/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data/torrents
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   data:
+    #     volume: data
     persistence:
-      config: /opt/qbittorrent/config
-      # the container should have access only to the torrent downloads directory
-      data: /data/torrents
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        data:
+          volume: ""
     vpn: {}
     extraEnv: []
   qbit_manage:
@@ -1354,17 +1460,38 @@ services:
     critical: false
     image:
       repository: ghcr.io/stuffanthings/qbit_manage
-      tag: v4.6.3
+      tag: v4.6.5@sha256:4f36632a138b4e5aeab3b765b7f389087bfb140c80dbbec1343eca74dc351245
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
     resourcesPreset: "micro"
     ports: {}
     ingress: []
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/qbit_manage/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data/torrents
+    #     type: Directory
+    # mounts:
+    #   config:
+    #     volume: config
+    #   # This MUST point to the same volume (and optionally subPath) as qbittorrent data mount
+    #   qbittorrent-data:
+    #     volume: data
     persistence:
-      config: /opt/qbit_manage/config
-    ## script schedule
-    ## every 5 minutes by default
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        qbittorrent-data:
+          volume: ""
     scheduleCron: "*/10 * * * *"
     vpn: {}
     extraEnv:
@@ -1378,7 +1505,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/sabnzbd
-      tag: "4"
+      tag: "4@sha256:da57e01cdebc547852b6df85c8df8c0e4d87792742c7608c5590dc653b184e8c"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1389,9 +1516,30 @@ services:
       - sabnzbd
       - usenet
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/sabnzbd/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data/usenet
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   data:
+    #     volume: data
     persistence:
-      config: /opt/sabnzbd/config
-      data: /data/usenet
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        data:
+          volume: ""
     extraEnv: []
   prowlarr:
     enabled: false
@@ -1401,7 +1549,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/prowlarr
-      tag: "2"
+      tag: "2@sha256:4394dff2311238bf5c31e006872122ed4e5f6bf042d33528d80acd44a09c57f7"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1411,8 +1559,22 @@ services:
     ingress:
       - prowlarr
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/prowlarr/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/prowlarr/config
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     extraEnv: []
   radarr:
     enabled: false
@@ -1422,7 +1584,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/radarr
-      tag: "6"
+      tag: "6@sha256:10f94c85f605d42e5e78de928f24758b5750a4e99eee8d0ef9ff150f7a2df033"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1434,9 +1596,30 @@ services:
       - movies
       - movie
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/radarr/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   data:
+    #     volume: data
     persistence:
-      config: /opt/radarr/config
-      data: /data
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        data:
+          volume: ""
     extraEnv: []
   sonarr:
     enabled: false
@@ -1446,7 +1629,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/sonarr
-      tag: "4"
+      tag: "4@sha256:3597fd572f4599c67abbeb8afd3cb85bce8a9e389f0779b7ea1273781544d15c"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1457,9 +1640,30 @@ services:
       - sonarr
       - tv
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/sonarr/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   data:
+    #     volume: data
     persistence:
-      config: /opt/sonarr/config
-      data: /data
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        data:
+          volume: ""
     extraEnv: []
   lidarr:
     enabled: false
@@ -1480,9 +1684,40 @@ services:
       - lidarr
       - music
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/lidarr/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data
+    #     type: DirectoryOrCreate
+    # - name: downloads
+    #   hostPath:
+    #     path: /data/soulseek/downloaded
+    #     type: Directory
+    # mounts:
+    #   config:
+    #     volume: config
+    #   data:
+    #     volume: data
+    #   soulseek-downloads:
+    #     volume: downloads
     persistence:
-      config: /opt/lidarr/config
-      data: /data
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        data:
+          volume: ""
+        ## Optional - only for Soulseek integration
+        ## This MUST point to the same volume (and optionally subPath) as slskd downloads mount
+        soulseek-downloads:
+          volume: ""
     extraEnv: []
   slskd:
     enabled: false
@@ -1492,7 +1727,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/slskd/slskd
-      tag: 0.23.2
+      tag: 0.24.1@sha256:e3635858d9614a2fb811601afca706dbf97a6838b849905c27294cbce71be268
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1504,24 +1739,47 @@ services:
       - slskd
       - soulseek
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    #   - name: config
+    #     hostPath:
+    #       path: /opt/slskd/config
+    #       type: DirectoryOrCreate
+    #   - name: downloads
+    #     hostPath:
+    #       path: /data/soulseek/downloaded
+    #       type: DirectoryOrCreate
+    #   - name: incomplete
+    #     hostPath:
+    #       path: /data/soulseek/incomplete
+    #       type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   downloads:
+    #     volume: downloads
+    #   incomplete:
+    #     volume: incomplete
     persistence:
-      config: /opt/slskd/config
-      downloads: /data/soulseek/downloaded
-      incomplete: /data/soulseek/incomplete
-    ## slskd configuration
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        downloads:
+          volume: ""
+        incomplete:
+          volume: ""
     config:
-      ## Configure the host directories you want to share
-      ## Each entry maps a host directory to a container path
-      ## The `containerPath` is what other Soulseek users will see
+      ## Configure the container directories you want to share.
+      ## Make sure to inject the corresponding volume via `extraVolumes` and `extraVolumeMounts`.
       ##
       ## Example:
       ## shares:
-      ## - hostPath: "/data/library/music"
-      ##   containerPath: "/shares/music"
-      ## - hostPath: "/data/library/movies"
-      ##   containerPath: "/shares/movies"
-      ## - hostPath: "/data/library/ebooks"
-      ##   containerPath: "/shares/books"
+      ## - containerPath: "/shares/music"
+      ## - containerPath: "/shares/movies"
+      ## - containerPath: "/shares/books"
       shares: []
       ## API keys for service integrations
       ## Each entry creates an API key with the specified name
@@ -1561,7 +1819,7 @@ services:
     critical: false
     image:
       repository: mrusse08/soularr
-      tag: latest
+      tag: latest@sha256:15bcdf0bcbce937f39c1c93ba8384fc1508e849bff943b56e4bc79a076af9ea2
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1569,11 +1827,34 @@ services:
     ports: {}
     ingress: []
     ## script runs continuously with this interval (in seconds)
-    scriptInterval: 300
+    ## default is hourly
+    scriptInterval: 3600
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/soularr/config
+    #     type: DirectoryOrCreate
+    # - name: downloads
+    #   hostPath:
+    #     path: /data/soulseek/downloaded
+    #     type: Directory
+    # mounts:
+    #   config:
+    #     volume: config
+    #   # this MUST point to the same volume (and optionally subPath) as slskd downloads mount
+    #   soulseek-downloads:
+    #     volume: downloads
     persistence:
-      config: /opt/soularr/config
-    ## Lidarr integration
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        soulseek-downloads:
+          volume: ""
     lidarr:
       apiKeySecret:
         name: "" # Name of the secret containing the Lidarr API key
@@ -1592,7 +1873,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/hotio/whisparr
-      tag: v3
+      tag: v3@sha256:07495086b1b1e2585455c0f4759368b28b91e730d1a2912efa3760a5a6737487
       pullPolicy: Always
     securityContext:
       # the Hotio image uses s6-overlay,
@@ -1605,9 +1886,30 @@ services:
       - whisparr
       - porn
       - xxx
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/whisparr/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   data:
+    #     volume: data
     persistence:
-      config: /opt/whisparr/config
-      data: /data
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        data:
+          volume: ""
   bazarr:
     enabled: false
     exposed: true
@@ -1616,7 +1918,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/bazarr
-      tag: "1"
+      tag: "1@sha256:2f1c32cb1420b2e56f60cfdf7823737eb501fdb2c13669429d23ab3a02e9ad90"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1628,9 +1930,30 @@ services:
       - subtitles
       - subtitle
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/bazarr/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   data:
+    #     volume: data
     persistence:
-      config: /opt/bazarr/config
-      data: /data
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        data:
+          volume: ""
     extraEnv: []
   jellyseerr:
     enabled: false
@@ -1640,7 +1963,7 @@ services:
     critical: false
     image:
       repository: fallenbagel/jellyseerr
-      tag: "2.7.3"
+      tag: "2.7.3@sha256:4538137bc5af902dece165f2bf73776d9cf4eafb6dd714670724af8f3eb77764"
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -1649,8 +1972,22 @@ services:
       http: 5055
     ingress:
       - jellyseerr
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/jellyseerr/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/jellyseerr/config
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     extraEnv: []
   flaresolverr:
     enabled: false
@@ -1662,7 +1999,7 @@ services:
       # up to date fork of FlareSolverr
       # uses nodriver method instead of obsolete undetected-chromedriver
       repository: 21hsmw/flaresolverr
-      tag: nodriver
+      tag: nodriver@sha256:dca8cda5852b04e6142752fc044c9845eb536353ea6f8b7bb58b4ff9419538fa
       pullPolicy: Always
     securityContext:
       # throws exception if strict, hard to debug
@@ -1690,7 +2027,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/sarperavci/cloudflarebypassforscraping
-      tag: latest
+      tag: latest@sha256:fe540cace0be8ce09d22a8b22299cf2d562d65d72149f545dc7fc382ca342410
       pullPolicy: Always
     securityContext:
       strict: false
@@ -1708,7 +2045,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/tautulli
-      tag: "2"
+      tag: "2@sha256:2a092f86a51f5718111097b0fced33eaa876b5904a543b7504f92357a4f75635"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1718,8 +2055,22 @@ services:
     ingress:
       - tautulli
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/tautulli/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/tautulli/config
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     extraEnv: []
   kometa:
     enabled: false
@@ -1729,7 +2080,7 @@ services:
     critical: false
     image:
       repository: kometateam/kometa
-      tag: v2.2.2
+      tag: v2.2.2@sha256:32992226d1a505da3ed5d4e9c97bed8a6deb7aef36cd5ef8b1f519762607df45
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -1738,10 +2089,22 @@ services:
       http: 8181
     ingress: []
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/kometa/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/kometa/config
-    ## Schedule
-    ##
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     scheduleCron: "0 5 * * *"
     ## Jmxd overlays configuration
     ## See https://github.com/jmxd/Kometa
@@ -1780,7 +2143,7 @@ services:
     critical: false
     image:
       repository: thelounge/thelounge
-      tag: "4"
+      tag: "4@sha256:c2aa0916203b298ffaf3a36c4eb60ef73c1006448d430e218d37840472e84e50"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -1792,8 +2155,22 @@ services:
       - lounge
       - irc
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/thelounge/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/thelounge/config
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     extraEnv: []
   myspeed:
     enabled: false
@@ -1803,7 +2180,7 @@ services:
     critical: false
     image:
       repository: germannewsmaker/myspeed
-      tag: "1.0.9"
+      tag: "1.0.9@sha256:3a3e774b3f78d930a5a962d625b99bcb3d71730bfeb4a6b93e04fd38cfe7d9a9"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -1813,8 +2190,22 @@ services:
     ingress:
       - myspeed
       - speedtest
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/myspeed/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/myspeed/config
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     extraEnv: []
   stirlingpdf:
     enabled: false
@@ -1824,7 +2215,7 @@ services:
     critical: false
     image:
       repository: frooodle/s-pdf
-      tag: "1.3.2-ultra-lite"
+      tag: "1.4.0-ultra-lite@sha256:fa578308b9cb739716c57a6df766a9f25b02833b4813dd592bc90bb02f5bebc2"
       pullPolicy: IfNotPresent
     securityContext:
       # unfortunately the image needs root access
@@ -1841,14 +2232,28 @@ services:
     enableLogin: false
     installBookAndAdvancedHtmlOps: true
     langs: "en_GB,en_US,ru_RU"
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/stirlingpdf/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/stirlingpdf/config
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     extraEnv: []
-      ## see the full list of supported env vars
-      ## https://github.com/Stirling-Tools/Stirling-PDF?tab=readme-ov-file#customisation
-      ##
-      # - name: UI_APP_NAME
-      #   value: "My very own Stirling PDF"
+    ## see the full list of supported env vars
+    ## https://github.com/Stirling-Tools/Stirling-PDF?tab=readme-ov-file#customisation
+    ##
+    # - name: UI_APP_NAME
+    #   value: "My very own Stirling PDF"
   miniflux:
     enabled: false
     exposed: true
@@ -1857,7 +2262,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/miniflux/miniflux
-      tag: "2.2.13"
+      tag: "2.2.15@sha256:9a1f95a7a05b77040d19bb7be96194af4c222de02fb84165fb808f65700c064f"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -1913,7 +2318,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/huginn/huginn
-      tag: 1e0c359a46b1e84eb8c658404212eaf693b30e61
+      tag: 1e0c359a46b1e84eb8c658404212eaf693b30e61@sha256:68e2c7082cd51d417e5ce76fe123810e9d52f4ab2018569df5b74b913ed3bc64
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -1974,7 +2379,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/browserless/chromium
-      tag: v2.36.0
+      tag: v2.37.0@sha256:615699913df92b5f0cdaa2873f92d70c87df43c14f6a54aabc53a418ba48fa86
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -1986,8 +2391,22 @@ services:
     timeout: 60000
     maxConcurrentSessions: 4
     maxQueueLength: 10
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/playwright/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/playwright/config
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     vpn: {}
     # see the full list of supported env vars
     # https://docs.browserless.io/docker/config
@@ -2001,7 +2420,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/dgtlmoon/changedetection.io
-      tag: "0.50"
+      tag: "0.51@sha256:99cf11f04b5d1f1300b5b68f17dc22e76bdb5d6695d7e6590d2df92eca8fb339"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -2018,11 +2437,22 @@ services:
       stealth: true
       headless: true
       args: ["--lang=en-US", "--hide-scrollbars"]
-    persistence:
-      config: /opt/changedetectionio/config
-    # see the full list of supported env vars
-    # https://github.com/dgtlmoon/changedetection.io/blob/master/docker-compose.yml#L11
+    # Persistence config
     #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/changedetectionio/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    persistence:
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     extraEnv: []
   archivebox:
     enabled: false
@@ -2032,7 +2462,7 @@ services:
     critical: false
     image:
       repository: archivebox/archivebox
-      tag: "0.7"
+      tag: "0.7@sha256:fdf2936192aa1e909b0c3f286f60174efa24078555be4b6b90a07f2cef1d4909"
       pullPolicy: Always
     securityContext:
       # uses its own mechanism for switching to a non-root user via PUID/GUID
@@ -2044,10 +2474,22 @@ services:
       - archivebox
       - archive
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /opt/archivebox/data
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   data:
+    #     volume: data
     persistence:
-      data: /opt/archivebox/data
-    ## Admin credentials for the web interface
-    ##
+      volumes: []
+      mounts:
+        data:
+          volume: ""
     adminCredentials:
       secretName: archivebox-admin-credentials
       usernameKey: username
@@ -2080,7 +2522,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/caronc/apprise
-      tag: "1.2"
+      tag: "1.3@sha256:e365025a7bf1fed39ef66b5f22c9855d500ee7bdea27441365e5b95ea972e843"
       pullPolicy: Always
     securityContext:
       # incompatible with read-only file system
@@ -2097,11 +2539,22 @@ services:
     attachSizeMegabytes: 500
     defaultConfigId: apprise
     defaultTheme: dark
-    persistence:
-      config: /opt/apprise/config
-    # see the full list of supported env vars
-    # https://github.com/caronc/apprise-api?tab=readme-ov-file#environment-variables
+    # Persistence config
     #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/apprise/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    persistence:
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     extraEnv: []
   gotify:
     enabled: false
@@ -2111,7 +2564,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/gotify/server
-      tag: "2.7"
+      tag: "2.7@sha256:2ae0e4e689f183137c8247884382fcb174d5a72253ce1897e7e5267090093fc8"
       pullPolicy: Always
     securityContext:
       strict: true
@@ -2121,10 +2574,22 @@ services:
     ingress:
       - gotify
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /opt/gotify/data
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   data:
+    #     volume: data
     persistence:
-      data: /opt/gotify/data
-    ## Admin credentials for the web interface
-    ##
+      volumes: []
+      mounts:
+        data:
+          volume: ""
     adminCredentials:
       secretName: gotify-admin-credentials
       usernameKey: username
@@ -2143,7 +2608,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/kareadita/kavita
-      tag: "0.8.7"
+      tag: "0.8.8@sha256:22c42f3cc83fb98b98a6d6336200b615faf2cfd2db22dab363136744efda1bb0"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2153,9 +2618,30 @@ services:
     ingress:
       - kavita
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/kavita/config
+    #     type: DirectoryOrCreate
+    # - name: library
+    #   hostPath:
+    #     path: /data/library/books
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   library:
+    #     volume: library
     persistence:
-      config: /opt/kavita/config
-      library: /data/library/books
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        library:
+          volume: ""
     extraEnv: []
   stump:
     enabled: false
@@ -2165,7 +2651,7 @@ services:
     critical: false
     image:
       repository: aaronleopold/stump
-      tag: "0.0.12"
+      tag: "0.0.12@sha256:eb49d6cceb6628ed863e4aa6a66d7d79d483e1a24a5e51266f60e04ce322873c"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2175,9 +2661,30 @@ services:
     ingress:
       - stump
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/stump/config
+    #     type: DirectoryOrCreate
+    # - name: library
+    #   hostPath:
+    #     path: /data/library/books
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   library:
+    #     volume: library
     persistence:
-      config: /opt/stump/config
-      library: /data/library/books
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        library:
+          volume: ""
     extraEnv: []
   calibre:
     enabled: false
@@ -2187,7 +2694,7 @@ services:
     critical: false
     image:
       repository: crocodilestick/calibre-web-automated
-      tag: V3.1.4
+      tag: V3.1.4@sha256:577e846f104fd21453ef306eefb4a95dd95b3b9ddd2463a150944494284da0fd
       pullPolicy: IfNotPresent
     securityContext:
       # the image uses s6-overlay,
@@ -2200,10 +2707,38 @@ services:
       - calibre
       - books
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/calibre-web-automated/config
+    #     type: DirectoryOrCreate
+    # - name: ingest
+    #   hostPath:
+    #     path: /opt/calibre-web-automated/ingest
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data/library/books
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   ingest:
+    #     volume: ingest
+    #   data:
+    #     volume: data
     persistence:
-      config: /opt/calibre-web-automated/config
-      ingest: /opt/calibre-web-automated/ingest
-      data: /data/library/books
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        ingest:
+          volume: ""
+        data:
+          volume: ""
     extraEnv: []
   calibrebookdownloader:
     enabled: false
@@ -2213,7 +2748,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/calibrain/calibre-web-automated-book-downloader
-      tag: latest
+      tag: latest@sha256:3b2f9af9279507edb312f20199087d2ad3567f3eb304cbc31b99777ef21d6c5b
       pullPolicy: Always
     securityContext:
       # has its own mechanism for switching to a non-root user via UID/UID
@@ -2250,7 +2785,7 @@ services:
     critical: false
     image:
       repository: evanbuss/openbooks
-      tag: "4.5.0"
+      tag: "4.5.0@sha256:3f2e59a75b68950d57cfec5dc2b1b31d6c6b02706097c70b5438499b59fbdea2"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2265,6 +2800,23 @@ services:
     ircname: pebble
     # if true, won't send files to browser
     noBrowserDownloads: false
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: ingest
+    #   hostPath:
+    #     path: /opt/calibre-web-automated/ingest
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   # This mount MUST point to the same volume (and optionally subPath) as CWA ingest mount
+    #   calibre-ingest:
+    #     volume: ingest
+    persistence:
+      volumes: []
+      mounts:
+        calibre-ingest:
+          volume: ""
   convertx:
     enabled: false
     exposed: true
@@ -2273,7 +2825,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/c4illin/convertx
-      tag: v0.15.1
+      tag: v0.15.1@sha256:53f2c04ebe63fdfb4d812ee66b78a5db9360c729f3defe3dcc864256ff91a7cb
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2283,9 +2835,22 @@ services:
     ingress:
       - convertx
       - convert
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /opt/convertx/data
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   data:
+    #     volume: data
     persistence:
-      data: /opt/convertx/data
-    # set to 0 to disable auto-delete
+      volumes: []
+      mounts:
+        data:
+          volume: ""
     autoDeleteEveryNHours: 24
     # see available env vars
     # https://github.com/C4illin/ConvertX?tab=readme-ov-file#environment-variables
@@ -2299,7 +2864,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/kieraneglin/pinchflat
-      tag: v2025.6.6
+      tag: v2025.6.6@sha256:4e975edf58f0861a5cbfe8fc6aac4851ff5a02dfc3f05ffeea4982e3084a5a4a
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -2310,9 +2875,30 @@ services:
       - pinchflat
       - youtube
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/pinchflat/config
+    #     type: DirectoryOrCreate
+    # - name: data
+    #   hostPath:
+    #     path: /data/library/videos
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
+    #   data:
+    #     volume: data
     persistence:
-      config: /opt/pinchflat/config
-      data: /data/library/videos
+      volumes: []
+      mounts:
+        config:
+          volume: ""
+        data:
+          volume: ""
     extraEnv:
       - name: LOG_LEVEL
         value: info
@@ -2324,7 +2910,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/mealie-recipes/mealie
-      tag: v3.3.2
+      tag: v3.4.0@sha256:545fb8af4287ad027e4f7eb8a0464fa2e21f157e88fda3d7a514ba1e6d3a86b0
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2339,8 +2925,22 @@ services:
     ##
     allowSignup: false
     tokenTimeHours: 4320
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /opt/mealie/data
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   data:
+    #     volume: data
     persistence:
-      data: /opt/mealie/data
+      volumes: []
+      mounts:
+        data:
+          volume: ""
     extraEnv:
       ## Log Level
       ## critical, error, warning, info, debug
@@ -2355,7 +2955,7 @@ services:
     critical: true
     image:
       repository: ghcr.io/danny-avila/librechat
-      tag: v0.8.0
+      tag: v0.8.0@sha256:adcb326f43a971b53df0fbca5f4769c8e56fafbdf834c9dd8c7e4924788f0152
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2383,11 +2983,23 @@ services:
     #
     # make sure the MeiliSearch service is enabled
     search: false
+    # Persistence config
+    #
+    # Example:
+    # # directory where to keep user-uploaded images
+    # volumes:
+    # - name: client-images
+    #   hostPath:
+    #     path: /opt/librechat/client/images
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   client-images:
+    #     volume: client-images
     persistence:
-      # directory where to keep user-uploaded images
-      clientImages: /opt/librechat/client/images
-    # MongoDB Chart configuration
-    # https://artifacthub.io/packages/helm/bitnami/mongodb#parameters
+      volumes: []
+      mounts:
+        client-images:
+          volume: ""
     mongodb:
       backup:
         enabled: true
@@ -2422,7 +3034,7 @@ services:
         value: "true"
       - name: DEBUG_CONSOLE
         value: "true"
-      # json format is preffered if you the Loki/Grafana stack built-in to this chart
+        # json format is preffered if you the Loki/Grafana stack built-in to this chart
       - name: CONSOLE_JSON
         value: "false"
   meilisearch:
@@ -2433,7 +3045,7 @@ services:
     critical: true
     image:
       repository: getmeili/meilisearch
-      tag: v1.22.3
+      tag: v1.23.0@sha256:bac1af7afd5a19b72ec57a660cbb09704926b75ad709ad514ed2f7cf01675256
       pullPolicy: Always
     securityContext:
       strict: true
@@ -2441,11 +3053,22 @@ services:
     ports:
       http: 7700
     ingress: []
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /opt/meilisearch/data
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   data:
+    #     volume: data
     persistence:
-      data: /opt/meilisearch/data
-    ## Master key
-    ## must be at least 16 bytes long
-    ##
+      volumes: []
+      mounts:
+        data:
+          volume: ""
     masterKey:
       secretName: meilisearch-secret
       secretKey: master-key
@@ -2486,7 +3109,7 @@ services:
     critical: true
     image:
       repository: couchdb
-      tag: "3.5"
+      tag: "3.5@sha256:a2c8839c86304962ae60df41c9aa51907925b7ca022b69acfcd45663a89daa77"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
@@ -2495,12 +3118,30 @@ services:
       http: 5984
     ingress:
       - obsidian-livesync
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /opt/obsidian-livesync/data
+    #     type: DirectoryOrCreate
+    # - name: etc-local-d
+    #   hostPath:
+    #     path: /opt/obsidian-livesync/etc/local.d
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   data:
+    #     volume: data
+    #   etc-local-d:
+    #     volume: etc-local-d
     persistence:
-      data: /opt/obsidian-livesync/data
-      etc-local-d: /opt/obsidian-livesync/etc/local.d
-    ## Admin credentials must be provided via the referenced secret
-    ## usernameKey/passwordKey identify the keys within the secret data
-    ##
+      volumes: []
+      mounts:
+        data:
+          volume: ""
+        etc-local-d:
+          volume: ""
     adminCredentials:
       secretName: obsidian-livesync-admin-credentials
       usernameKey: username
@@ -2547,7 +3188,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/hotio/stash
-      tag: release-0.28.1
+      tag: release-0.30.1@sha256:96c439367b5df845ed3768a8b804101bd84c217d87052d227764ff129e7cc42f
       pullPolicy: IfNotPresent
     securityContext:
       strict: false
@@ -2557,19 +3198,63 @@ services:
     ingress:
       - stash
     vpn: {}
+    # Persistence config
+    #
+    # Example:
+    # ## Point this at your collection
+    # volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /data/library-xxx/xxx
+    #     type: DirectoryOrCreate
+    # - name: config
+    #   hostPath:
+    #     path: /opt/stash/.stash
+    #     type: DirectoryOrCreate
+    # - name: metadata
+    #   hostPath:
+    #     path: /opt/stash/metadata
+    #     type: DirectoryOrCreate
+    # - name: cache
+    #   hostPath:
+    #     path: /opt/stash/cache
+    #     type: DirectoryOrCreate
+    # - name: blobs
+    #   hostPath:
+    #     path: /opt/stash/blobs
+    #     type: DirectoryOrCreate
+    # - name: generated
+    #   hostPath:
+    #     path: /opt/stash/generated
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   data:
+    #     volume: data
+    #   config:
+    #     volume: config
+    #   metadata:
+    #     volume: metadata
+    #   cache:
+    #     volume: cache
+    #   blobs:
+    #     volume: blobs
+    #   generated:
+    #     volume: generated
     persistence:
-      ## Point this at your collection
-      data: /data/library-xxx/xxx
-      ## Keep configs, scrapers, and plugins here
-      config: /opt/stash/.stash
-      ## This is where metadata lives
-      metadata: /opt/stash/metadata
-      ## Any other cache content
-      cache: /opt/stash/cache
-      ## Where to store binary blob data (scene covers, images)
-      blobs: /opt/stash/blobs
-      ## Where to store generated content (screenshots, previews, transcodes, sprites)
-      generated: /opt/stash/generated
+      volumes: []
+      mounts:
+        data:
+          volume: ""
+        config:
+          volume: ""
+        metadata:
+          volume: ""
+        cache:
+          volume: ""
+        blobs:
+          volume: ""
+        generated:
+          volume: ""
     extraEnv: []
   opengist:
     enabled: false
@@ -2579,7 +3264,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/thomiceli/opengist
-      tag: "1.11"
+      tag: "1.11@sha256:86e7eb1f9fb2aa7b5d620fe452406de331c6e4d1c47b4d23d46b4b01e1ebf69d"
       pullPolicy: Always
     securityContext:
       strict: false
@@ -2589,8 +3274,22 @@ services:
     ingress:
       - opengist
       - gist
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: config
+    #   hostPath:
+    #     path: /opt/opengist/config
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   config:
+    #     volume: config
     persistence:
-      config: /opt/opengist/config
+      volumes: []
+      mounts:
+        config:
+          volume: ""
     vpn: {}
     # see the full list of supported env vars
     # https://opengist.io/docs/configuration/cheat-sheet.html
@@ -2606,14 +3305,28 @@ services:
     critical: false
     image:
       repository: ghcr.io/dmunozv04/isponsorblocktv
-      tag: main
+      tag: main@sha256:35facec8ef8fc43ecc6a2123baa2dfb631896336e855c822e9fd60cbb5b9ead5
       pullPolicy: Always
     securityContext:
       strict: true
     resourcesPreset: "micro"
     ports: {}
     ingress: []
+    # Persistence config
+    #
+    # Example:
+    # volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /opt/isponsorblocktv/
+    #     type: DirectoryOrCreate
+    # mounts:
+    #   data:
+    #     volume: data
     persistence:
-      data: /opt/isponsorblocktv/
+      volumes: []
+      mounts:
+        data:
+          volume: ""
     vpn: {}
     extraEnv: []

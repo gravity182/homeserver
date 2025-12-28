@@ -1,0 +1,14 @@
+{{- /*
+This file runs all chart validations during template rendering.
+
+Validations run during:
+- helm template
+- helm install --dry-run
+- helm upgrade --dry-run
+- helm install
+- helm upgrade
+
+This ensures configuration errors are caught before any resources are created.
+*/ -}}
+{{- include "homeserver.validation.runAll" $ -}}
+# All validations passed

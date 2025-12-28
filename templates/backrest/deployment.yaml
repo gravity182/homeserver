@@ -48,30 +48,9 @@ spec:
           readinessProbe: {{- include "homeserver.common.container.readinessProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           startupProbe: {{- include "homeserver.common.container.startupProbe.httpGet" (dict "service" $service "path" "/" "context" $) | nindent 12 }}
           volumeMounts: {{- include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) | nindent 12 }}
-            - name: userdata
-              mountPath: /userdata
-              readOnly: true
-            - name: data
-              mountPath: /data
-            - name: config
-              mountPath: /config
-            - name: cache
-              mountPath: /cache
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "userdata" "mountPath" "/userdata") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/data") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 12 }}
+            {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "cache" "mountPath" "/cache") | nindent 12 }}
       volumes: {{- include "homeserver.common.pod.volumes" (dict "service" $service "context" $) | nindent 8 }}
-        - name: userdata
-          hostPath:
-            path: {{ $service.userdata | quote }}
-            type: Directory
-        - name: data
-          hostPath:
-            path: {{ $service.persistence.data | quote }}
-            type: Directory
-        - name: config
-          hostPath:
-            path: {{ $service.persistence.config | quote }}
-            type: Directory
-        - name: cache
-          hostPath:
-            path: {{ $service.persistence.cache | quote }}
-            type: Directory
 {{- end }}

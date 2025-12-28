@@ -91,7 +91,7 @@ data:
         for dir_config in media_dirs_config:
             logging.info("="*50)
 
-            root_path = dir_config['path']
+            root_path = dir_config['mountPath']
             max_depth = dir_config.get('maxDepth', 1)  # Default to 1 if not specified
 
             if not os.path.exists(root_path):

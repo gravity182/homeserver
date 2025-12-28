@@ -1,0 +1,51 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>gravity182/renovate-config",
+    ":automergeBranch",
+    ":dependencyDashboard",
+    ":disableRateLimiting"
+  ],
+  "baseBranchPatterns": [
+    "master"
+  ],
+  "branchPrefix": "renovate/",
+  "prConcurrentLimit": 10,
+  "platformAutomerge": true,
+  "automergeType": "pr",
+  "ignoreTests": true,
+  "helm-values": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "Docker image updates",
+      "matchDatasources": "docker",
+      "matchManagers": [
+        "helm-values"
+      ],
+      "major": {
+        "automerge": false,
+        "labels": [
+          "renovate",
+          "major-update"
+        ]
+      },
+      "minor": {
+        "automerge": false,
+        "labels": [
+          "renovate",
+          "minor-update"
+        ]
+      },
+      "patch": {
+        "automerge": true,
+        "labels": [
+          "renovate",
+          "patch-update"
+        ]
+      },
+      "commitMessageSuffix": "{{#if isMajor}} ⚠️{{else if isMinor}} ✨{{else}} 🩹{{/if}}"
+    }
+  ]
+}

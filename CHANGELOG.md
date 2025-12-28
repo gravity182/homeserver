@@ -5,6 +5,101 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## \[6.0.0] - 2025-12-25
+
+### PVC/NFS/emptyDir volumes support
+
+Added support for PVC, NFS, and emptyDir volumes. Raw string host paths are no longer supported - use `hostPath` volume instead.
+
+### Flexible persistence configuration
+
+Migrated persistence configuration from raw host paths to volumes + mounts structure.
+
+Old format:
+```yaml
+persistence:
+  config: "/opt/service/config"
+```
+
+Equivalent new format:
+```yaml
+persistence:
+  volumes:
+    - name: config
+      hostPath:
+        path: "/opt/service/config"
+        type: DirectoryOrCreate # optional type; DirectoryOrCreate by default
+  mounts:
+    config:
+      volume: config
+```
+
+This flexible schema allows you to reuse the same volume for multiple mounts, which previously was not possible:
+```yaml
+persistence:
+  volumes:
+    - name: data
+      pvc:
+        existingClaim: media-pvc
+  mounts:
+    data:
+      volume: data
+    soulseek-downloads:
+      volume: data
+      subPath: soulseek/downloaded
+```
+
+This is mostly useful for PVCs.
+
+You can provision PVC dynamically too:
+```yaml
+persistence:
+  volumes:
+    - name: data
+      pvc:
+        size: 10Gi
+        storageClassName: local-path # optional; otherwise default used
+  mounts:
+    data:
+      volume: data
+```
+
+### Remove persistence defaults from default values.yaml
+
+Since there are multiple ways now (hostPath, pvc, nfs, emptyDir) to provide a persistence volume, all defaults were removed from `values.yaml`.
+This forces users to explicitly configure persistence - no assumptions about default paths.
+
+### Chart validations
+
+Added comprehensive chart validations that catch configuration errors early. Most notable ones:
+- Service names are unique
+- Mount references exist in volumes array
+- Unused volumes (volume defined but never mounted)
+- Shared storage consistency:
+    - soularr/lidarr + slskd: ensures same soulseek downloads path
+    - openbooks + calibre: ensures same ingest path
+    - qbit_manage + qbittorrent: ensures same torrent data path
+
+### Other changes
+
+- Housekeeping job: adjusted the config to account for the new volumes+mounts structure. Specify the mount names inside `paths` after adding persistence volumes
+- Slskd: sharing now requires you to inject the extra volumes beforehand via `extraVolumes`/`extraVolumeMounts`. Config value `.shares` accepts only a list of container paths (your mount paths)
+- Backrest: `userdata` config field moved to persistence section
+- Soularr/Lidarr: soulseek downloads path must be specified explicitly via `soulseek-downloads` mount. It MUST point to the same volume/volumeMount as slskd
+- Openbooks: CWA ingest path must be specified explicitly via `calibre-ingest` mount. It MUST point to the same volume/volumeMount as CWA
+- QbitManage: torrents data path must be specified explicitly via `qbittorrent-data` mount. It MUST point to the same volume/volumeMount as qBitTorrent
+
+### Migration guide
+
+When upgrading from 5.x to 6.0.0:
+1. Update all persistence configurations - configure volumes/mounts explicitly for each service
+2. Configure shared mounts if using service integrations:
+   - Soularr: configure `soulseek-downloads` mount in both soularr and lidarr to point to same storage
+   - Openbooks: configure `calibre-ingest` mount in both openbooks and calibre to point to same storage
+   - qbit_manage: configure `qbittorrent-data` mount in both qbit_manage and qbittorrent to point to same storage
+3. Validate configuration - run `helm template homeserver . --values values.yaml` to catch any errors before deployment
+4. Test with dry-run - run `helm upgrade homeserver . --values values.yaml --dry-run` before actual deployment
+
 ## \[5.5.2] - 2025-10-19
 
 Changes:

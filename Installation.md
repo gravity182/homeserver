@@ -237,7 +237,7 @@ Once the script finishes its job, please see the [Post-Installation](#post-insta
 Having verified that cert-manager and Authentik are functioning properly, you can proceed to explore the services.
 All services are optional. Just enable the ones you need.
 
-All sections in `values.yaml` should be self-explanatory as important variables are documented. The required parameters are marked with a `# REQUIRED` comment, the rest can be left default or adjusted to your liking. Make sure the directories used by a service (usually specified in the `persistence` subsection) do actually exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
+All sections in `values.yaml` should be self-explanatory as important variables are documented. The required parameters are marked with a `# REQUIRED` comment, the rest can be left default or adjusted to your liking. For services using hostPath volumes, ensure directories exist on the host and are owned by the same user and group you specified in `host.uid`/`host.gid`.
 
 This chart supplies with a helpful [JSON Schema](./values.schema.json) for your `values.yaml`.
 If you have a supported editor like VS Code with the [RedHat's YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml), you'll see autosuggestions and field descriptions right in your editor.
@@ -488,10 +488,48 @@ services:
         ingress:
             - subdomain1
             - sub-domain2
-        # controls paths to persistence dirs on the *host* if any
+        # persistence volumes and mounts configuration
+        # volumes: define storage backends (hostPath, PVC, NFS, emptyDir)
+        # mounts: specify which volume each mount uses (e.g., config -> config volume)
         persistence:
-            config: /opt/service/config
-            data: /data
+            volumes:
+                - name: config
+                  hostPath:
+                      path: /opt/service/config
+                      type: DirectoryOrCreate
+                - name: data
+                  hostPath:
+                      path: /data
+                      type: Directory
+            mounts:
+                config:
+                    volume: config
+                data:
+                    volume: data
+        # Volume reuse example (single PVC, multiple mounts):
+        # persistence:
+        #   volumes:
+        #     - name: media-pvc
+        #       pvc:
+        #         existingClaim: media-storage
+        #   mounts:
+        #     downloads:
+        #       volume: media-pvc
+        #       subPath: downloads
+        #     library:
+        #       volume: media-pvc
+        #       subPath: library
+        #
+        # Dynamic PVC provisioning example:
+        # persistence:
+        #   volumes:
+        #     - name: data
+        #       pvc:
+        #         size: 10Gi
+        #         storageClassName: local-path
+        #   mounts:
+        #     data:
+        #       volume: data
         # ---
         # OPTIONAL section
         # these values are not required to define,
@@ -675,47 +713,6 @@ An example of perfect images would be [onedr0p](https://github.com/onedr0p/conta
 
 ---
 
-## Folder Structure
-
-Here's an overview of a folder structure this chart follows by default:
-```text
-data
-├── torrents
-│   ├── movies
-│   └── tv
-│   ├── music
-│   ├── books
-│   └── xxx
-├── usenet
-│   ├── incomplete
-│   └── complete
-│       ├── movies
-│       └── tv
-│       ├── music
-│       ├── books
-│       └── xxx
-└── library
-    ├── movies
-    └── tv
-    ├── music
-    ├── books
-    └── xxx
-```
-
-You're free to change the paths as you'd like. Just remember to reflect the changes in the `values.yaml`.
-
-The names of sub-folders for torrent downloads (movies, tv, etc.) are controlled by a download category you use. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/torrents/movies` directory will be created by qBittorrent automatically. E.g. your qBittorrent setup can look like this:
-
-![qBittorrent categories](assets/qbittorrent-categories.png)
-
-The same applies to Usenet downloads. If you set a `movies` category for Radarr-initiated downloads, the respective `/data/usenet/movies` directory will be created by SABnzbd automatically. E.g. your SABnzbd setup can look like this:
-
-![SABnzbd categories](assets/sabnzbd-categories.png)
-
-The data folder itself can be placed wherever you like. Personally, I put this in the root at `/data`.
-
----
-
 ## Hard links & Instant moves
 
 You've probably heard about hard links in context of Radarr/Sonarr and Torrent clients.
@@ -730,19 +727,19 @@ This chart fully supports hard links. If you have followed the [Radarr](#radarr)
 
 Just to double-check, here's what you need to do:
 1. Radarr:
-    - The Radarr container should have access to the `/data` directory on the host, i.e. `services.radarr.data=/data`
+    - The Radarr container should have access to the entire `/data` directory (configure `services.radarr.persistence.mounts.data` accordingly)
     - In Settings -> Media Management add a root folder with the path of `/data/library/movies`
 2. Sonarr:
-    - The Sonarr container should have access to the `/data` directory on the host, i.e. `services.sonarr.data=/data`
+    - The Sonarr container should have access to the entire `/data` directory (configure `services.sonarr.persistence.mounts.data` accordingly)
     - In Settings -> Media Management add a root folder with the path of `/data/library/tv`
 3. qBittorrent:
-    - The qBittorrent container should have access to the `/data/torrents` directory on the host, i.e. `services.qbittorrent.data=/data/torrents`
+    - The qBittorrent container should have access to the `/data/torrents` directory only (configure `services.qbittorrent.persistence.mounts.data` accordingly)
     - In Settings -> Downloads set `Default Save Path (complete)` to `/data/torrents`. Do not touch the other paths
 4. SABnzbd
-    - The SABnzbd container should have access to the `/data/usenet` directory on the host, i.e. `services.sabnzbd.data=/data/usenet`
+    - The SABnzbd container should have access to the `/data/usenet` directory only (configure `services.sabnzbd.persistence.mounts.data` accordingly)
     - In Settings -> Folders set `Completed Download Folder` to `/data/usenet/complete` and `Temporary Download Folder` to `/data/usenet/incomplete`
 5. Plex:
-    - The Plex container should have access to the `/data/library` directory on the host, i.e. `services.plex.library=/data/library`
+    - The Plex container should have access to the `/data/library` directory only (configure `services.plex.persistence.mounts.library` accordingly)
     - Add 2 libraries:
         - `Movies` with the path of `/data/library/movies`
         - `TV Shows` with the path of `/data/library/tv`
@@ -907,7 +904,7 @@ In the end your profile should look like this:
 ### Hardlinks
 
 To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/), all of the steps below must be carried out:
-1. Ensure the Radarr container has access to the whole `/data` directory on the host, meaning you've set `services.radarr.data=/data`
+1. Ensure the Radarr container has access to the entire `/data` directory (configure `services.radarr.persistence` volumes+mounts accordingly)
 2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
     ```sh
     sudo chown -R <uid>:<gid> /data
@@ -999,7 +996,7 @@ In the end your profile should look like this:
 ### Hardlinks
 
 To enable [hardlinks](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/), all of the steps below must be carried out:
-1. Ensure the Sonarr container has access to the whole `/data` directory on the host, meaning you've set `services.sonarr.data=/data`
+1. Ensure the Sonarr container has access to the entire `/data` directory (configure `services.sonarr.persistence` volumes+mounts accordingly)
 2. Ensure the `/data` directory is owned by the same user and group you specified in `host.uid`/`host.gid`:
     ```sh
     sudo chown -R <uid>:<gid> /data

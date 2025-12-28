@@ -62,6 +62,7 @@ Chart features:
 - Automatic TLS certificates provisioning powered by [cert-manager](https://github.com/cert-manager/cert-manager)
 - Scheduled server backups powered by [Backrest](https://github.com/garethgeorge/backrest)
 - VPN support - every service can route its traffic through a WireGuard VPN. This is especially important for such services as qBitTorrent for smooth Linux ISO downloading
+- Any kind of volume (hostPath/PVC/NFS) is supported
 - Proper file permissions handling - you will never encounter permission issues
 - Follows best security practices - containers are running as a non-root user and with a read-only filesystem
 
