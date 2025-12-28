@@ -48,14 +48,6 @@ spec:
           securityContext: {{- include "homeserver.common.container.securityContext" (dict "service" $service "context" $) | nindent 12 }}
           envFrom: {{- include "homeserver.common.container.envFrom" (dict "service" $service "context" $) | nindent 12 }}
           env: {{- include "homeserver.common.container.env" (dict "service" $service "context" $) | nindent 12 }}
-            {{- if (include "homeserver.common.utils.getSecurityContext" (dict "service" $service) | fromYaml).strict }}
-            - name: USER
-              value: "stash"
-            {{- end }}
-            - name: PUID
-              value: {{ required "A valid UID required!" .Values.host.uid | quote }}
-            - name: PGID
-              value: {{ required "A valid GID required!" .Values.host.gid | quote }}
             - name: STASH_CONFIG_FILE
               value: "/config/config.yml"
             - name: STASH_STASH

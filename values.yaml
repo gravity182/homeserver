@@ -3187,11 +3187,11 @@ services:
     replicaCount: 1
     critical: false
     image:
-      repository: ghcr.io/hotio/stash
-      tag: release-0.30.1@sha256:96c439367b5df845ed3768a8b804101bd84c217d87052d227764ff129e7cc42f
+      repository: ghcr.io/home-operations/stash
+      tag: 0.30.1
       pullPolicy: IfNotPresent
     securityContext:
-      strict: false
+      strict: true
     resourcesPreset: "small"
     ports:
       http: 9999
