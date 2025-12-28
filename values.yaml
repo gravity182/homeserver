@@ -1673,7 +1673,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/home-operations/lidarr
-      tag: "2.14@sha256:c611fcd98569310ae072e66793ee985480298d95363930f9ea5e27795b5d4256"
+      tag: "3.1.1"
       pullPolicy: Always
     securityContext:
       strict: true
