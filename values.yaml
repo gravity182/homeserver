@@ -1873,7 +1873,7 @@ services:
     critical: false
     image:
       repository: ghcr.io/hotio/whisparr
-      tag: v3@sha256:7e3044103a9c4af5944fcb598c581ecd685e8907de290aef9cdebe02b3d7d9fc
+      tag: v3@sha256:07495086b1b1e2585455c0f4759368b28b91e730d1a2912efa3760a5a6737487
       pullPolicy: Always
     securityContext:
       # the Hotio image uses s6-overlay,
