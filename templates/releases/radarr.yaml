@@ -1,0 +1,47 @@
+{{- $service := .Values.services.radarr }}
+{{- if $service.enabled }}
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: {{ $service.name }}
+  namespace: {{ include "homeserver.common.names.namespace" $ }}
+  labels: {{- include "homeserver.common.labels.standard" (dict "service" $service "context" $) | nindent 4 }}
+spec:
+  interval: 30m
+  {{- $deps := include "homeserver.main.service.dependencies" (dict "service" $service "context" $) }}
+  {{- if $deps }}
+  dependsOn: {{ $deps | nindent 4 }}
+  {{- end }}
+  chart:
+    spec:
+      chart: ./homeserver-app
+      sourceRef:
+        kind: GitRepository
+        name: homeserver
+        namespace: {{ .Values.flux.namespace | default "flux-system" }}
+  values:
+    {{- include "homeserver.main.service.toValues" (dict "service" $service "context" $) | nindent 4 }}
+
+    ports:
+      - name: http
+        containerPort: 7878
+        protocol: TCP
+
+    livenessProbe:
+      type: http
+      path: /ping
+
+    readinessProbe:
+      type: http
+      path: /ping
+
+    volumes:
+      {{- range $service.persistence.volumes }}
+      - name: {{ .name }}
+        {{- include "homeserver.common.persistence.volume" (dict "service" $service "volume" .) | nindent 8 }}
+      {{- end }}
+
+    volumeMounts:
+      {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "config" "mountPath" "/config") | nindent 6 }}
+      {{- include "homeserver.common.persistence.volumeMount" (dict "service" $service "name" "data" "mountPath" "/data") | nindent 6 }}
+{{- end }}

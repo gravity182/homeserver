@@ -1,0 +1,119 @@
+suite: test probe edge cases
+templates:
+  - deployment.yaml
+tests:
+  - it: should handle all probes disabled
+    set:
+      name: no-probes-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+        startupProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should handle startup probe enabled
+    set:
+      name: startup-probe-app
+      enabled: true
+      type: deployment
+      image:
+        repository: slow-app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      livenessProbe:
+        type: http
+        path: /health
+      readinessProbe:
+        type: http
+        path: /ready
+      startupProbe:
+        type: http
+        path: /startup
+      global:
+        livenessProbe:
+          enabled: true
+          periodSeconds: 10
+        readinessProbe:
+          enabled: true
+          periodSeconds: 10
+        startupProbe:
+          enabled: true
+          periodSeconds: 5
+          failureThreshold: 60
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should handle custom probe port
+    set:
+      name: custom-port-probe-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+        - name: health
+          containerPort: 9000
+      livenessProbe:
+        type: http
+        path: /health
+        port: health
+      readinessProbe:
+        type: http
+        path: /ready
+        port: 9000
+      global:
+        livenessProbe:
+          enabled: true
+          periodSeconds: 10
+        readinessProbe:
+          enabled: true
+          periodSeconds: 10
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}

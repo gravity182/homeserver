@@ -108,3 +108,78 @@ Usage:
 - name: net.ipv4.conf.all.src_valid_mark
   value: "1"
 {{- end }}
+
+{{/*
+VPN container for bjw-s format.
+
+Usage:
+{{ include "homeserver.vpn.container.bjws" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.vpn.container.bjws" -}}
+wireguard:
+  image:
+    repository: lscr.io/linuxserver/wireguard
+    tag: latest
+    pullPolicy: IfNotPresent
+  restartPolicy: Always
+  securityContext:
+    privileged: false
+    allowPrivilegeEscalation: false
+    runAsNonRoot: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      add:
+        - NET_ADMIN
+        {{- if .context.Values.vpn.sysModule }}
+        - SYS_MODULE
+        {{- end }}
+  env:
+    - name: PUID
+      value: "1001"
+    - name: PGID
+      value: "1001"
+    - name: TZ
+      value: {{ .context.Values.host.tz | default "UTC" | quote }}
+  resources: {{- include "homeserver.common.resources.preset" (dict "type" "2xnano") | nindent 4 }}
+{{- end -}}
+
+{{/*
+VPN persistence entries for bjw-s format.
+
+Usage:
+{{ include "homeserver.vpn.persistence.bjws" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.vpn.persistence.bjws" -}}
+wireguard-conf:
+  type: secret
+  name: {{ include "homeserver.common.vpn.secretRef" (dict "service" .service "context" .context) }}
+  defaultMode: 0600
+  advancedMounts:
+    main:
+      wireguard:
+        - path: /config/wg_confs/wg0.conf
+          subPath: {{ include "homeserver.common.vpn.secretKey" (dict "service" .service "context" .context) }}
+          readOnly: true
+{{- if .context.Values.vpn.sysModule }}
+lib-modules:
+  type: hostPath
+  hostPath: /lib/modules
+  hostPathType: Directory
+  advancedMounts:
+    main:
+      wireguard:
+        - path: /lib/modules
+          readOnly: true
+{{- end }}
+{{- end -}}
+
+{{/*
+VPN sysctls for bjw-s pod securityContext.
+
+Usage:
+{{ include "homeserver.vpn.sysctls.bjws" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.vpn.sysctls.bjws" -}}
+- name: net.ipv4.conf.all.src_valid_mark
+  value: "1"
+{{- end -}}

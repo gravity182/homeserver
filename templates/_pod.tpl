@@ -140,3 +140,74 @@ Usage:
 {{ include "homeserver.common.tplvalues.render" (dict "value" (default $value $valueOverride) "context" .context) }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Pod security context for bjw-s format.
+Usage:
+{{ include "homeserver.pod.securityContext.bjws" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.pod.securityContext.bjws" -}}
+runAsNonRoot: true
+runAsUser: 1001
+runAsGroup: 1001
+fsGroup: 1001
+fsGroupChangePolicy: Always
+supplementalGroups: []
+{{- if (default dict .service.vpn).enabled }}
+sysctls: {{- include "homeserver.vpn.sysctls.bjws" (dict "service" .service "context" .context) | nindent 2 }}
+{{- else }}
+sysctls: []
+{{- end }}
+{{- end -}}
+
+{{/*
+Init containers for bjw-s format (volumePermissions only, VPN is a sidecar container).
+Usage:
+{{ include "homeserver.pod.initContainers.bjws" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.pod.initContainers.bjws" -}}
+{{- if .context.Values.volumePermissions.enabled -}}
+volume-permissions:
+  image:
+    repository: busybox
+    tag: latest
+    pullPolicy: IfNotPresent
+  command:
+    - /bin/sh
+    - -c
+    - chown -R 1001:1001 /config
+  securityContext:
+    runAsUser: 0
+    runAsNonRoot: false
+  resources: {{- include "homeserver.common.resources.preset" (dict "type" "2xnano") | nindent 4 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+All persistence entries for bjw-s format (empty-dir, app mounts, VPN, extraVolumes).
+
+Input: dict with keys:
+  - service: service object
+  - mounts: list of mount definitions (name + path)
+  - context: root context ($)
+
+Usage:
+{{ include "homeserver.persistence.bjws" (dict "service" $service "mounts" $mounts "context" $) }}
+*/}}
+{{- define "homeserver.persistence.bjws" -}}
+empty-dir:
+  type: emptyDir
+  globalMounts:
+    - path: /tmp
+      subPath: tmp-dir
+    - path: /log
+      subPath: log-dir
+{{ include "homeserver.persistence.toBjwsFormat" (dict "service" .service "mounts" .mounts) }}
+{{- if .service.vpn.enabled }}
+{{ include "homeserver.vpn.persistence.bjws" (dict "service" .service "context" .context) }}
+{{- end }}
+{{- $extraVolumes := include "homeserver.common.utils.getExtraVolumes" (dict "service" .service) -}}
+{{- if $extraVolumes }}
+{{ include "homeserver.common.tplvalues.render" (dict "value" $extraVolumes "context" .context) }}
+{{- end -}}
+{{- end -}}

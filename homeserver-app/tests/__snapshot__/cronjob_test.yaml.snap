@@ -1,0 +1,76 @@
+should render cronjob correctly:
+  1: |
+    apiVersion: batch/v1
+    kind: CronJob
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: backup-job
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: backup-job
+      namespace: NAMESPACE
+    spec:
+      concurrencyPolicy: Forbid
+      failedJobsHistoryLimit: 1
+      jobTemplate:
+        spec:
+          backoffLimit: 6
+          template:
+            metadata:
+              annotations: null
+              labels:
+                app.kubernetes.io/instance: RELEASE-NAME
+                app.kubernetes.io/managed-by: Helm
+                app.kubernetes.io/name: backup-job
+                app.kubernetes.io/part-of: homeserver
+                app.kubernetes.io/version: 0.1.0
+                helm.sh/chart: homeserver-app-0.1.0
+                homeserver/vpn: "false"
+            spec:
+              affinity: null
+              automountServiceAccountToken: false
+              containers:
+                - env:
+                    - name: TZ
+                      value: UTC
+                    - name: KUBERNETES_POD_IP
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: status.podIP
+                  image: backup:1.0
+                  imagePullPolicy: IfNotPresent
+                  name: backup-job
+                  resources: null
+                  securityContext:
+                    readOnlyRootFilesystem: false
+                    runAsNonRoot: false
+                    seLinuxOptions: {}
+                    seccompProfile:
+                      type: RuntimeDefault
+                  volumeMounts:
+                    - mountPath: /tmp
+                      name: empty-dir
+                      subPath: tmp-dir
+                    - mountPath: /log
+                      name: empty-dir
+                      subPath: log-dir
+              enableServiceLinks: false
+              priorityClassName: NAMESPACE-normal-priority
+              restartPolicy: OnFailure
+              securityContext:
+                fsGroup: 1000
+                fsGroupChangePolicy: Always
+                supplementalGroups: []
+                sysctls: []
+              tolerations: null
+              volumes:
+                - emptyDir: {}
+                  name: empty-dir
+      schedule: 0 2 * * *
+      successfulJobsHistoryLimit: 3
+      timeZone: UTC

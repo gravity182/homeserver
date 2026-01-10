@@ -1,0 +1,323 @@
+should create service for internal app:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: internal-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: internal-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: internal-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: internal-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: postgres:15
+              imagePullPolicy: IfNotPresent
+              name: internal-app
+              ports:
+                - containerPort: 5432
+                  name: postgres
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+          enableServiceLinks: false
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+  2: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: internal-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: internal-app
+      namespace: NAMESPACE
+    spec:
+      ports:
+        - name: postgres
+          port: 5432
+          protocol: TCP
+          targetPort: postgres
+      selector:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/name: internal-app
+      type: ClusterIP
+should create service with multiple ports:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: multi-port-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: multi-port-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: multi-port-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: multi-port-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: app:1.0
+              imagePullPolicy: IfNotPresent
+              name: multi-port-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+                - containerPort: 9090
+                  name: metrics
+                  protocol: TCP
+                - containerPort: 50051
+                  name: grpc
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+          enableServiceLinks: false
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+  2: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: multi-port-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: multi-port-app
+      namespace: NAMESPACE
+    spec:
+      ports:
+        - name: http
+          port: 8080
+          protocol: TCP
+          targetPort: http
+        - name: metrics
+          port: 9090
+          protocol: TCP
+          targetPort: metrics
+        - name: grpc
+          port: 50051
+          protocol: TCP
+          targetPort: grpc
+      selector:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/name: multi-port-app
+      type: ClusterIP
+should create service with single port:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: single-port-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: single-port-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: single-port-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: single-port-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: nginx:1.21
+              imagePullPolicy: IfNotPresent
+              name: single-port-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+          enableServiceLinks: false
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+  2: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: single-port-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: single-port-app
+      namespace: NAMESPACE
+    spec:
+      ports:
+        - name: http
+          port: 8080
+          protocol: TCP
+          targetPort: http
+      selector:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/name: single-port-app
+      type: ClusterIP

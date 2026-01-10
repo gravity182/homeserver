@@ -1,0 +1,72 @@
+suite: test job workload type
+templates:
+  - job.yaml
+tests:
+  - it: should render job correctly
+    set:
+      name: backup-job
+      enabled: true
+      type: job
+      image:
+        repository: backup
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      job:
+        backoffLimit: 6
+        completions: 1
+        parallelism: 1
+        ttlSecondsAfterFinished: 3600
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+        startupProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should render job with multiple completions
+    set:
+      name: parallel-job
+      enabled: true
+      type: job
+      image:
+        repository: worker
+        tag: "latest"
+      ports:
+        - name: http
+          containerPort: 8080
+      job:
+        backoffLimit: 3
+        completions: 10
+        parallelism: 5
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}

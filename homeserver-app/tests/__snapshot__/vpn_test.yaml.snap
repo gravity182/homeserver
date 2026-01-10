@@ -1,0 +1,128 @@
+should inject VPN sidecar when enabled:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: qbittorrent
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "true"
+      name: qbittorrent
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: qbittorrent
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: qbittorrent
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "true"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: qbittorrent:latest
+              imagePullPolicy: IfNotPresent
+              name: qbittorrent
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+          enableServiceLinks: false
+          initContainers:
+            - env:
+                - name: PUID
+                  value: "1000"
+                - name: PGID
+                  value: "1000"
+                - name: TZ
+                  value: UTC
+              image: lscr.io/linuxserver/wireguard:latest
+              imagePullPolicy: IfNotPresent
+              name: wireguard
+              resources:
+                limits:
+                  cpu: 50m
+                  memory: 64Mi
+                requests:
+                  cpu: 25m
+                  memory: 32Mi
+              restartPolicy: Always
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  add:
+                    - NET_ADMIN
+                    - SYS_MODULE
+                privileged: false
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /config/wg_confs/wg0.conf
+                  name: wireguard-conf
+                  readOnly: true
+                  subPath: wg0.conf
+                - mountPath: /lib/modules
+                  name: lib-modules
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls:
+              - name: net.ipv4.conf.all.src_valid_mark
+                value: "1"
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+            - name: wireguard-conf
+              secret:
+                defaultMode: 384
+                optional: false
+                secretName: vpn-config
+            - hostPath:
+                path: /lib/modules
+                type: Directory
+              name: lib-modules

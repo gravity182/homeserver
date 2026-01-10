@@ -1,0 +1,67 @@
+version: '3'
+
+tasks:
+  test:
+    desc: Run helm unittest tests
+    cmds:
+      - helm unittest .
+
+  test:update:
+    desc: Run tests and update snapshots
+    cmds:
+      - helm unittest -u .
+
+  test:verbose:
+    desc: Run tests with verbose output
+    cmds:
+      - helm unittest -v .
+
+  test:watch:
+    desc: Run tests on file changes (requires watchexec)
+    cmds:
+      - watchexec -e yaml,tpl -- helm unittest .
+
+  deps:
+    desc: Update chart dependencies
+    cmds:
+      - helm dependency update
+
+  lint:
+    desc: Lint the helm chart
+    cmds:
+      - helm lint .
+
+  template:
+    desc: Render templates with test values (creates /tmp/test-render.yaml)
+    cmds:
+      - |
+        helm template test-app . \
+          --set name=test-app \
+          --set enabled=true \
+          --set image.repository=nginx \
+          --set image.tag=latest \
+          > /tmp/test-render.yaml
+      - echo "Templates rendered to /tmp/test-render.yaml"
+
+  clean:
+    desc: Remove generated files
+    cmds:
+      - rm -rf charts/
+      - rm -rf Chart.lock
+
+  clean:snapshots:
+    desc: Remove snapshot files (use with caution!)
+    prompt: This will delete all test snapshots. Continue?
+    cmds:
+      - rm -rf tests/__snapshot__
+
+  help:
+    desc: Show available tasks
+    cmds:
+      - task --list-all
+    silent: true
+
+  default:
+    desc: Run tests (default task)
+    cmds:
+      - task: test

@@ -1,0 +1,107 @@
+suite: test httproute rendering
+templates:
+  - deployment.yaml
+  - httproute.yaml
+tests:
+  - it: should create httproute when exposed
+    set:
+      name: exposed-app
+      enabled: true
+      exposed: true
+      type: deployment
+      image:
+        repository: nginx
+        tag: "1.21"
+      hosts:
+        - app
+        - application
+      ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+        gateway: gateway
+        rootService: homepage
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should NOT create httproute when not exposed
+    set:
+      name: internal-app
+      enabled: true
+      exposed: false
+      type: deployment
+      image:
+        repository: postgres
+        tag: "15"
+      ports:
+        - name: postgres
+          containerPort: 5432
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+        gateway: gateway
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should create httproute with multiple hosts
+    set:
+      name: multi-host-app
+      enabled: true
+      exposed: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      hosts:
+        - app
+        - application
+        - service
+      ports:
+        - name: http
+          containerPort: 8080
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+        gateway: gateway
+        rootService: homepage
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}

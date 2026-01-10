@@ -1,0 +1,82 @@
+{{- if eq .Values.type "deployment" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "homeserver.common.names.name" $ | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "homeserver.app.labels.standard" $ | nindent 4 }}
+  annotations:
+    {{- include "homeserver.app.annotations.standard" $ | nindent 4 }}
+    {{- with .Values.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.replicaCount | default 1 }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {{- include "homeserver.app.labels.matchLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "homeserver.app.labels.standard" $ | nindent 8 }}
+      annotations:
+        {{- include "homeserver.app.annotations.standard" $ | nindent 8 }}
+        {{- with .Values.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      automountServiceAccountToken: {{ include "homeserver.app.pod.automountServiceAccountToken" $ }}
+      enableServiceLinks: {{ include "homeserver.app.pod.enableServiceLinks" $ }}
+      priorityClassName: {{ include "homeserver.app.pod.priorityClass" $ | quote }}
+      affinity: {{- include "homeserver.app.pod.affinity" $ | nindent 8 }}
+      tolerations: {{- include "homeserver.app.pod.tolerations" $ | nindent 8 }}
+      securityContext: {{- include "homeserver.app.pod.securityContext" $ | nindent 8 }}
+      {{- $helperInitContainers := include "homeserver.app.pod.initContainers" $ }}
+      {{- if or $helperInitContainers .Values.initContainers }}
+      initContainers:
+        {{- with $helperInitContainers }}
+        {{- . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.initContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.name }}
+          image: {{ printf "%s:%s" .Values.image.repository (.Values.image.tag | toString) | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+          securityContext: {{- include "homeserver.app.container.securityContext" $ | nindent 12 }}
+          {{- $envFrom := include "homeserver.app.container.envFrom" $ }}
+          {{- if $envFrom }}
+          envFrom: {{- $envFrom | nindent 12 }}
+          {{- end }}
+          env:
+            {{- include "homeserver.app.container.env" $ | nindent 12 }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            {{- range .Values.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ .protocol | default "TCP" }}
+            {{- end }}
+          resources: {{- include "homeserver.app.container.resources" $ | nindent 12 }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe: {{- include "homeserver.app.container.livenessProbe" $ | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe: {{- include "homeserver.app.container.readinessProbe" $ | nindent 12 }}
+          {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe: {{- include "homeserver.app.container.startupProbe" $ | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- include "homeserver.app.container.volumeMounts" $ | nindent 12 }}
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        {{- include "homeserver.app.pod.volumes" $ | nindent 8 }}
+{{- end }}

@@ -1,0 +1,39 @@
+suite: test cronjob rendering
+templates:
+  - cronjob.yaml
+tests:
+  - it: should render cronjob correctly
+    set:
+      name: backup-job
+      enabled: true
+      type: cronjob
+      image:
+        repository: backup
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      cronjob:
+        schedule: "0 2 * * *"
+        timeZone: UTC
+        concurrencyPolicy: Forbid
+        successfulJobsHistory: 3
+        failedJobsHistory: 1
+        backoffLimit: 6
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}

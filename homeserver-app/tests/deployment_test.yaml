@@ -1,0 +1,150 @@
+suite: test deployment rendering
+templates:
+  - deployment.yaml
+  - service.yaml
+  - httproute.yaml
+tests:
+  - it: should render complete deployment for standard HTTP app
+    set:
+      name: test-app
+      enabled: true
+      exposed: true
+      type: deployment
+      replicaCount: 1
+      critical: false
+      image:
+        repository: nginx
+        tag: "1.21"
+        pullPolicy: IfNotPresent
+      hosts:
+        - test-app
+        - app
+      ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+      livenessProbe:
+        type: http
+        path: /health
+      readinessProbe:
+        type: http
+        path: /ready
+      securityContext:
+        strict: true
+      resourcesPreset: micro
+      volumes: []
+      volumeMounts: []
+      global:
+        livenessProbe:
+          enabled: true
+          periodSeconds: 10
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        readinessProbe:
+          enabled: true
+          periodSeconds: 10
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        startupProbe:
+          enabled: false
+        automountServiceAccountToken: false
+        enableServiceLinks: false
+        affinity: {}
+        tolerations: []
+        commonLabels: {}
+        commonAnnotations: {}
+        vpn:
+          secretRef: vpn-config
+          secretKey: wg0.conf
+          sysModule: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+        gateway: gateway
+        rootService: homepage
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should render deployment with TCP probes
+    set:
+      name: postgres
+      enabled: true
+      exposed: false
+      type: deployment
+      replicaCount: 1
+      image:
+        repository: postgres
+        tag: "15"
+      ports:
+        - name: postgres
+          containerPort: 5432
+      livenessProbe:
+        type: tcp
+        port: 5432
+      readinessProbe:
+        type: tcp
+        port: 5432
+      global:
+        livenessProbe:
+          enabled: true
+          periodSeconds: 5
+        readinessProbe:
+          enabled: true
+          periodSeconds: 5
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should render deployment with exec probes
+    set:
+      name: custom-app
+      enabled: true
+      exposed: false
+      type: deployment
+      image:
+        repository: custom
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      livenessProbe:
+        type: exec
+        command:
+          - /bin/healthcheck
+          - --verbose
+      global:
+        livenessProbe:
+          enabled: true
+          periodSeconds: 15
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}

@@ -15,6 +15,11 @@ host:
   ## Can be obtained via `id -g`
   ##
   gid: -1
+## Flux configuration
+## Namespace where Flux is deployed (used by HelmRelease templates)
+##
+flux:
+  namespace: flux-system
 ## cert-manager chart configuration
 ## see available values at https://artifacthub.io/packages/helm/cert-manager/cert-manager#configuration
 ##
@@ -460,75 +465,89 @@ x-traefik:
       - 131.0.72.0/22
       # Needed to trust Traefik's own IPs
       - 10.0.0.0/8
-## Whether information about services should be injected into pod's environment variables
-## The environment variables injected by service links are usually not needed, but can lead to slow boot times.
-## Recommended to keep it disabled.
-## Can be overriden per service
+## Global configuration for all services
+## These are overridable defaults - services can override in their own config
 ##
-enableServiceLinks: false
-## Whether to mount Service Account token in pods
-## Recommended to keep it disabled.
-## Can be overriden per service
-##
-automountServiceAccountToken: false
-## Affinity configuration for pods
-## See https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-## Can be overriden per service
-##
-affinity:
-  nodeAffinity: {}
-  podAffinity: {}
-  podAntiAffinity: {}
-## Tolerations configuration for pods
-## See https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-## Can be overriden per service
-##
-tolerations: []
-## Common labels to add to all the deployed resources. Evaluated as a template
-##
-## Usage:
-## commonLabels:
-##    app.kubernetes.io/managed-by: Helm
-##
-commonLabels: {}
-## Common annotations to add to all the deployed resources. Evaluated as a template
-##
-## Usage:
-## commonAnnotations:
-##    app.kubernetes.io/managed-by: Helm
-##
-commonAnnotations: {}
-## Pods' global liveness probe. Evaluated as a template.
-## see https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
-##
-livenessProbe:
-  enabled: true
-  initialDelaySeconds: 30
-  periodSeconds: 20
-  timeoutSeconds: 10
-  failureThreshold: 6
-  successThreshold: 1
-## Pods' global readiness probe. Evaluated as a template.
-## see https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
-##
-readinessProbe:
-  enabled: true
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 6
-  successThreshold: 1
-## Pods' global startup probe. Evaluated as a template.
-## Slow starting containers can be protected through startup probes
-## see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
-##
-startupProbe:
-  enabled: false
-  initialDelaySeconds: 5
-  periodSeconds: 20
-  timeoutSeconds: 10
-  failureThreshold: 30
-  successThreshold: 1
+global:
+  ## Whether information about services should be injected into pod's environment variables
+  ## The environment variables injected by service links are usually not needed, but can lead to slow boot times.
+  ## Recommended to keep it disabled.
+  ## Can be overriden per service
+  ##
+  enableServiceLinks: false
+  ## Whether to mount Service Account token in pods
+  ## Recommended to keep it disabled.
+  ## Can be overriden per service
+  ##
+  automountServiceAccountToken: false
+  ## Affinity configuration for pods
+  ## See https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Can be overriden per service
+  ##
+  affinity:
+    nodeAffinity: {}
+    podAffinity: {}
+    podAntiAffinity: {}
+  ## Tolerations configuration for pods
+  ## See https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  ## Can be overriden per service
+  ##
+  tolerations: []
+  ## Labels to add to all the deployed resources. Evaluated as a template
+  ##
+  ## Usage:
+  ## labels:
+  ##    app.kubernetes.io/managed-by: Helm
+  ##
+  labels: {}
+  ## Annotations to add to all the deployed resources. Evaluated as a template
+  ##
+  ## Usage:
+  ## annotations:
+  ##    app.kubernetes.io/managed-by: Helm
+  ##
+  annotations: {}
+  ## Pods' global liveness probe. Evaluated as a template.
+  ## see https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 10
+    failureThreshold: 6
+    successThreshold: 1
+  ## Pods' global readiness probe. Evaluated as a template.
+  ## see https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+  ## Pods' global startup probe. Evaluated as a template.
+  ## Slow starting containers can be protected through startup probes
+  ## see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+  ##
+  startupProbe:
+    enabled: false
+    initialDelaySeconds: 5
+    periodSeconds: 20
+    timeoutSeconds: 10
+    failureThreshold: 30
+    successThreshold: 1
+  ## VPN default configuration
+  ## Can be overridden per service
+  ##
+  vpn:
+    ## Name of the secret containing the WireGuard configuration
+    secretRef: wireguard-ru-conf
+    ## Key inside the secret
+    secretKey: wg0.conf
+    ## Enables SYS_MODULE capability
+    sysModule: true
 ## Resources configuration
 ##
 resources:

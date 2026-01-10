@@ -1,0 +1,34 @@
+suite: test VPN sidecar injection
+templates:
+  - deployment.yaml
+tests:
+  - it: should inject VPN sidecar when enabled
+    set:
+      name: qbittorrent
+      enabled: true
+      type: deployment
+      image:
+        repository: qbittorrent
+        tag: "latest"
+      ports:
+        - name: http
+          containerPort: 8080
+      vpn:
+        enabled: true
+      global:
+        vpn:
+          secretRef: vpn-config
+          secretKey: wg0.conf
+          sysModule: true
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}

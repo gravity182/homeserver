@@ -1,0 +1,5 @@
+apiVersion: v2
+name: common
+description: Common template library for homeserver charts
+type: library
+version: 1.0.0

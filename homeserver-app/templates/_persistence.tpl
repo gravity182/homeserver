@@ -97,24 +97,22 @@ Usage:
   {{- fail (printf "Mount '%s' not found in %s.persistence.mounts" $mountName $service.name) }}
 {{- end }}
 
-{{- $subPath := $mount.subPath | default "" }}
-{{- if ne $subPath "" }}
+- name: {{ required (printf "Volume name %s.volume is required" $mountName) $mount.volume | quote }}
+  mountPath: {{ $mountPath | quote }}
+  {{- $subPath := $mount.subPath | default "" }}
+  {{- if ne $subPath "" }}
   {{- if hasPrefix "/" $subPath }}
     {{- fail (printf "Mount '%s': subPath must be a relative path (must NOT start with /), got: %s" $mountName $subPath) }}
   {{- end }}
   {{- if contains ".." $subPath }}
     {{- fail (printf "Mount '%s': subPath must not contain '..' (path traversal not allowed), got: %s" $mountName $subPath) }}
   {{- end }}
-{{- end }}
-- name: {{ required (printf "Volume name %s.volume is required" $mountName) $mount.volume | quote }}
-  mountPath: {{ $mountPath | quote }}
-  {{- if ne $subPath "" }}
   subPath: {{ $subPath | quote }}
   {{- end }}
   {{- if hasKey $mount "readOnly" }}
   readOnly: {{ $mount.readOnly }}
   {{- end }}
-  {{- end }}
+{{- end }}
 
 {{/*
 Render a PVC manifest.
@@ -186,156 +184,4 @@ Usage:
 */}}
 {{- define "homeserver.persistence.pvcName" }}
 {{- printf "%s-%s-pvc" .service.name .name -}}
-{{- end -}}
-
-{{/*
-Translate homeserver persistence format to bjw-s app-template format.
-
-This helper:
-1. Takes a list of mount definitions with hardcoded paths
-2. Groups mounts by their source volume (supports volume reuse)
-3. Outputs bjw-s persistence entries with combined globalMounts
-
-Input: dict with keys:
-  - service: service object containing persistence.volumes and persistence.mounts
-  - mounts: list of mount definitions, each with:
-      - name: mount name (key in persistence.mounts)
-      - path: container mount path (hardcoded destination)
-
-Example input:
-  {{- include "homeserver.persistence.toBjwsFormat" (dict
-      "service" $service
-      "mounts" (list
-        (dict "name" "config" "path" "/app")
-        (dict "name" "downloads" "path" "/soulseek/downloaded")
-        (dict "name" "incomplete" "path" "/soulseek/incomplete")
-      )
-  ) | nindent 6 }}
-
-Where values.yaml has:
-  persistence:
-    volumes:
-      - name: config
-        hostPath:
-          path: /opt/slskd/config
-      - name: data
-        pvc:
-          size: 100Gi
-    mounts:
-      config:
-        volume: config
-      downloads:
-        volume: data
-      incomplete:
-        volume: data
-        subPath: incomplete
-
-Output:
-  config:
-    enabled: true
-    type: hostPath
-    hostPath: /opt/slskd/config
-    hostPathType: DirectoryOrCreate
-    globalMounts:
-      - path: /app
-  data:
-    enabled: true
-    type: persistentVolumeClaim
-    size: 100Gi
-    accessMode: ReadWriteOnce
-    retain: true
-    globalMounts:
-      - path: /soulseek/downloaded
-      - path: /soulseek/incomplete
-        subPath: incomplete
-
-Usage:
-  {{- include "homeserver.persistence.toBjwsFormat" (dict "service" $service "mounts" $mounts) | nindent 6 }}
-*/}}
-{{- define "homeserver.persistence.toBjwsFormat" -}}
-{{- $service := .service -}}
-{{- $mountDefs := .mounts -}}
-
-{{- /* Step 1: Build a map of volume -> list of mount entries */ -}}
-{{- $volumeToMounts := dict -}}
-
-{{- range $mountDef := $mountDefs -}}
-  {{- $mountName := $mountDef.name -}}
-  {{- $mountPath := $mountDef.path -}}
-
-  {{- /* Look up mount config */ -}}
-  {{- $mountConfig := index $service.persistence.mounts $mountName -}}
-  {{- if and $mountConfig $mountConfig.volume (ne $mountConfig.volume "") -}}
-    {{- $volumeName := $mountConfig.volume -}}
-
-    {{- /* Build mount entry */ -}}
-    {{- $mountEntry := dict "path" $mountPath -}}
-    {{- if $mountConfig.subPath -}}
-      {{- $_ := set $mountEntry "subPath" $mountConfig.subPath -}}
-    {{- end -}}
-    {{- if $mountConfig.readOnly -}}
-      {{- $_ := set $mountEntry "readOnly" $mountConfig.readOnly -}}
-    {{- end -}}
-
-    {{- /* Add to volume's mount list */ -}}
-    {{- $existingMounts := index $volumeToMounts $volumeName | default list -}}
-    {{- $existingMounts = append $existingMounts $mountEntry -}}
-    {{- $_ := set $volumeToMounts $volumeName $existingMounts -}}
-  {{- end -}}
-{{- end -}}
-
-{{- /* Step 2: For each volume with mounts, output bjw-s format */ -}}
-{{- range $volumeName, $mounts := $volumeToMounts -}}
-  {{- /* Look up volume definition */ -}}
-  {{- $volume := dict -}}
-  {{- range $vol := $service.persistence.volumes -}}
-    {{- if eq $vol.name $volumeName -}}
-      {{- $volume = $vol -}}
-    {{- end -}}
-  {{- end -}}
-
-  {{- if $volume }}
-{{ $volumeName }}:
-  enabled: true
-    {{- if hasKey $volume "hostPath" }}
-  type: hostPath
-  hostPath: {{ $volume.hostPath.path }}
-  hostPathType: {{ $volume.hostPath.type | default "DirectoryOrCreate" }}
-    {{- else if hasKey $volume "pvc" }}
-  type: persistentVolumeClaim
-      {{- if $volume.pvc.existingClaim }}
-  existingClaim: {{ $volume.pvc.existingClaim }}
-      {{- else }}
-  size: {{ $volume.pvc.size }}
-  accessMode: {{ index ($volume.pvc.accessModes | default (list "ReadWriteOnce")) 0 }}
-        {{- if $volume.pvc.storageClassName }}
-  storageClass: {{ $volume.pvc.storageClassName }}
-        {{- end }}
-  retain: true
-      {{- end }}
-    {{- else if hasKey $volume "nfs" }}
-  type: nfs
-  server: {{ $volume.nfs.server }}
-  path: {{ $volume.nfs.path }}
-    {{- else if hasKey $volume "emptyDir" }}
-  type: emptyDir
-      {{- if $volume.emptyDir.medium }}
-  medium: {{ $volume.emptyDir.medium }}
-      {{- end }}
-      {{- if $volume.emptyDir.sizeLimit }}
-  sizeLimit: {{ $volume.emptyDir.sizeLimit }}
-      {{- end }}
-    {{- end }}
-  globalMounts:
-    {{- range $mount := $mounts }}
-    - path: {{ $mount.path }}
-      {{- if $mount.subPath }}
-      subPath: {{ $mount.subPath }}
-      {{- end }}
-      {{- if $mount.readOnly }}
-      readOnly: {{ $mount.readOnly }}
-      {{- end }}
-    {{- end }}
-  {{- end }}
-{{- end -}}
 {{- end -}}

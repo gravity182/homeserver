@@ -5,6 +5,10 @@ kubeVersion: ">= 1.29.0"
 description: Self-hosted media server
 type: application
 home: https://github.com/blinky-z/homeserver
+dependencies:
+  - name: common
+    version: "1.0.0"
+    repository: "file://../charts/library"
 keywords:
   - homeserver
   - homepage

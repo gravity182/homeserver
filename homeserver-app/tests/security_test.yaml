@@ -1,0 +1,125 @@
+suite: test security contexts and priority classes
+templates:
+  - deployment.yaml
+tests:
+  - it: should use strict security context
+    set:
+      name: strict-app
+      enabled: true
+      type: deployment
+      image:
+        repository: nginx
+        tag: "1.21"
+      ports:
+        - name: http
+          containerPort: 8080
+      securityContext:
+        strict: true
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should use lenient security context
+    set:
+      name: lenient-app
+      enabled: true
+      type: deployment
+      image:
+        repository: legacy-app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      securityContext:
+        strict: false
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should set high priority for critical apps
+    set:
+      name: critical-app
+      enabled: true
+      critical: true
+      type: deployment
+      image:
+        repository: critical-service
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should set normal priority for non-critical apps
+    set:
+      name: normal-app
+      enabled: true
+      critical: false
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}

@@ -80,6 +80,71 @@ Usage:
 {{- end -}}
 
 {{/*
+Translate extraEnv to bjw-s env format (list of {name, value}).
+Usage:
+{{ include "homeserver.common.container.extraEnv" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.common.container.extraEnv" -}}
+{{- $extraEnv := include "homeserver.common.utils.getExtraEnv" (dict "service" .service) | fromYamlArray -}}
+{{- range $extraEnv }}
+- name: {{ .name | quote }}
+  value: {{ include "homeserver.common.tplvalues.render" (dict "value" .value "context" $.context) | quote }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Translate extraEnvSecrets to bjw-s env format (list of {name, valueFrom}).
+Usage:
+{{ include "homeserver.common.container.extraEnvSecrets" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.common.container.extraEnvSecrets" -}}
+{{- $extraEnvSecrets := include "homeserver.common.utils.getExtraEnvSecrets" (dict "service" .service) | fromYamlArray -}}
+{{- range $extraEnvSecrets }}
+- name: {{ .name | quote }}
+  valueFrom:
+    secretKeyRef:
+      name: {{ .secretName | quote }}
+      key: {{ .secretKey | quote }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Complete env vars for bjw-s format (TZ, KUBERNETES_POD_IP, extraEnv, extraEnvSecrets).
+Usage:
+{{ include "homeserver.container.env.bjws" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.container.env.bjws" -}}
+- name: TZ
+  value: {{ .context.Values.host.tz | default "UTC" | quote }}
+- name: KUBERNETES_POD_IP
+  valueFrom:
+    fieldRef:
+      fieldPath: status.podIP
+{{- include "homeserver.common.container.extraEnv" (dict "service" .service "context" .context) }}
+{{- include "homeserver.common.container.extraEnvSecrets" (dict "service" .service "context" .context) }}
+{{- end -}}
+
+{{/*
+Translate extraEnvFromCM and extraEnvFromSecret to bjw-s envFrom format.
+Usage:
+{{ include "homeserver.common.container.envFrom" (dict "service" $service "context" $) }}
+*/}}
+{{- define "homeserver.common.container.envFrom.bjws" -}}
+{{- $extraEnvFromCM := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "extraEnvFromCM") -}}
+{{- $extraEnvFromSecret := include "homeserver.common.utils.getServiceValueFromKey" (dict "service" .service "key" "extraEnvFromSecret") -}}
+{{- if or $extraEnvFromCM $extraEnvFromSecret }}
+{{- if $extraEnvFromCM }}
+- configMapRef:
+    name: {{ $extraEnvFromCM | quote }}
+{{- end }}
+{{- if $extraEnvFromSecret }}
+- secretRef:
+    name: {{ $extraEnvFromSecret | quote }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Volume mounts for containers.
 Usage:
 {{ include "homeserver.common.container.volumeMounts" (dict "service" $service "context" $) }}

@@ -1,0 +1,374 @@
+should NOT add volume permissions when disabled:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: no-volperm-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: no-volperm-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: no-volperm-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: no-volperm-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: app:1.0
+              imagePullPolicy: IfNotPresent
+              name: no-volperm-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+                - mountPath: /data
+                  name: data
+          enableServiceLinks: false
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+            - hostPath:
+                path: /data
+                type: Directory
+              name: data
+should add volume permissions init container when enabled:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: volperm-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: volperm-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: volperm-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: volperm-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: app:1.0
+              imagePullPolicy: IfNotPresent
+              name: volperm-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+                - mountPath: /data
+                  name: data
+          enableServiceLinks: false
+          initContainers:
+            - command:
+                - /bin/bash
+                - -ec
+                - |
+                  IFS=" "
+                  echo "Current permissions:" \
+                    && ls -land $PATHS \
+                    && echo "------------------------------" \
+                    && echo "Changing volume permissions..." \
+                    && chown -R $CHOWN_UID:$CHOWN_GID $PATHS \
+                    && chmod -R a=,ug+rX,u+w $PATHS \
+                    && echo "------------------------------" \
+                    && echo "Updated permissions:" \
+                    && ls -land $PATHS
+              env:
+                - name: PATHS
+                  value: /mnt/data
+                - name: CHOWN_UID
+                  value: "1000"
+                - name: CHOWN_GID
+                  value: "1000"
+              image: chainguard/bash:latest
+              imagePullPolicy: IfNotPresent
+              name: volume-permissions
+              securityContext:
+                capabilities:
+                  add:
+                    - CHOWN
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                runAsUser: 0
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /mnt/data
+                  name: data
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+            - hostPath:
+                path: /data
+                type: Directory
+              name: data
+should combine volume permissions and VPN init containers:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: volperm-vpn-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "true"
+      name: volperm-vpn-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: volperm-vpn-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: volperm-vpn-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "true"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: app:1.0
+              imagePullPolicy: IfNotPresent
+              name: volperm-vpn-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+                - mountPath: /data
+                  name: data
+          enableServiceLinks: false
+          initContainers:
+            - command:
+                - /bin/bash
+                - -ec
+                - |
+                  IFS=" "
+                  echo "Current permissions:" \
+                    && ls -land $PATHS \
+                    && echo "------------------------------" \
+                    && echo "Changing volume permissions..." \
+                    && chown -R $CHOWN_UID:$CHOWN_GID $PATHS \
+                    && chmod -R a=,ug+rX,u+w $PATHS \
+                    && echo "------------------------------" \
+                    && echo "Updated permissions:" \
+                    && ls -land $PATHS
+              env:
+                - name: PATHS
+                  value: /mnt/data
+                - name: CHOWN_UID
+                  value: "1000"
+                - name: CHOWN_GID
+                  value: "1000"
+              image: chainguard/bash:latest
+              imagePullPolicy: IfNotPresent
+              name: volume-permissions
+              securityContext:
+                capabilities:
+                  add:
+                    - CHOWN
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                runAsUser: 0
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /mnt/data
+                  name: data
+            - env:
+                - name: PUID
+                  value: "1000"
+                - name: PGID
+                  value: "1000"
+                - name: TZ
+                  value: UTC
+              image: lscr.io/linuxserver/wireguard:latest
+              imagePullPolicy: IfNotPresent
+              name: wireguard
+              resources:
+                limits:
+                  cpu: 50m
+                  memory: 64Mi
+                requests:
+                  cpu: 25m
+                  memory: 32Mi
+              restartPolicy: Always
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  add:
+                    - NET_ADMIN
+                privileged: false
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /config/wg_confs/wg0.conf
+                  name: wireguard-conf
+                  readOnly: true
+                  subPath: wg0.conf
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls:
+              - name: net.ipv4.conf.all.src_valid_mark
+                value: "1"
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+            - name: wireguard-conf
+              secret:
+                defaultMode: 384
+                optional: false
+                secretName: vpn-config
+            - hostPath:
+                path: /data
+                type: Directory
+              name: data

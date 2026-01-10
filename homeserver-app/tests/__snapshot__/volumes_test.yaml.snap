@@ -1,0 +1,428 @@
+should handle NFS volumes:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: nfs-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: nfs-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: nfs-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: nfs-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: app:1.0
+              imagePullPolicy: IfNotPresent
+              name: nfs-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+                - mountPath: /shared
+                  name: shared
+          enableServiceLinks: false
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+            - name: shared
+              nfs:
+                path: /exports/shared
+                server: nfs.example.com
+should handle PVC volumes:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: pvc-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: pvc-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: pvc-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: pvc-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: app:1.0
+              imagePullPolicy: IfNotPresent
+              name: pvc-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+                - mountPath: /data
+                  name: data
+          enableServiceLinks: false
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+            - name: data
+              persistentVolumeClaim:
+                claimName: app-data-pvc
+should handle app with no volumes:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: no-volumes-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: no-volumes-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: no-volumes-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: no-volumes-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: stateless-app:1.0
+              imagePullPolicy: IfNotPresent
+              name: no-volumes-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+          enableServiceLinks: false
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+should handle emptyDir volumes:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: emptydir-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: emptydir-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: emptydir-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: emptydir-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: app:1.0
+              imagePullPolicy: IfNotPresent
+              name: emptydir-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+                - mountPath: /cache
+                  name: cache
+                - mountPath: /tmp
+                  name: tmp
+          enableServiceLinks: false
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+            - emptyDir: {}
+              name: cache
+            - emptyDir:
+                medium: Memory
+                sizeLimit: 1Gi
+              name: tmp
+should handle hostPath volumes:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: hostpath-app
+        app.kubernetes.io/part-of: homeserver
+        app.kubernetes.io/version: 0.1.0
+        helm.sh/chart: homeserver-app-0.1.0
+        homeserver/vpn: "false"
+      name: hostpath-app
+      namespace: NAMESPACE
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 3
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/name: hostpath-app
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          annotations: null
+          labels:
+            app.kubernetes.io/instance: RELEASE-NAME
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: hostpath-app
+            app.kubernetes.io/part-of: homeserver
+            app.kubernetes.io/version: 0.1.0
+            helm.sh/chart: homeserver-app-0.1.0
+            homeserver/vpn: "false"
+        spec:
+          affinity: null
+          automountServiceAccountToken: false
+          containers:
+            - env:
+                - name: TZ
+                  value: UTC
+                - name: KUBERNETES_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+              image: app:1.0
+              imagePullPolicy: IfNotPresent
+              name: hostpath-app
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              resources: null
+              securityContext:
+                readOnlyRootFilesystem: false
+                runAsNonRoot: false
+                seLinuxOptions: {}
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /tmp
+                  name: empty-dir
+                  subPath: tmp-dir
+                - mountPath: /log
+                  name: empty-dir
+                  subPath: log-dir
+                - mountPath: /config
+                  name: config
+                - mountPath: /data
+                  name: data
+          enableServiceLinks: false
+          priorityClassName: NAMESPACE-normal-priority
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: Always
+            supplementalGroups: []
+            sysctls: []
+          tolerations: null
+          volumes:
+            - emptyDir: {}
+              name: empty-dir
+            - hostPath:
+                path: /opt/app/config
+                type: DirectoryOrCreate
+              name: config
+            - hostPath:
+                path: /data
+                type: Directory
+              name: data

@@ -75,6 +75,24 @@ Usage:
 {{- end -}}
 
 {{/*
+Gets a volume definition by name from the service's persistence.volumes array.
+Returns empty dict if not found.
+Usage:
+{{ include "homeserver.common.utils.getVolumeByName" (dict "service" $service "name" "config") | fromYaml }}
+*/}}
+{{- define "homeserver.common.utils.getVolumeByName" -}}
+{{- $result := dict -}}
+{{- if and .service.persistence .service.persistence.volumes -}}
+{{- range $vol := .service.persistence.volumes -}}
+{{- if eq $vol.name $.name -}}
+{{- $result = $vol -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- $result | toYaml -}}
+{{- end -}}
+
+{{/*
 Gets extra volumes for the given service
 Usage:
 {{ include "homeserver.common.utils.getExtraVolumes" (dict "service" $service) }}

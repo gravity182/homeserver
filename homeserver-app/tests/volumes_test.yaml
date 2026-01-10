@@ -1,0 +1,191 @@
+suite: test volume types and configurations
+templates:
+  - deployment.yaml
+tests:
+  - it: should handle hostPath volumes
+    set:
+      name: hostpath-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      volumes:
+        - name: config
+          hostPath:
+            path: /opt/app/config
+            type: DirectoryOrCreate
+        - name: data
+          hostPath:
+            path: /data
+            type: Directory
+      volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: data
+          mountPath: /data
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should handle PVC volumes
+    set:
+      name: pvc-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: app-data-pvc
+      volumeMounts:
+        - name: data
+          mountPath: /data
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should handle NFS volumes
+    set:
+      name: nfs-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      volumes:
+        - name: shared
+          nfs:
+            server: nfs.example.com
+            path: /exports/shared
+      volumeMounts:
+        - name: shared
+          mountPath: /shared
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should handle emptyDir volumes
+    set:
+      name: emptydir-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      volumes:
+        - name: cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+      volumeMounts:
+        - name: cache
+          mountPath: /cache
+        - name: tmp
+          mountPath: /tmp
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should handle app with no volumes
+    set:
+      name: no-volumes-app
+      enabled: true
+      type: deployment
+      image:
+        repository: stateless-app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      volumes: []
+      volumeMounts: []
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}

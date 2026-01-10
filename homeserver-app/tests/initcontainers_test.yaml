@@ -1,0 +1,120 @@
+suite: test init containers
+templates:
+  - deployment.yaml
+tests:
+  - it: should add volume permissions init container when enabled
+    set:
+      name: volperm-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      volumes:
+        - name: data
+          hostPath:
+            path: /data
+            type: Directory
+      volumeMounts:
+        - name: data
+          mountPath: /data
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: true
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should NOT add volume permissions when disabled
+    set:
+      name: no-volperm-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      volumes:
+        - name: data
+          hostPath:
+            path: /data
+            type: Directory
+      volumeMounts:
+        - name: data
+          mountPath: /data
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should combine volume permissions and VPN init containers
+    set:
+      name: volperm-vpn-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      vpn:
+        enabled: true
+      volumes:
+        - name: data
+          hostPath:
+            path: /data
+            type: Directory
+      volumeMounts:
+        - name: data
+          mountPath: /data
+      global:
+        vpn:
+          secretRef: vpn-config
+          secretKey: wg0.conf
+          sysModule: false
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: true
+    asserts:
+      - matchSnapshot: {}

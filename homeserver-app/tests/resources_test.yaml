@@ -1,0 +1,123 @@
+suite: test resource presets
+templates:
+  - deployment.yaml
+tests:
+  - it: should apply nano resource preset
+    set:
+      name: nano-app
+      enabled: true
+      type: deployment
+      image:
+        repository: tiny-app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      resourcesPreset: nano
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: true
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should apply micro resource preset
+    set:
+      name: micro-app
+      enabled: true
+      type: deployment
+      image:
+        repository: small-app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      resourcesPreset: micro
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: true
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should apply large resource preset
+    set:
+      name: large-app
+      enabled: true
+      type: deployment
+      image:
+        repository: big-app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      resourcesPreset: large
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: true
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}
+
+  - it: should not set resources when disabled
+    set:
+      name: no-resources-app
+      enabled: true
+      type: deployment
+      image:
+        repository: app
+        tag: "1.0"
+      ports:
+        - name: http
+          containerPort: 8080
+      resourcesPreset: medium
+      global:
+        livenessProbe:
+          enabled: false
+        readinessProbe:
+          enabled: false
+      host:
+        tz: UTC
+        uid: 1000
+        gid: 1000
+      ingress:
+        domain: example.com
+      resources:
+        enabled: false
+      volumePermissions:
+        enabled: false
+    asserts:
+      - matchSnapshot: {}

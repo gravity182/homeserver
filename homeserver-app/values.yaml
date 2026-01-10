@@ -1,0 +1,332 @@
+# homeserver-app - Generic Application Template Chart
+#
+# Deploys applications as Deployments, CronJobs, or Jobs
+# with a consistent configuration structure.
+
+# ============================================================================
+# Core Configuration
+# ============================================================================
+
+# -- Controller type
+# Valid options: deployment, cronjob, job
+# @default -- deployment
+type: deployment
+
+# -- Application name
+name: ""
+
+# -- Enable/disable the application
+enabled: true
+
+# -- Expose the application via HTTPRoute
+exposed: false
+
+# -- Mark as critical workload (gets high priority class)
+critical: false
+
+# -- Number of replicas (only for deployment type)
+# @default -- 1
+replicaCount: 1
+
+# -- Container image configuration
+image:
+  # -- Image repository
+  repository: ""
+  # -- Image tag
+  tag: ""
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Subdomain aliases for ingress (array of strings)
+# These will be concatenated with ingress.domain
+# Example: ["radarr", "movies"] → radarr.example.com, movies.example.com
+hosts: []
+
+# -- VPN configuration
+vpn:
+  # -- Enable VPN sidecar
+  enabled: false
+  # -- Secret containing VPN configuration (optional, overrides cluster default)
+  secretRef: ""
+  # -- Key in secret containing VPN config file (optional, overrides cluster default)
+  secretKey: ""
+
+# -- Security context configuration
+securityContext:
+  # -- Use strict security context (non-root, read-only rootfs)
+  strict: false
+
+# -- Resource preset
+# Valid options: 2xnano, xnano, nano, micro, small, medium, large, xlarge, 2xlarge
+resourcesPreset: "small"
+
+# -- Extra environment variables
+extraEnv: []
+
+# -- Extra environment variables from secrets
+extraEnvSecrets: []
+
+# -- Extra environment variables from ConfigMap
+extraEnvFromCM: ""
+
+# -- Extra environment variables from Secret
+extraEnvFromSecret: ""
+
+# -- Extra labels for this specific application
+extraLabels: {}
+
+# -- Extra annotations for this specific application
+extraAnnotations: {}
+
+# -- Affinity rules (optional, defaults to global.affinity)
+# affinity: {}
+
+# -- Tolerations (optional, defaults to global.tolerations)
+# tolerations: []
+
+# -- Automount service account token (optional, defaults to global.automountServiceAccountToken)
+# automountServiceAccountToken: false
+
+# -- Enable service links (optional, defaults to global.enableServiceLinks)
+# enableServiceLinks: false
+
+# -- Extra volumes (from service configuration)
+extraVolumes: []
+
+# -- Extra volume mounts (from service configuration)
+extraVolumeMounts: []
+
+# ============================================================================
+# Type-Specific Configuration
+# ============================================================================
+
+# -- CronJob configuration
+# Required only when type: cronjob
+# @default -- See below
+# cronjob:
+#   # -- Schedule in cron format
+#   schedule: "0 6 * * *"
+#   # -- Timezone for the schedule
+#   timeZone: UTC
+#   # -- Concurrency policy (Allow, Forbid, Replace)
+#   concurrencyPolicy: Forbid
+#   # -- Number of successful jobs to keep
+#   successfulJobsHistory: 3
+#   # -- Number of failed jobs to keep
+#   failedJobsHistory: 1
+#   # -- Backoff limit for failed jobs
+#   backoffLimit: 6
+#   # -- Starting deadline in seconds
+#   startingDeadlineSeconds: 30
+#   # -- TTL seconds after finished
+#   ttlSecondsAfterFinished:
+
+# -- Job configuration
+# Required only when type: job
+# @default -- See below
+# job:
+#   # -- Backoff limit for failed jobs
+#   backoffLimit: 6
+#   # -- Number of completions
+#   completions: 1
+#   # -- Number of parallel jobs
+#   parallelism: 1
+#   # -- TTL seconds after finished
+#   ttlSecondsAfterFinished:
+
+# ============================================================================
+# Global Defaults
+# ============================================================================
+
+global:
+  # -- Common labels to add to all resources
+  labels: {}
+
+  # -- Common annotations to add to all resources
+  annotations: {}
+
+  # -- Enable service links in pod environment
+  enableServiceLinks: false
+
+  # -- Automount service account token
+  automountServiceAccountToken: false
+
+  # -- Affinity rules (can be overridden per app)
+  affinity: {}
+
+  # -- Tolerations (can be overridden per app)
+  tolerations: []
+
+  # -- Liveness probe defaults
+  livenessProbe:
+    enabled: true
+    periodSeconds: 10
+    initialDelaySeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 6
+
+  # -- Readiness probe defaults
+  readinessProbe:
+    enabled: true
+    periodSeconds: 10
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+  # -- Startup probe defaults
+  startupProbe:
+    enabled: false
+    periodSeconds: 20
+    initialDelaySeconds: 5
+    timeoutSeconds: 10
+    failureThreshold: 30
+
+  # -- VPN cluster configuration
+  vpn:
+    # -- Secret containing VPN configuration
+    secretRef: ""
+    # -- Key in secret containing VPN config file
+    secretKey: ""
+    # -- Load kernel modules
+    sysModule: false
+
+# ============================================================================
+# Cluster Configuration
+# ============================================================================
+
+# -- Host configuration
+host:
+  # -- Timezone
+  tz: UTC
+  # -- User ID
+  uid: 1001
+  # -- Group ID
+  gid: 1001
+
+# -- Ingress cluster configuration
+ingress:
+  # -- Base domain for all ingresses
+  domain: ""
+  # -- Gateway name
+  gateway: ""
+  # -- Root service (homepage)
+  rootService: ""
+
+# -- Resource management
+resources:
+  # -- Enable resource limits/requests
+  enabled: true
+
+# -- Volume permissions
+volumePermissions:
+  # -- Enable automatic volume permission fixing
+  enabled: false
+
+# ============================================================================
+# App Configuration
+# ============================================================================
+
+# -- Container ports
+# Example:
+# ports:
+#   - name: http
+#     containerPort: 8080
+#     protocol: TCP
+ports: []
+
+# -- Liveness probe configuration
+# HTTP example:
+# livenessProbe:
+#   type: http
+#   path: /health
+#   port: http
+#   spec:
+#     periodSeconds: 10
+#     initialDelaySeconds: 30
+#
+# TCP example:
+# livenessProbe:
+#   type: tcp
+#   port: 8080
+#   spec:
+#     periodSeconds: 10
+#
+# Exec example:
+# livenessProbe:
+#   type: exec
+#   command:
+#     - /bin/healthcheck
+#   spec:
+#     periodSeconds: 10
+
+# -- Readiness probe configuration
+# readinessProbe:
+#   type: http
+#   path: /ready
+#   spec:
+#     periodSeconds: 10
+
+# -- Startup probe configuration
+# startupProbe:
+#   type: http
+#   path: /startup
+#   spec:
+#     periodSeconds: 20
+
+# -- Pod volumes
+# Example:
+# volumes:
+#   - name: config
+#     hostPath:
+#       path: /opt/app/config
+#       type: Directory
+#   - name: data
+#     nfs:
+#       server: nas.local
+#       path: /data
+#   - name: cache
+#     emptyDir: {}
+volumes: []
+
+# -- Container volume mounts
+# Example:
+# volumeMounts:
+#   - name: config
+#     mountPath: /config
+#   - name: data
+#     mountPath: /data
+#     subPath: app
+#   - name: cache
+#     mountPath: /.cache
+volumeMounts: []
+
+# -- Environment variables for main container
+# Example:
+# env:
+#   - name: STASH_PORT
+#     value: "9999"
+#   - name: STASH_CONFIG_FILE
+#     value: "/config/config.yml"
+env: []
+
+# -- Init containers
+# Full specification including their own volumeMounts
+# Example:
+# initContainers:
+#   - name: fix-permissions
+#     image: busybox:latest
+#     command: ["/bin/sh", "-c", "chown -R 1000:1000 /config"]
+#     volumeMounts:
+#       - name: config
+#         mountPath: /config
+initContainers: []
+
+# -- ConfigMaps
+# ConfigMaps are automatically mounted as volumes
+# Example:
+# configMaps:
+#   app-config:
+#     data:
+#       config.yaml: |
+#         key: value
+configMaps: {}
