@@ -73,9 +73,17 @@ if [ -z "$NAMESPACE" ]; then
 fi
 set -u
 
+set +u
+if [ -z "$CONTEXT" ]; then
+  CONTEXT=$(ask_for_input "Enter Kubernetes context")
+  config_updated=1
+fi
+set -u
+
 if [ $config_updated -eq 1 ]; then
   echo "RELEASE_NAME=\"$RELEASE_NAME\"" > "$CONFIG_FILE"
   echo "NAMESPACE=\"$NAMESPACE\"" >> "$CONFIG_FILE"
+  echo "CONTEXT=\"$CONTEXT\"" >> "$CONFIG_FILE"
 fi
 
 f_values=( -f values.yaml )
@@ -90,6 +98,7 @@ helm upgrade --install "$RELEASE_NAME" . \
   "${f_values[@]}" \
   --namespace "$NAMESPACE" \
   --create-namespace \
+  --kube-context "$CONTEXT" \
   "${helm_args[@]}"
 
 if [ $config_updated -eq 1 ]; then
@@ -99,4 +108,5 @@ if [ $config_updated -eq 1 ]; then
   echo "Deployment config saved to $CONFIG_FILE"
   echo "  Release Name: $RELEASE_NAME"
   echo "  Namespace: $NAMESPACE"
+  echo "  Context: $CONTEXT"
 fi
