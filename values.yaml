@@ -3109,7 +3109,7 @@ services:
     critical: true
     image:
       repository: couchdb
-      tag: "3.5@sha256:a2c8839c86304962ae60df41c9aa51907925b7ca022b69acfcd45663a89daa77"
+      tag: "3.5@sha256:807777b6959fc62a2c9aacb106801958aeb5cd1ad6702ea088b097fc9254c812"
       pullPolicy: IfNotPresent
     securityContext:
       strict: true
