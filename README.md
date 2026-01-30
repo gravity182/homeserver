@@ -1,5 +1,10 @@
 # Home Media Server
 
+> [!WARNING]
+> **This project is no longer maintained.**
+>
+> I've moved to a new GitOps-based setup. Check it out at [home-ops](https://github.com/gravity182/home-ops).
+
 ## Description
 
 This repo will get you your own home server with a lot of useful self-hosted software. This stack is well-built and will serve you reliably.
