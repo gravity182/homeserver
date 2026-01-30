@@ -2215,7 +2215,7 @@ services:
     critical: false
     image:
       repository: frooodle/s-pdf
-      tag: "1.4.0-ultra-lite@sha256:fa578308b9cb739716c57a6df766a9f25b02833b4813dd592bc90bb02f5bebc2"
+      tag: "2.4.2-ultra-lite@sha256:5f6b4c3a58798f16650256f68d5b7cae8d38c9708a631d554499d8a0cceeb61c"
       pullPolicy: IfNotPresent
     securityContext:
       # unfortunately the image needs root access
